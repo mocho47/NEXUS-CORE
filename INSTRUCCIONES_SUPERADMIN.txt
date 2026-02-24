@@ -1,0 +1,40 @@
+================================================================================
+   INSTRUCCIONES PARA EL SUPERADMINISTRADOR (PERFIL ADMIN)
+================================================================================
+
+Hola, una vez que estés en el perfil de Administrador, sigue estos 3 pasos para reparar CorelDRAW definitivamente.
+
+Necesitarás acceder a esta carpeta donde están los scripts:
+Ruta: c:\Users\anuar\Documents\trae_projects\habilitar respaldo aspire y corel\nexus_v2
+
+--------------------------------------------------------------------------------
+PASO 1: BLOQUEAR SERVIDORES (Archivo Hosts)
+--------------------------------------------------------------------------------
+1. Busca el archivo: bloquear_corel.bat
+2. Haz clic derecho sobre él.
+3. Elige "Ejecutar como administrador".
+4. Espera a que diga "LISTO" o "EXITO".
+
+--------------------------------------------------------------------------------
+PASO 2: BLOQUEO DE FUEGO (Firewall) - ¡EL MÁS IMPORTANTE!
+--------------------------------------------------------------------------------
+1. Busca el archivo: bloquear_firewall_corel.ps1
+2. Haz clic derecho sobre él.
+3. Elige "Ejecutar con PowerShell".
+4. Si pregunta si confías en el script, presiona la tecla 'S' y luego Enter.
+5. Verás letras verdes confirmando el bloqueo.
+
+--------------------------------------------------------------------------------
+PASO 3: LIMPIEZA DE RASTROS (Borrar aviso ilegal)
+--------------------------------------------------------------------------------
+1. Busca el archivo: limpiar_cache_corel.ps1
+2. Haz clic derecho sobre él.
+3. Elige "Ejecutar con PowerShell".
+4. Esto borrará la carpeta "Messages" oculta que causa la ventana de error.
+
+--------------------------------------------------------------------------------
+FINAL:
+--------------------------------------------------------------------------------
+Una vez hechos los 3 pasos, abre CorelDRAW. Debería funcionar sin internet y sin el aviso.
+
+¡Suerte!

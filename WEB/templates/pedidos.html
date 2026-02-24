@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pedidos - NEXUS</title>
+    <style>
+        * { box-sizing: border-box; }
+        body { background: #0a0a0a; color: #e0e0e0; font-family: 'Segoe UI', sans-serif; padding: 16px; }
+        h2 { color: #00ff88; margin-bottom: 4px; }
+        .nav a { color: #888; text-decoration: none; font-size: 0.9em; }
+        .toolbar { display: flex; gap: 10px; flex-wrap: wrap; margin: 14px 0; align-items: center; }
+        .btn-nuevo { background: #00ff88; color: #000; padding: 8px 18px; border-radius: 6px; text-decoration: none; font-weight: bold; font-size: 0.9em; }
+        .filtros { display: flex; gap: 6px; flex-wrap: wrap; }
+        .filtro { background: #141414; border: 1px solid #333; color: #888; padding: 5px 12px; border-radius: 20px; cursor: pointer; font-size: 0.8em; }
+        .filtro.active { border-color: #00ff88; color: #00ff88; }
+        .card {
+            background: #111; border: 1px solid #1e1e1e; border-radius: 10px;
+            padding: 14px 16px; margin-bottom: 10px;
+            border-left: 4px solid #333;
+            transition: border-color 0.2s;
+        }
+        .card.PENDIENTE  { border-left-color: #ffaa00; }
+        .card.LISTO      { border-left-color: #00ff88; }
+        .card.ENTREGADO  { border-left-color: #333; opacity: 0.5; }
+        .card-header { display: flex; justify-content: space-between; align-items: flex-start; gap: 8px; }
+        .cliente { font-weight: bold; font-size: 1em; }
+        .producto { color: #888; font-size: 0.88em; margin-top: 2px; }
+        .badge { padding: 2px 8px; border-radius: 4px; font-size: 0.75em; font-weight: bold; white-space: nowrap; }
+        .badge-PENDIENTE { background: #ffaa0022; color: #ffaa00; }
+        .badge-LISTO     { background: #00ff8822; color: #00ff88; }
+        .badge-ENTREGADO { background: #33333322; color: #555; }
+        .meta { display: flex; gap: 16px; margin-top: 10px; font-size: 0.8em; color: #555; flex-wrap: wrap; }
+        .meta span { display: flex; align-items: center; gap: 4px; }
+        .acciones { display: flex; gap: 8px; margin-top: 10px; }
+        .btn-accion {
+            padding: 6px 14px; border-radius: 6px; font-size: 0.82em; font-weight: bold;
+            cursor: pointer; border: none; text-decoration: none;
+        }
+        .btn-listo     { background: #00ff8822; color: #00ff88; border: 1px solid #00ff8844; }
+        .btn-entregado { background: #33333344; color: #888; border: 1px solid #333; }
+        .btn-listo:hover     { background: #00ff8844; }
+        .btn-entregado:hover { background: #44444444; }
+        .empty { text-align: center; color: #333; padding: 40px 0; }
+        .area-tag { background: #1a1a1a; color: #555; padding: 2px 6px; border-radius: 4px; font-size: 0.75em; }
+        .deadline-urgente { color: #ff4444 !important; }
+        .resumen { display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 16px; }
+        .res-card { background: #111; border: 1px solid #222; border-radius: 8px; padding: 10px 16px; text-align: center; flex: 1; min-width: 80px; }
+        .res-num { font-size: 1.8em; font-weight: bold; color: #00ff88; }
+        .res-label { font-size: 0.75em; color: #555; text-transform: uppercase; }
+    </style>
+</head>
+<body>
+    <div class="nav" style="margin-bottom:12px;"><a href="/dashboard">← Dashboard</a></div>
+    <h2>📋 Pedidos</h2>
+
+    <!-- Resumen rápido -->
+    <div class="resumen">
+        <div class="res-card">
+            <div class="res-num">{{ pedidos | selectattr("status","eq","PENDIENTE") | list | length }}</div>
+            <div class="res-label">Pendientes</div>
+        </div>
+        <div class="res-card">
+            <div class="res-num">{{ pedidos | selectattr("status","eq","LISTO") | list | length }}</div>
+            <div class="res-label">Listos</div>
+        </div>
+        <div class="res-card">
+            <div class="res-num">{{ pedidos | length }}</div>
+            <div class="res-label">Total</div>
+        </div>
+    </div>
+
+    <div class="toolbar">
+        <a class="btn-nuevo" href="/nuevo_pedido_form">+ Nuevo pedido</a>
+        <div class="filtros">
+            <span class="filtro active" onclick="filtrar('TODOS', this)">Todos</span>
+            <span class="filtro" onclick="filtrar('PENDIENTE', this)">Pendientes</span>
+            <span class="filtro" onclick="filtrar('LISTO', this)">Listos</span>
+            <span class="filtro" onclick="filtrar('LASER', this)">Láser</span>
+            <span class="filtro" onclick="filtrar('SUBLIMACION', this)">Subli</span>
+        </div>
+    </div>
+
+    <div id="lista-pedidos">
+    {% if pedidos %}
+        {% for p in pedidos | sort(attribute='deadline') %}
+        <div class="card {{ p.status }}" data-status="{{ p.status }}" data-area="{{ p.area or 'GENERAL' }}">
+            <div class="card-header">
+                <div>
+                    <div class="cliente">{{ p.cliente }}</div>
+                    <div class="producto">{{ p.producto }}</div>
+                </div>
+                <span class="badge badge-{{ p.status }}">{{ p.status }}</span>
+            </div>
+            <div class="meta">
+                <span class="{{ 'deadline-urgente' if p.deadline and p.deadline[:10] <= today else '' }}">
+                    📅 {{ p.deadline[:16] if p.deadline else '—' }}
+                </span>
+                <span class="area-tag">{{ p.area or 'GENERAL' }}</span>
+            </div>
+            <div class="acciones">
+                {% if p.status == 'PENDIENTE' %}
+                <form method="post" action="/marcar_listo" style="margin:0;">
+                    <input type="hidden" name="id" value="{{ p.id }}">
+                    <button class="btn-accion btn-listo" type="submit">✓ Listo</button>
+                </form>
+                {% endif %}
+                {% if p.status == 'LISTO' %}
+                <form method="post" action="/marcar_entregado" style="margin:0;">
+                    <input type="hidden" name="id" value="{{ p.id }}">
+                    <button class="btn-accion btn-entregado" type="submit">✓ Entregado</button>
+                </form>
+                {% endif %}
+                <a class="btn-accion" href="/editar_pedido_form?id={{ p.id }}"
+                   style="background:#1a1a1a;color:#888;border:1px solid #333;">✏ Editar</a>
+            </div>
+        </div>
+        {% endfor %}
+    {% else %}
+        <div class="empty">Sin pedidos registrados.<br><a href="/nuevo_pedido_form" style="color:#00ff88;">Crear el primero</a></div>
+    {% endif %}
+    </div>
+
+    <script>
+    const today = "{{ today }}";
+    function filtrar(valor, el) {
+        document.querySelectorAll('.filtro').forEach(f => f.classList.remove('active'));
+        el.classList.add('active');
+        document.querySelectorAll('.card').forEach(card => {
+            if (valor === 'TODOS') {
+                card.style.display = '';
+            } else if (['PENDIENTE','LISTO','ENTREGADO'].includes(valor)) {
+                card.style.display = card.dataset.status === valor ? '' : 'none';
+            } else {
+                card.style.display = card.dataset.area === valor ? '' : 'none';
+            }
+        });
+    }
+    </script>
+</body>
+</html>

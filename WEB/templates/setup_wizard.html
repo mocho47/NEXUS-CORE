@@ -1,0 +1,428 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>NEXUS — Configuración Inicial</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:#000;color:#00ff88;font-family:'Courier New',monospace;
+  min-height:100vh;display:flex;align-items:center;justify-content:center;
+  overflow:hidden}
+/* scanline */
+body::before{content:'';position:fixed;inset:0;background:repeating-linear-gradient(
+  0deg,transparent,transparent 2px,rgba(0,255,136,0.03) 2px,rgba(0,255,136,0.03) 4px);
+  pointer-events:none;z-index:9999}
+
+#wrap{width:100%;max-width:680px;padding:20px}
+
+/* Logo */
+#logo{text-align:center;margin-bottom:32px;animation:fadeIn 1.2s ease}
+#logo .nx{font-size:3rem;font-weight:700;letter-spacing:0.3em;
+  text-shadow:0 0 30px #00ff88,0 0 60px #00ff8855}
+#logo .sub{color:#00ff8888;font-size:.8rem;letter-spacing:.2em;margin-top:6px}
+
+/* Terminal box */
+#terminal{background:#0a0a0a;border:1px solid #00ff8833;border-radius:12px;
+  padding:28px;min-height:320px;position:relative}
+#terminal .bar{display:flex;gap:8px;margin-bottom:20px;padding-bottom:12px;
+  border-bottom:1px solid #1a1a1a}
+#terminal .bar span{width:12px;height:12px;border-radius:50%}
+#terminal .bar .r{background:#ff5f56}
+#terminal .bar .y{background:#ffbd2e}
+#terminal .bar .g{background:#27c93f}
+#terminal .bar .lbl{color:#444;font-size:.75rem;margin-left:6px;align-self:center}
+
+/* Diálogo NEXUS */
+#dialogo{min-height:220px}
+.msg-nexus{display:flex;align-items:flex-start;gap:12px;margin-bottom:16px;
+  animation:slideIn .4s ease}
+.msg-nexus .avatar{width:32px;height:32px;border-radius:50%;background:#00ff8822;
+  border:1px solid #00ff8855;display:flex;align-items:center;justify-content:center;
+  font-size:.9rem;flex-shrink:0}
+.msg-nexus .burbuja{background:#0d1f14;border:1px solid #00ff8833;border-radius:0 10px 10px 10px;
+  padding:12px 16px;font-size:.9rem;line-height:1.6;color:#b0ffda;max-width:90%}
+.msg-nexus .burbuja .cursor{display:inline-block;width:8px;height:14px;background:#00ff88;
+  animation:blink .7s infinite;vertical-align:middle;margin-left:3px}
+
+/* Cursor typing */
+@keyframes blink{0%,100%{opacity:1}50%{opacity:0}}
+@keyframes slideIn{from{opacity:0;transform:translateX(-10px)}to{opacity:1;transform:none}}
+@keyframes fadeIn{from{opacity:0;transform:translateY(-10px)}to{opacity:1;transform:none}}
+@keyframes pulse{0%,100%{box-shadow:0 0 0 0 #00ff8844}50%{box-shadow:0 0 0 8px transparent}}
+
+/* Input area */
+#inputArea{margin-top:20px;display:none}
+#inputArea input,#inputArea select{width:100%;background:#050d08;border:1px solid #00ff8866;
+  border-radius:8px;padding:12px 16px;color:#00ff88;font-family:inherit;font-size:.95rem;
+  outline:none;transition:border .2s}
+#inputArea input:focus,#inputArea select:focus{border-color:#00ff88}
+#inputArea select option{background:#0a0a0a;color:#00ff88}
+#inputArea .hint{color:#00ff8855;font-size:.75rem;margin-top:6px}
+
+/* Botón */
+#btnContinuar{display:none;width:100%;margin-top:16px;padding:14px;background:#00ff8811;
+  border:1px solid #00ff88;border-radius:8px;color:#00ff88;font-family:inherit;
+  font-size:.95rem;cursor:pointer;letter-spacing:.1em;transition:all .2s;animation:pulse 2s infinite}
+#btnContinuar:hover{background:#00ff8833;box-shadow:0 0 20px #00ff8844}
+
+/* PIN inputs */
+.pin-row{display:flex;gap:10px}
+.pin-row input{flex:1;text-align:center;font-size:1.5rem;letter-spacing:.3em;
+  padding:14px 8px}
+
+/* Progress */
+#progress{display:flex;gap:6px;justify-content:center;margin-bottom:24px}
+.step-dot{width:8px;height:8px;border-radius:50%;background:#1a1a1a;transition:all .4s}
+.step-dot.done{background:#00ff88;box-shadow:0 0 8px #00ff88}
+.step-dot.active{background:#00ff8866;box-shadow:0 0 12px #00ff8888;animation:pulse 1.5s infinite}
+
+/* Finalización */
+#finalizacion{display:none;text-align:center;padding:20px 0;animation:fadeIn .8s ease}
+#finalizacion .check{font-size:4rem;animation:pulse 1s 3}
+#finalizacion h2{color:#00ff88;font-size:1.4rem;margin:16px 0 8px;letter-spacing:.1em}
+#finalizacion p{color:#00ff8899;font-size:.85rem;line-height:1.7}
+#finalizacion .acciones{display:flex;gap:12px;justify-content:center;margin-top:24px;flex-wrap:wrap}
+#finalizacion .btn-action{padding:12px 24px;border:1px solid;border-radius:8px;
+  font-family:inherit;font-size:.85rem;cursor:pointer;text-decoration:none;
+  display:inline-flex;align-items:center;gap:8px;transition:all .2s}
+.btn-dashboard{background:#00ff8811;border-color:#00ff88;color:#00ff88}
+.btn-dashboard:hover{background:#00ff8833}
+.btn-paranormal{background:#b39ddb11;border-color:#b39ddb;color:#b39ddb}
+.btn-paranormal:hover{background:#b39ddb22}
+</style>
+</head>
+<body>
+<div id="wrap">
+  <div id="logo">
+    <div class="nx">NEXUS</div>
+    <div class="sub">CONFIGURACION INICIAL</div>
+  </div>
+
+  <div id="progress">
+    <div class="step-dot active" id="dot0"></div>
+    <div class="step-dot" id="dot1"></div>
+    <div class="step-dot" id="dot2"></div>
+    <div class="step-dot" id="dot3"></div>
+    <div class="step-dot" id="dot4"></div>
+  </div>
+
+  <div id="terminal">
+    <div class="bar">
+      <span class="r"></span><span class="y"></span><span class="g"></span>
+      <span class="lbl">nexus_setup.sh</span>
+    </div>
+
+    <div id="dialogo"></div>
+
+    <div id="inputArea">
+      <div id="inputContainer"></div>
+      <div class="hint" id="hint"></div>
+    </div>
+    <button id="btnContinuar" onclick="avanzar()">CONTINUAR &rarr;</button>
+  </div>
+
+  <div id="finalizacion">
+    <div class="check">&#9989;</div>
+    <h2>NEXUS CONFIGURADO</h2>
+    <p id="finMsg"></p>
+    <div class="acciones">
+      <a href="/dashboard" class="btn-action btn-dashboard">&#127968; Ir al Dashboard</a>
+      <a href="/paranormal" class="btn-action btn-paranormal">&#128123; Probar Paranormal</a>
+    </div>
+  </div>
+</div>
+
+<script>
+const synth = window.speechSynthesis;
+
+// ── NEXUS habla ─────────────────────────────────────────────────────
+const NOMBRES_MASC=['sabino','raúl','raul','miguel','carlos','antonio','juan',
+                    'diego','pablo','jorge','andrés','andres','luis','pedro'];
+let _voz = null;
+function getVoz(){
+  if(_voz) return _voz;
+  const vs=synth.getVoices();
+  _voz = vs.find(v=>v.lang==='es-MX'&&NOMBRES_MASC.some(n=>v.name.toLowerCase().includes(n)))
+       ||vs.find(v=>v.lang==='es-MX')
+       ||vs.find(v=>v.lang.startsWith('es')&&NOMBRES_MASC.some(n=>v.name.toLowerCase().includes(n)))
+       ||vs.find(v=>v.lang.startsWith('es'))
+       ||vs[0]||null;
+  return _voz;
+}
+if(synth.onvoiceschanged!==undefined) synth.onvoiceschanged=()=>{ _voz=null; getVoz(); };
+
+function nexusHabla(texto, pitch=1.05, rate=0.92){
+  return new Promise(res=>{
+    if(!synth){res();return;}
+    synth.cancel();
+    const u=new SpeechSynthesisUtterance(texto);
+    const v=getVoz(); if(v) u.voice=v;
+    u.lang='es-MX'; u.pitch=pitch; u.rate=rate; u.volume=1.0;
+    u.onend=res; u.onerror=res;
+    synth.speak(u);
+  });
+}
+
+// ── TYPING EFFECT ───────────────────────────────────────────────────
+function typing(elemento, texto, velocidad=28){
+  return new Promise(res=>{
+    elemento.textContent='';
+    let i=0;
+    const t=setInterval(()=>{
+      elemento.textContent+=texto[i++];
+      if(i>=texto.length){clearInterval(t);res();}
+    },velocidad);
+  });
+}
+
+function agregarBurbuja(html, tieneInput=false){
+  const d=document.getElementById('dialogo');
+  const wrap=document.createElement('div');
+  wrap.className='msg-nexus';
+  wrap.innerHTML=`
+    <div class="avatar">N</div>
+    <div class="burbuja" id="burbuja_${Date.now()}">${html}</div>`;
+  d.appendChild(wrap);
+  d.scrollTop=d.scrollHeight;
+  return wrap.querySelector('.burbuja');
+}
+
+// ── DATOS RECOLECTADOS ──────────────────────────────────────────────
+const datos={
+  nombre_negocio:'',
+  tipo_negocio:'general',
+  ciudad:'',
+  owner_name:'',
+  pin:'',
+  pin2:''
+};
+
+let paso=0;
+const TOTAL_PASOS=5;
+
+// ── PASOS DEL WIZARD ─────────────────────────────────────────────────
+const pasos=[
+  {
+    pregunta:'Hola. Soy NEXUS.\n\nVoy a guiarte en la configuración inicial — serán solo unos minutos.\n\n¿Cómo se llama tu negocio?',
+    campo:'nombre_negocio',
+    tipo:'text',
+    placeholder:'Ej: Taller Martínez, Tienda El Sol...',
+    hint:'El nombre que aparecerá en los reportes y documentos.',
+    voz:'Hola. Soy NEXUS. ¿Cómo se llama tu negocio?'
+  },
+  {
+    pregunta:'Perfecto.\n\n¿Qué tipo de negocio es?',
+    campo:'tipo_negocio',
+    tipo:'select',
+    opciones:[
+      {v:'taller',    l:'Taller (impresión, laser, corte...)'},
+      {v:'tienda',    l:'Tienda o punto de venta'},
+      {v:'servicios', l:'Servicios profesionales'},
+      {v:'restaurante',l:'Restaurante / Comida'},
+      {v:'familia',   l:'Uso personal / Familia'},
+      {v:'general',   l:'Otro'}
+    ],
+    hint:'Esto me ayuda a recomendarte los módulos correctos.',
+    voz:'¿Qué tipo de negocio tienes?'
+  },
+  {
+    pregunta:'¿En qué ciudad operan?',
+    campo:'ciudad',
+    tipo:'text',
+    placeholder:'Ej: Guadalajara, CDMX, Monterrey...',
+    hint:'Opcional — para personalizar reportes regionales.',
+    voz:'¿En qué ciudad operan?'
+  },
+  {
+    pregunta:'¿Cuál es tu nombre, administrador?',
+    campo:'owner_name',
+    tipo:'text',
+    placeholder:'Ej: Carlos, María, Javier...',
+    hint:'El dueño o administrador principal del sistema.',
+    voz:'¿Cuál es tu nombre, administrador?'
+  },
+  {
+    pregunta:'Casi listo.\n\nCrea un PIN de 4 dígitos para acceder al panel admin.',
+    campo:'pin',
+    tipo:'pin',
+    hint:'Memoriza este PIN — lo necesitarás para acceder a la configuración avanzada.',
+    voz:'Crea un PIN de cuatro dígitos para el panel administrador.'
+  }
+];
+
+// ── INIT ─────────────────────────────────────────────────────────────
+window.addEventListener('load', async ()=>{
+  // Verificar si ya está configurado
+  const r=await fetch('/api/setup/check').then(x=>x.json()).catch(()=>({configurado:false}));
+  if(r.configurado){
+    document.getElementById('logo').style.display='none';
+    document.getElementById('progress').style.display='none';
+    document.getElementById('terminal').style.display='none';
+    const fin=document.getElementById('finalizacion');
+    fin.style.display='block';
+    document.getElementById('finMsg').innerHTML=`NEXUS ya está configurado para <strong>${r.negocio}</strong>.<br>Si deseas reconfigurar, elimina CONFIG/negocio.json y reinicia.`;
+    return;
+  }
+  await mostrarPaso(0);
+});
+
+async function mostrarPaso(n){
+  paso=n;
+  // Actualizar dots
+  for(let i=0;i<TOTAL_PASOS;i++){
+    const d=document.getElementById(`dot${i}`);
+    if(i<n) d.className='step-dot done';
+    else if(i===n) d.className='step-dot active';
+    else d.className='step-dot';
+  }
+
+  const p=pasos[n];
+  const burbuja=agregarBurbuja('<span class="cursor"></span>');
+
+  // Habla mientras escribe
+  nexusHabla(p.voz||p.pregunta);
+  await typing(burbuja, p.pregunta, 22);
+
+  // Input
+  const ia=document.getElementById('inputArea');
+  const ic=document.getElementById('inputContainer');
+  const hint=document.getElementById('hint');
+  ic.innerHTML='';
+  ia.style.display='block';
+  hint.textContent=p.hint||'';
+
+  if(p.tipo==='text'){
+    ic.innerHTML=`<input type="text" id="campo" placeholder="${p.placeholder||''}" autofocus>`;
+    document.getElementById('campo').addEventListener('keydown',e=>{
+      if(e.key==='Enter') avanzar();
+    });
+  } else if(p.tipo==='select'){
+    let ops=p.opciones.map(o=>`<option value="${o.v}">${o.l}</option>`).join('');
+    ic.innerHTML=`<select id="campo">${ops}</select>`;
+  } else if(p.tipo==='pin'){
+    ic.innerHTML=`
+      <div class="pin-row">
+        <input type="password" maxlength="1" class="pdig" inputmode="numeric" pattern="[0-9]">
+        <input type="password" maxlength="1" class="pdig" inputmode="numeric" pattern="[0-9]">
+        <input type="password" maxlength="1" class="pdig" inputmode="numeric" pattern="[0-9]">
+        <input type="password" maxlength="1" class="pdig" inputmode="numeric" pattern="[0-9]">
+      </div>`;
+    const pds=[...document.querySelectorAll('.pdig')];
+    pds.forEach((d,i)=>{
+      d.addEventListener('input',()=>{
+        d.value=d.value.replace(/[^0-9]/g,'');
+        if(d.value&&i<3) pds[i+1].focus();
+      });
+      d.addEventListener('keydown',e=>{
+        if(e.key==='Backspace'&&!d.value&&i>0) pds[i-1].focus();
+        if(e.key==='Enter') avanzar();
+      });
+    });
+    pds[0].focus();
+  }
+
+  const btn=document.getElementById('btnContinuar');
+  btn.textContent = n===TOTAL_PASOS-1 ? 'FINALIZAR CONFIGURACION' : 'CONTINUAR →';
+  btn.style.display='block';
+  document.getElementById('inputArea').scrollIntoView({behavior:'smooth'});
+}
+
+async function avanzar(){
+  const p=pasos[paso];
+  let valor='';
+
+  if(p.tipo==='text'){
+    const c=document.getElementById('campo');
+    valor=c?c.value.trim():'';
+    if(!valor && p.campo!=='ciudad'){
+      c.style.border='1px solid #ff4444';
+      setTimeout(()=>{c.style.border='1px solid #00ff8866';},1200);
+      return;
+    }
+  } else if(p.tipo==='select'){
+    valor=document.getElementById('campo').value;
+  } else if(p.tipo==='pin'){
+    const pds=[...document.querySelectorAll('.pdig')];
+    valor=pds.map(d=>d.value).join('');
+    if(valor.length!==4){
+      pds.forEach(d=>d.style.border='1px solid #ff4444');
+      setTimeout(()=>pds.forEach(d=>d.style.border='1px solid #00ff8866'),1200);
+      return;
+    }
+  }
+
+  datos[p.campo]=valor;
+
+  // Eco del usuario
+  const d=document.getElementById('dialogo');
+  const eco=document.createElement('div');
+  eco.style.cssText='text-align:right;margin:8px 0 16px;animation:slideIn .3s ease';
+  eco.innerHTML=`<span style="background:#00ff8811;border:1px solid #00ff8833;border-radius:10px 0 10px 10px;
+    padding:8px 14px;display:inline-block;font-size:.88rem;color:#00ff88cc">
+    ${p.tipo==='pin' ? '● ● ● ●' : (valor||'(omitido)')}
+  </span>`;
+  d.appendChild(eco);
+
+  document.getElementById('inputArea').style.display='none';
+  document.getElementById('btnContinuar').style.display='none';
+
+  if(paso < TOTAL_PASOS-1){
+    await new Promise(r=>setTimeout(r,500));
+    await mostrarPaso(paso+1);
+  } else {
+    await finalizar();
+  }
+}
+
+async function finalizar(){
+  const burbuja=agregarBurbuja('<span class="cursor"></span>');
+  await nexusHabla('Procesando configuración...');
+  await typing(burbuja,'Procesando configuración...',30);
+
+  const payload={
+    nombre_negocio: datos.nombre_negocio,
+    pin:            datos.pin,
+    tipo_negocio:   datos.tipo_negocio,
+    ciudad:         datos.ciudad,
+    owner_name:     datos.owner_name
+  };
+
+  let res;
+  try{
+    res=await fetch('/api/setup/finalizar',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify(payload)
+    }).then(x=>x.json());
+  } catch(e){
+    res={ok:false,error:String(e)};
+  }
+
+  if(res.ok){
+    burbuja.textContent=`Listo, ${datos.owner_name||datos.nombre_negocio}. NEXUS configurado y activo.`;
+    await nexusHabla(`Listo ${datos.owner_name||''}. NEXUS está configurado y activo. Bienvenido.`);
+    await new Promise(r=>setTimeout(r,1200));
+    document.getElementById('terminal').style.display='none';
+    document.getElementById('progress').style.display='none';
+    const fin=document.getElementById('finalizacion');
+    fin.style.display='block';
+    document.getElementById('finMsg').innerHTML=`
+      Sistema configurado para <strong>${datos.nombre_negocio}</strong>.<br>
+      Administrador: <strong>${datos.owner_name||'—'}</strong> &nbsp;|&nbsp;
+      Ciudad: <strong>${datos.ciudad||'—'}</strong><br><br>
+      Tu PIN admin está guardado. Úsalo en <code>/admin</code> para configurar módulos y precios.
+    `;
+    // dots todos done
+    for(let i=0;i<TOTAL_PASOS;i++) document.getElementById(`dot${i}`).className='step-dot done';
+  } else {
+    burbuja.textContent=`Error: ${res.error||'No se pudo guardar la configuración. Intenta de nuevo.'}`;
+    await nexusHabla('Hubo un error. Por favor intenta de nuevo.');
+    document.getElementById('btnContinuar').textContent='REINTENTAR';
+    document.getElementById('btnContinuar').style.display='block';
+    document.getElementById('btnContinuar').onclick=finalizar;
+  }
+}
+</script>
+</body>
+</html>

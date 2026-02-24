@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Historial - NEXUS</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { background: #0a0a0a; color: #e0e0e0; font-family: 'Segoe UI', sans-serif; padding: 16px; }
+        .nav { margin-bottom: 14px; }
+        .nav a { color: #888; text-decoration: none; font-size: 0.9em; }
+        h2 { color: #00ff88; margin-bottom: 16px; }
+        .search-bar {
+            width: 100%; background: #111; border: 1px solid #2a2a2a;
+            border-radius: 8px; color: #e0e0e0; padding: 10px 14px;
+            font-size: 0.9em; outline: none; margin-bottom: 16px;
+        }
+        .search-bar:focus { border-color: #00ff8844; }
+        .count { color: #555; font-size: 0.8em; margin-bottom: 12px; }
+        .card {
+            background: #111; border: 1px solid #1e1e1e; border-radius: 8px;
+            padding: 12px 14px; margin-bottom: 8px; display: flex;
+            justify-content: space-between; align-items: center; gap: 10px;
+        }
+        .card:hover { border-color: #2a2a2a; }
+        .info .cliente { font-weight: bold; font-size: 0.92em; }
+        .info .producto { color: #888; font-size: 0.82em; margin-top: 2px; }
+        .meta { text-align: right; flex-shrink: 0; }
+        .badge { padding: 2px 8px; border-radius: 4px; font-size: 0.74em; font-weight: bold; }
+        .badge-PENDIENTE { background: #ffaa0022; color: #ffaa00; }
+        .badge-LISTO     { background: #00ff8822; color: #00ff88; }
+        .badge-ENTREGADO { background: #33333322; color: #555; }
+        .badge-CANCELADO { background: #ff444422; color: #ff4444; }
+        .fecha { color: #555; font-size: 0.78em; margin-top: 4px; }
+        .empty { text-align: center; color: #333; padding: 40px 0; }
+        .area-tag { font-size: 0.74em; color: #444; background: #181818;
+                    padding: 1px 6px; border-radius: 4px; margin-left: 6px; }
+    </style>
+</head>
+<body>
+    <div class="nav"><a href="/pedidos">← Pedidos</a></div>
+    <h2>📂 Historial de Pedidos</h2>
+
+    <input class="search-bar" type="text" id="buscador"
+           placeholder="Buscar por cliente, producto o estatus..."
+           oninput="filtrar()" autocomplete="off">
+
+    <div class="count" id="conteo">{{ pedidos | length }} registros</div>
+
+    <div id="lista">
+    {% if pedidos %}
+        {% for p in pedidos | sort(attribute='deadline', reverse=True) %}
+        <div class="card" data-texto="{{ (p.cliente + ' ' + p.producto + ' ' + p.status) | lower }}">
+            <div class="info">
+                <div class="cliente">
+                    {{ p.cliente }}
+                    <span class="area-tag">{{ p.area or 'GENERAL' }}</span>
+                </div>
+                <div class="producto">{{ p.producto }}</div>
+            </div>
+            <div class="meta">
+                <span class="badge badge-{{ p.status }}">{{ p.status }}</span>
+                <div class="fecha">{{ p.deadline[:10] if p.deadline else '—' }}</div>
+            </div>
+        </div>
+        {% endfor %}
+    {% else %}
+        <div class="empty">Sin pedidos en el historial.</div>
+    {% endif %}
+    </div>
+
+    <script>
+    function filtrar() {
+        const val = document.getElementById('buscador').value.toLowerCase();
+        const cards = document.querySelectorAll('.card');
+        let visibles = 0;
+        cards.forEach(c => {
+            const visible = c.dataset.texto.includes(val);
+            c.style.display = visible ? '' : 'none';
+            if (visible) visibles++;
+        });
+        document.getElementById('conteo').innerText = visibles + ' registros';
+    }
+    </script>
+</body>
+</html>

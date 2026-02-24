@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Inventario</title>
+    <style>
+        body { font-family: 'Segoe UI', sans-serif; background: #121212; color: #fff; padding: 20px; }
+        .item { display: flex; justify-content: space-between; padding: 15px; border-bottom: 1px solid #333; }
+        .low-stock { color: #ff4444; }
+        .nav { margin-bottom: 20px; }
+        .nav a { color: #aaa; text-decoration: none; margin-right: 15px; }
+    </style>
+</head>
+<body>
+    <div class="nav">
+        <a href="/">← Volver</a>
+    </div>
+    <h2>Inventario 📦</h2>
+    
+    {% for nombre, data in stock.items() %}
+    <div class="item">
+        <div>
+            <div style="font-weight:bold; font-size:1.1em;">{{ nombre }}</div>
+            <div style="color:#aaa; font-size:0.9em;">Min: {{ data.min }}</div>
+        </div>
+        <div style="text-align:right;">
+            <div class="{% if data.qty <= data.min %}low-stock{% endif %}" style="font-size:1.2em;">
+                {{ data.qty }}
+            </div>
+            <div style="color:#00ff00;">${{ data.price }}</div>
+        </div>
+    </div>
+    {% endfor %}
+</body>
+</html>

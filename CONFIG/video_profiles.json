@@ -1,0 +1,29 @@
+{
+    "global_settings": {
+        "ffmpeg_path": "auto",
+        "temp_dir": "C:/NEXUS/TEMP_VIDEO",
+        "assets_dir": "C:/NEXUS/ASSETS"
+    },
+    "profiles": {
+        "ATF_REVIVAL": {
+            "description": "Marca de agua simple para Actualiza Tus Faros",
+            "active": true,
+            "input_dir": "C:/NEXUS/RESPALDO_MAESTRO",
+            "output_dir": "C:/NEXUS/OUTPUT/ATF_REVIVAL",
+            "watermark_image": "atf_logo.png",
+            "watermark_position": "bottom_right",
+            "intro_video": null,
+            "outro_video": null
+        },
+        "CANBUSFIX_VIRAL": {
+            "description": "Edición completa para Comunidad CanbusFix",
+            "active": true,
+            "input_dir": "C:/NEXUS/RESPALDO_MAESTRO",
+            "output_dir": "C:/NEXUS/OUTPUT/CANBUSFIX_VIRAL",
+            "watermark_image": "canbusfix_logo.png",
+            "watermark_position": "top_left",
+            "intro_video": "intro_community.mp4",
+            "outro_video": "outro_subscribe.mp4"
+        }
+    }
+}

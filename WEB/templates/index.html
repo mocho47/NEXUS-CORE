@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NEXUS</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { background: #0a0a0a; color: #e0e0e0; font-family: 'Segoe UI', monospace; padding: 16px; }
+        h1 { color: #00ff88; font-size: 1.3em; border-bottom: 1px solid #00ff8822; padding-bottom: 10px; margin-bottom: 16px; }
+        .grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-bottom: 20px; }
+        .btn {
+            background: #111; border: 1px solid #1e1e1e; border-radius: 10px;
+            padding: 18px 10px; text-align: center; text-decoration: none;
+            color: #e0e0e0; font-size: 0.9em; transition: border-color 0.2s; display: block;
+        }
+        .btn:hover { border-color: #00ff8844; color: #00ff88; }
+        .btn .icon { font-size: 1.8em; display: block; margin-bottom: 6px; }
+        .btn.primary { border-color: #00ff8844; color: #00ff88; }
+        .cmd-bar { display: flex; gap: 8px; margin-bottom: 16px; }
+        .cmd-input {
+            flex: 1; background: #111; border: 1px solid #333; border-radius: 8px;
+            color: #e0e0e0; padding: 10px 14px; font-size: 0.9em; outline: none;
+        }
+        .cmd-input:focus { border-color: #00ff8844; }
+        .cmd-send {
+            background: #00ff8822; border: 1px solid #00ff8844; border-radius: 8px;
+            color: #00ff88; padding: 10px 18px; font-size: 0.9em; cursor: pointer;
+        }
+        .status { background: #111; border: 1px solid #1e1e1e; border-radius: 10px; padding: 14px; }
+        .status h2 { font-size: 0.8em; color: #555; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 10px; }
+        .log { font-size: 0.78em; color: #444; height: 120px; overflow-y: auto; line-height: 1.6; }
+        .toast {
+            position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%);
+            background: #00ff8822; border: 1px solid #00ff8844; color: #00ff88;
+            padding: 8px 20px; border-radius: 8px; font-size: 0.85em;
+            display: none; z-index: 999;
+        }
+    </style>
+</head>
+<body>
+    <h1>⚡ NEXUS</h1>
+
+    <!-- Barra de comando de texto -->
+    <div class="cmd-bar">
+        <input class="cmd-input" type="text" id="cmdInput" placeholder="Escribe un comando para Nexus..." autocomplete="off">
+        <button class="cmd-send" onclick="enviarComando()">▶</button>
+    </div>
+
+    <!-- Accesos rápidos -->
+    <div class="grid">
+        <a class="btn primary" href="/dashboard">
+            <span class="icon">⚡</span>Dashboard
+        </a>
+        <a class="btn" href="/pedidos">
+            <span class="icon">📋</span>Pedidos
+        </a>
+        <a class="btn" href="/nuevo_pedido_form">
+            <span class="icon">➕</span>Nuevo pedido
+        </a>
+        <a class="btn" href="/cotizar-rapido">
+            <span class="icon">💲</span>Cotizar
+        </a>
+        <a class="btn" href="/clientes">
+            <span class="icon">👥</span>Clientes
+        </a>
+        <a class="btn" href="/stock">
+            <span class="icon">📦</span>Inventario
+        </a>
+        <a class="btn" href="/reporte">
+            <span class="icon">📊</span>Reporte
+        </a>
+        <a class="btn" href="/catalogo">
+            <span class="icon">📄</span>Catálogo
+        </a>
+    </div>
+
+    <!-- Mini log en vivo -->
+    <div class="status">
+        <h2>📡 Actividad reciente</h2>
+        <div class="log" id="logBox">Cargando...</div>
+    </div>
+
+    <div class="toast" id="toast"></div>
+
+    <script>
+    function mostrarToast(msg, color) {
+        const t = document.getElementById('toast');
+        t.innerText = msg;
+        t.style.display = 'block';
+        t.style.color = color || '#00ff88';
+        setTimeout(() => t.style.display = 'none', 2500);
+    }
+
+    function enviarComando() {
+        const inp = document.getElementById('cmdInput');
+        const cmd = inp.value.trim();
+        if (!cmd) return;
+        inp.value = '';
+        fetch('/command', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({command: cmd})
+        }).then(r => r.json()).then(d => {
+            mostrarToast('Comando enviado ✓');
+        }).catch(() => mostrarToast('Sin conexión al servidor', '#ff4444'));
+    }
+
+    document.getElementById('cmdInput').addEventListener('keydown', e => {
+        if (e.key === 'Enter') enviarComando();
+    });
+
+    function cargarLogs() {
+        fetch('/logs').then(r => r.text()).then(txt => {
+            const box = document.getElementById('logBox');
+            box.innerText = txt.trim() ? txt.trim().split('\n').slice(-10).join('\n') : 'Sin actividad reciente.';
+            box.scrollTop = box.scrollHeight;
+        }).catch(() => {});
+    }
+
+    setInterval(cargarLogs, 4000);
+    cargarLogs();
+    </script>
+</body>
+</html>

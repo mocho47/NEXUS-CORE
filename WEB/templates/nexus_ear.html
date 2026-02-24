@@ -1,0 +1,366 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<meta name="theme-color" content="#0a0a0a">
+<title>NEXUS — Oído & Chat</title>
+<style>
+:root{
+  --bg:#0a0a0a;--surface:#111;--surface2:#1a1a1a;--border:#2a2a2a;
+  --green:#00ff88;--blue:#00aaff;--gold:#ffd700;--accent:#ff4444;
+  --purple:#b39ddb;--muted:#555;--text:#f0f0f0;--r:12px;--rr:8px;
+}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{height:100%;overflow:hidden}
+body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;display:flex;flex-direction:column}
+
+/* ── HEADER ── */
+.hdr{background:var(--surface);border-bottom:1px solid var(--border);padding:12px 16px;display:flex;align-items:center;gap:10px;flex-shrink:0}
+.hdr-title{font-size:16px;font-weight:700;color:var(--green)}
+.hdr-sub{font-size:11px;color:var(--muted)}
+.hdr-right{margin-left:auto;display:flex;align-items:center;gap:8px}
+
+/* ── MODO TOGGLE ── */
+.mode-pill{display:flex;background:var(--surface2);border:1px solid var(--border);border-radius:20px;overflow:hidden}
+.mode-btn{padding:5px 14px;font-size:12px;font-weight:600;cursor:pointer;color:var(--muted);border:none;background:transparent}
+.mode-btn.active{background:var(--green);color:#000}
+
+/* ── STATUS BAR ── */
+.statusbar{background:var(--surface2);border-bottom:1px solid var(--border);padding:8px 16px;display:flex;align-items:center;gap:8px;flex-shrink:0}
+.status-dot{width:8px;height:8px;border-radius:50%;background:var(--muted);flex-shrink:0;transition:.3s}
+.status-dot.listening{background:var(--accent);animation:pulse 1s infinite}
+.status-dot.processing{background:var(--gold);animation:pulse .5s infinite}
+.status-dot.online{background:var(--green)}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+.status-text{font-size:12px;color:var(--muted)}
+#transcriptLive{font-size:12px;color:var(--green);font-style:italic;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+
+/* ── CHAT AREA ── */
+.chat-area{flex:1;overflow-y:auto;padding:14px;display:flex;flex-direction:column;gap:10px;scroll-behavior:smooth}
+.msg{display:flex;gap:8px;max-width:85%;animation:fadein .2s ease}
+@keyframes fadein{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
+.msg.nexus{align-self:flex-start}
+.msg.user{align-self:flex-end;flex-direction:row-reverse}
+.msg-avatar{width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0}
+.msg.nexus .msg-avatar{background:var(--surface2);border:1px solid var(--border)}
+.msg.user  .msg-avatar{background:var(--green);color:#000;font-size:14px;font-weight:700}
+.msg-bubble{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:10px 13px;font-size:13px;line-height:1.5}
+.msg.nexus .msg-bubble{border-color:#00ff8822}
+.msg.user  .msg-bubble{background:var(--surface2)}
+.msg-time{font-size:10px;color:var(--muted);margin-top:4px;text-align:right}
+.msg.nexus .msg-time{text-align:left}
+
+/* Transcript tag dentro del bubble */
+.transcript-tag{font-size:10px;color:var(--muted);font-style:italic;margin-bottom:4px;display:block}
+
+/* ── INPUT AREA ── */
+.input-area{border-top:1px solid var(--border);padding:12px;background:var(--surface);flex-shrink:0;display:flex;flex-direction:column;gap:8px}
+.input-row{display:flex;gap:8px;align-items:flex-end}
+#cmdInput{flex:1;background:var(--surface2);border:1px solid var(--border);color:var(--text);padding:10px 14px;border-radius:24px;font-size:14px;outline:none;resize:none;max-height:100px;line-height:1.4}
+#cmdInput:focus{border-color:var(--green)}
+.btn-send{width:42px;height:42px;border-radius:50%;border:none;background:var(--green);color:#000;font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:.2s}
+.btn-send:hover{filter:brightness(1.1)}
+.btn-mic{width:42px;height:42px;border-radius:50%;border:1px solid var(--border);background:var(--surface2);color:var(--muted);font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:.3s}
+.btn-mic.on{background:var(--accent);border-color:var(--accent);color:#fff;box-shadow:0 0 16px var(--accent)}
+.input-hint{font-size:11px;color:var(--muted);padding:0 4px}
+
+/* ── COMANDOS RÁPIDOS ── */
+.quick-cmds{display:flex;gap:6px;overflow-x:auto;padding:0 0 2px;scrollbar-width:none}
+.quick-cmds::-webkit-scrollbar{display:none}
+.qcmd{background:var(--surface2);border:1px solid var(--border);color:var(--muted);font-size:12px;padding:4px 12px;border-radius:14px;cursor:pointer;white-space:nowrap;flex-shrink:0}
+.qcmd:hover{border-color:var(--green);color:var(--green)}
+
+/* ── SCROLLBAR ── */
+.chat-area::-webkit-scrollbar{width:3px}
+.chat-area::-webkit-scrollbar-track{background:transparent}
+.chat-area::-webkit-scrollbar-thumb{background:#333;border-radius:2px}
+
+/* ── LINK BACK ── */
+.back-btn{padding:4px 10px;border-radius:6px;border:1px solid var(--border);background:transparent;color:var(--muted);font-size:12px;cursor:pointer;text-decoration:none;display:inline-flex;align-items:center;gap:4px}
+.back-btn:hover{border-color:var(--green);color:var(--green)}
+</style>
+</head>
+<body>
+
+<!-- HEADER ─────────────────────────────────────────────────────────────── -->
+<div class="hdr">
+  <span style="font-size:24px">👂</span>
+  <div>
+    <div class="hdr-title">NEXUS Oído</div>
+    <div class="hdr-sub">Transcripción en vivo + chat de comandos</div>
+  </div>
+  <div class="hdr-right">
+    <div class="mode-pill">
+      <button class="mode-btn active" id="btnModeVoz" onclick="setMode('voz')">🎙️ Voz</button>
+      <button class="mode-btn" id="btnModeText" onclick="setMode('texto')">⌨️ Texto</button>
+    </div>
+    <a href="/dashboard" class="back-btn">← Panel</a>
+  </div>
+</div>
+
+<!-- STATUS ─────────────────────────────────────────────────────────────── -->
+<div class="statusbar">
+  <div class="status-dot" id="statusDot"></div>
+  <div class="status-text" id="statusText">Listo</div>
+  <div id="transcriptLive">— habla o escribe —</div>
+</div>
+
+<!-- CHAT ─────────────────────────────────────────────────────────────── -->
+<div class="chat-area" id="chatArea">
+  <div class="msg nexus">
+    <div class="msg-avatar">🤖</div>
+    <div>
+      <div class="msg-bubble">
+        Hola. Soy NEXUS.<br>
+        Puedes hablarme o escribirme — tú eliges.<br>
+        <span style="color:var(--muted);font-size:11px">En modo voz: todo lo que dices aparece aquí en tiempo real.</span>
+      </div>
+      <div class="msg-time">NEXUS · ahora</div>
+    </div>
+  </div>
+</div>
+
+<!-- INPUT ─────────────────────────────────────────────────────────────── -->
+<div class="input-area">
+  <div class="quick-cmds">
+    <div class="qcmd" onclick="enviarCmd('¿cuántos pedidos tengo hoy?')">📦 Pedidos</div>
+    <div class="qcmd" onclick="enviarCmd('¿cómo está el stock?')">🏪 Stock</div>
+    <div class="qcmd" onclick="enviarCmd('¿cuántos clientes tenemos?')">👥 Clientes</div>
+    <div class="qcmd" onclick="enviarCmd('genera un post para instagram')">📣 Marketing</div>
+    <div class="qcmd" onclick="enviarCmd('¿cuáles son mis ventas de hoy?')">💰 Ventas</div>
+    <div class="qcmd" onclick="enviarCmd('cuéntame un chiste de negocios')">😄 Humor</div>
+    <div class="qcmd" onclick="enviarCmd('activa modo paranormal')">🔮 Paranormal</div>
+    <div class="qcmd" onclick="enviarCmd('ayuda')">❓ Ayuda</div>
+  </div>
+  <div class="input-row">
+    <button class="btn-mic" id="btnMic" onclick="toggleMic()">🎙️</button>
+    <textarea id="cmdInput" placeholder="Escribe un comando..." rows="1"
+      onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();enviarEscrito()}"
+      oninput="autoResize(this)"></textarea>
+    <button class="btn-send" onclick="enviarEscrito()">↑</button>
+  </div>
+  <div class="input-hint" id="inputHint">💡 Modo voz activo — tu voz aparece aquí antes de enviar</div>
+</div>
+
+<script>
+// ═══════════════════════════════════════════════════════════════════════════
+// ESTADO
+// ═══════════════════════════════════════════════════════════════════════════
+let modo         = 'voz';   // 'voz' | 'texto'
+let micActivo    = false;
+let recognition  = null;
+let synth        = window.speechSynthesis;
+let sessionId    = 'ear_' + Date.now();
+let transcriptParcial = '';
+
+// ═══════════════════════════════════════════════════════════════════════════
+// MODO (VOZ / TEXTO)
+// ═══════════════════════════════════════════════════════════════════════════
+function setMode(m) {
+  modo = m;
+  document.getElementById('btnModeVoz').classList.toggle('active',  m==='voz');
+  document.getElementById('btnModeText').classList.toggle('active', m==='texto');
+  const hint = document.getElementById('inputHint');
+  const mic  = document.getElementById('btnMic');
+  if (m === 'voz') {
+    hint.textContent = '💡 Modo voz activo — pulsa 🎙️ para hablar';
+    mic.style.opacity = '1';
+    mic.style.pointerEvents = 'auto';
+  } else {
+    hint.textContent = '💡 Modo texto — escribe y pulsa ↑ o Enter';
+    if (micActivo) toggleMic();
+    mic.style.opacity = '0.3';
+    mic.style.pointerEvents = 'none';
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// SPEECH RECOGNITION (OÍDO)
+// ═══════════════════════════════════════════════════════════════════════════
+function initRecognition() {
+  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if (!SR) return null;
+  const r = new SR();
+  r.lang            = 'es-MX';
+  r.continuous      = true;
+  r.interimResults  = true;
+  r.maxAlternatives = 1;
+
+  r.onstart = () => {
+    setStatus('listening', 'Escuchando...');
+    document.getElementById('btnMic').classList.add('on');
+    document.getElementById('btnMic').textContent = '🔴';
+  };
+
+  r.onend = () => {
+    if (micActivo) { try { r.start(); } catch(e){} }
+    else {
+      setStatus('online', 'Listo');
+      document.getElementById('btnMic').classList.remove('on');
+      document.getElementById('btnMic').textContent = '🎙️';
+    }
+  };
+
+  r.onresult = (e) => {
+    let interim = '', final = '';
+    for (let i = e.resultIndex; i < e.results.length; i++) {
+      const t = e.results[i][0].transcript;
+      if (e.results[i].isFinal) final += t;
+      else interim += t;
+    }
+    // Mostrar en live bar
+    document.getElementById('transcriptLive').textContent = interim || final || '...';
+    if (final) {
+      transcriptParcial += ' ' + final;
+      document.getElementById('cmdInput').value = transcriptParcial.trim();
+      autoResize(document.getElementById('cmdInput'));
+    }
+  };
+
+  r.onerror = (e) => {
+    if (e.error !== 'no-speech') setStatus('online','Error: ' + e.error);
+  };
+
+  return r;
+}
+
+function toggleMic() {
+  if (modo !== 'voz') return;
+  if (!recognition) recognition = initRecognition();
+  if (!recognition) { addMsg('nexus','❌ Tu navegador no soporta reconocimiento de voz. Usa Chrome.'); return; }
+
+  micActivo = !micActivo;
+  if (micActivo) {
+    transcriptParcial = '';
+    document.getElementById('cmdInput').value = '';
+    try { recognition.start(); } catch(e){}
+  } else {
+    recognition.stop();
+    // Al soltar el mic, si hay texto acumulado lo enviamos
+    const texto = document.getElementById('cmdInput').value.trim();
+    if (texto) enviarCmd(texto);
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// ENVÍO DE COMANDOS
+// ═══════════════════════════════════════════════════════════════════════════
+async function enviarEscrito() {
+  const input = document.getElementById('cmdInput');
+  const texto = input.value.trim();
+  if (!texto) return;
+  input.value = '';
+  transcriptParcial = '';
+  autoResize(input);
+  await enviarCmd(texto);
+}
+
+async function enviarCmd(texto) {
+  document.getElementById('transcriptLive').textContent = texto;
+  addMsg('user', texto);
+  setStatus('processing', 'Procesando...');
+
+  try {
+    const r = await fetch('/api/asistente', {
+      method:  'POST',
+      headers: {'Content-Type':'application/json'},
+      body:    JSON.stringify({ texto, session_id: sessionId }),
+    });
+    const data = await r.json();
+    const respuesta = data.respuesta || data.mensaje || data.error || 'Sin respuesta';
+    setStatus('online', 'Listo');
+    addMsg('nexus', respuesta, texto);
+    if (modo === 'voz' && synth) hablar(respuesta);
+  } catch(err) {
+    setStatus('online', 'Error de conexión');
+    addMsg('nexus', '⚠️ Sin conexión con el servidor. ¿Está corriendo NEXUS?');
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// TTS
+// ═══════════════════════════════════════════════════════════════════════════
+// Voz masculina mexicana
+const _MASC_MX = ['raúl','raul','sabino','miguel','carlos','antonio','juan','diego',
+                  'pablo','jorge','andrés','andres','luis','pedro','microsoft raul','microsoft sabino'];
+let _vozEar = null;
+function getVozEar(){
+  if(_vozEar) return _vozEar;
+  const vs = synth ? synth.getVoices() : [];
+  _vozEar =
+    vs.find(v=>v.lang==='es-MX' && _MASC_MX.some(n=>v.name.toLowerCase().includes(n)))
+ || vs.find(v=>v.lang==='es-MX')
+ || vs.find(v=>v.lang.startsWith('es') && _MASC_MX.some(n=>v.name.toLowerCase().includes(n)))
+ || vs.find(v=>v.lang.startsWith('es'))
+ || vs[0] || null;
+  return _vozEar;
+}
+if(synth && synth.onvoiceschanged !== undefined) synth.onvoiceschanged = ()=>{ _vozEar=null; };
+
+function hablar(texto) {
+  if (!synth) return;
+  synth.cancel();
+  const u = new SpeechSynthesisUtterance(texto.substring(0,300));
+  u.lang  = 'es-MX';
+  u.rate  = 0.93;
+  u.pitch = 1.05;
+  const vz = getVozEar();
+  if (vz) u.voice = vz;
+  synth.speak(u);
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// UI HELPERS
+// ═══════════════════════════════════════════════════════════════════════════
+function addMsg(from, texto, transcripto='') {
+  const area = document.getElementById('chatArea');
+  const now  = new Date().toLocaleTimeString('es-MX',{hour:'2-digit',minute:'2-digit'});
+  const div  = document.createElement('div');
+  div.className = `msg ${from}`;
+  const avatar = from === 'nexus' ? '🤖' : 'TÚ';
+  const transcriptTag = (from==='user' && transcripto)
+    ? `<span class="transcript-tag">🎙️ "${transcripto}"</span>` : '';
+  div.innerHTML = `
+    <div class="msg-avatar">${avatar}</div>
+    <div>
+      <div class="msg-bubble">${transcriptTag}${escHtml(texto)}</div>
+      <div class="msg-time">${from==='nexus'?'NEXUS':'Tú'} · ${now}</div>
+    </div>`;
+  area.appendChild(div);
+  area.scrollTop = area.scrollHeight;
+}
+
+function escHtml(s) {
+  return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+          .replace(/\n/g,'<br>');
+}
+
+function setStatus(type, texto) {
+  const dot  = document.getElementById('statusDot');
+  const txt  = document.getElementById('statusText');
+  dot.className = 'status-dot ' + type;
+  txt.textContent = texto;
+}
+
+function autoResize(el) {
+  el.style.height = 'auto';
+  el.style.height = Math.min(el.scrollHeight, 100) + 'px';
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// INIT
+// ═══════════════════════════════════════════════════════════════════════════
+document.addEventListener('DOMContentLoaded', () => {
+  setStatus('online', 'Listo');
+  // Verificar soporte
+  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if (!SR) {
+    setMode('texto');
+    document.getElementById('inputHint').textContent = '⚠️ Reconocimiento de voz no soportado — usa Chrome. Modo texto activado.';
+    document.getElementById('btnMic').style.display = 'none';
+  }
+});
+</script>
+</body>
+</html>

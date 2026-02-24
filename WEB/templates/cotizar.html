@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nuevo Pedido</title>
+    <style>
+        body { font-family: 'Segoe UI', sans-serif; background: #121212; color: #fff; padding: 20px; }
+        input, select, button { width: 100%; padding: 15px; margin-bottom: 15px; background: #333; border: 1px solid #444; color: white; border-radius: 8px; font-size: 16px; box-sizing: border-box; }
+        button { background: #00ff00; color: black; font-weight: bold; border: none; cursor: pointer; }
+        label { display: block; margin-bottom: 5px; color: #aaa; }
+    </style>
+</head>
+<body>
+    <h2>Nuevo Pedido 📝</h2>
+    <form id="orderForm">
+        <label>Cliente</label>
+        <input type="text" name="cliente" required placeholder="Nombre del cliente">
+        
+        <label>Producto</label>
+        <input type="text" name="producto" required placeholder="Ej: 12 Tazas Mágicas">
+        
+        <label>Entrega</label>
+        <input type="text" name="entrega" placeholder="Ej: Mañana 2pm">
+        
+        <button type="submit">AGENDAR</button>
+    </form>
+    
+    <a href="/" style="display:block; text-align:center; color: #666; margin-top: 20px; text-decoration:none;">Cancelar</a>
+
+    <script>
+        document.getElementById('orderForm').onsubmit = async (e) => {
+            e.preventDefault();
+            const formData = new FormData(e.target);
+            const res = await fetch('/nuevo_pedido', { method: 'POST', body: formData });
+            const data = await res.json();
+            alert(data.mensaje);
+            window.location.href = '/';
+        };
+    </script>
+</body>
+</html>

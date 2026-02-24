@@ -1,0 +1,1698 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="theme-color" content="#0a0a0a">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="mobile-web-app-capable" content="yes">
+    <title>NEXUS Teens</title>
+    <style>
+        :root {
+            --bg:      #0a0a0a;
+            --bg2:     #111118;
+            --bg3:     #16161e;
+            --border:  #1e1e2e;
+            --txt:     #e0e0e0;
+            --dim:     #555;
+            --green:   #00ff88;
+            --pink:    #ff6b9d;
+            --cyan:    #4ecdc4;
+            --yellow:  #ffe66d;
+            --orange:  #ff9a3c;
+            --purple:  #c471ed;
+            --blue:    #4d9de0;
+            --safe-bottom: env(safe-area-inset-bottom, 20px);
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+        html, body { height: 100%; overflow: hidden; background: var(--bg); color: var(--txt);
+                     font-family: 'Segoe UI', system-ui, sans-serif; }
+
+        /* ── LAYOUT PRINCIPAL ── */
+        .app { display: flex; flex-direction: column; height: 100%; height: 100dvh; }
+
+        /* ── TOPBAR ── */
+        .topbar {
+            background: var(--bg2); border-bottom: 1px solid var(--border);
+            padding: 10px 14px; display: flex; align-items: center; gap: 10px;
+            flex-shrink: 0;
+        }
+        .topbar .logo { font-size: 1em; font-weight: 900; letter-spacing: 2px;
+                        background: linear-gradient(135deg, #ff6b9d, #c471ed, #4ecdc4);
+                        -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        .topbar .badge-tag { background: var(--pink); color: #000; font-size: 0.62em;
+                              font-weight: 900; padding: 2px 7px; border-radius: 20px;
+                              -webkit-text-fill-color: #000; }
+        .topbar .tokens { margin-left: auto; font-size: 0.84em; color: var(--yellow); font-weight: bold; }
+        .topbar .racha  { font-size: 0.8em; color: var(--orange); margin-right: 4px; }
+
+        /* ── TABS ── */
+        .tabs { background: var(--bg2); border-bottom: 1px solid var(--border);
+                display: flex; overflow-x: auto; flex-shrink: 0; scrollbar-width: none; }
+        .tabs::-webkit-scrollbar { display: none; }
+        .tab { padding: 10px 14px; font-size: 0.78em; color: var(--dim); cursor: pointer;
+               white-space: nowrap; border-bottom: 2px solid transparent;
+               transition: all 0.15s; user-select: none; display: flex; align-items: center; gap: 5px; }
+        .tab:hover { color: var(--txt); }
+        .tab.active { color: var(--pink); border-bottom-color: var(--pink); }
+
+        /* ── CONTENT ── */
+        .content { flex: 1; overflow-y: auto; overflow-x: hidden; padding: 12px;
+                   padding-bottom: calc(12px + var(--safe-bottom)); }
+        .panel { display: none; }
+        .panel.active { display: block; }
+
+        /* ── CARD BASE ── */
+        .card { background: var(--bg2); border: 1px solid var(--border); border-radius: 14px;
+                padding: 14px; margin-bottom: 12px; }
+        .card-title { font-size: 0.76em; text-transform: uppercase; letter-spacing: 1.5px;
+                      font-weight: 800; margin-bottom: 12px; }
+
+        /* ── PERFIL HERO ── */
+        .hero { background: linear-gradient(135deg, #1a0a1a, #0a1a2a);
+                border: 1px solid #2a1a3a; border-radius: 16px; padding: 18px;
+                margin-bottom: 12px; text-align: center; }
+        .avatar { width: 70px; height: 70px; border-radius: 50%;
+                  background: linear-gradient(135deg, var(--pink), var(--purple), var(--cyan));
+                  display: flex; align-items: center; justify-content: center;
+                  font-size: 2em; margin: 0 auto 10px; border: 3px solid #2a1a3a; }
+        .hero h2 { font-size: 1.15em; color: #fff; margin-bottom: 2px; }
+        .hero .nivel-txt { font-size: 0.78em; color: var(--purple); margin-bottom: 10px; }
+        .xp-bar-wrap { background: #1a1a2a; border-radius: 20px; height: 8px; margin: 8px 0; }
+        .xp-bar { background: linear-gradient(90deg, var(--pink), var(--purple));
+                  height: 100%; border-radius: 20px; transition: width 0.6s ease; }
+        .hero-stats { display: flex; justify-content: center; gap: 20px; margin-top: 12px; }
+        .stat { text-align: center; }
+        .stat .num { font-size: 1.3em; font-weight: 900; }
+        .stat .lbl { font-size: 0.68em; color: var(--dim); text-transform: uppercase; margin-top: 1px; }
+
+        /* ── KPI CHIPS ── */
+        .chips { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 12px; }
+        .chip { background: var(--bg3); border: 1px solid var(--border); border-radius: 10px;
+                padding: 8px 12px; font-size: 0.82em; display: flex; align-items: center; gap: 6px;
+                flex: 1; min-width: 100px; }
+        .chip .n { font-size: 1.15em; font-weight: 900; }
+
+        /* ── MISIONES ── */
+        .mision-card { background: var(--bg3); border: 1px solid var(--border);
+                       border-radius: 12px; padding: 12px 14px; margin-bottom: 10px;
+                       display: flex; align-items: center; gap: 12px; cursor: pointer;
+                       transition: border-color 0.15s; }
+        .mision-card:active { transform: scale(0.98); }
+        .mision-card.done { opacity: 0.45; }
+        .mision-card .tipo-badge { width: 40px; height: 40px; border-radius: 10px;
+                                    display: flex; align-items: center; justify-content: center;
+                                    font-size: 1.2em; flex-shrink: 0; }
+        .mision-card .info { flex: 1; min-width: 0; }
+        .mision-card .title { font-size: 0.88em; font-weight: 700; white-space: nowrap;
+                               overflow: hidden; text-overflow: ellipsis; }
+        .mision-card .desc  { font-size: 0.75em; color: var(--dim); margin-top: 2px; }
+        .mision-card .recompensa { text-align: right; flex-shrink: 0; }
+        .mision-card .tok  { font-size: 0.9em; color: var(--yellow); font-weight: bold; }
+        .mision-card .xp   { font-size: 0.72em; color: var(--purple); }
+        .freq-badge { font-size: 0.64em; padding: 2px 7px; border-radius: 10px; font-weight: 700;
+                      display: inline-block; margin-top: 3px; }
+        .freq-d { background: #00ff8820; color: var(--green); }
+        .freq-s { background: #ff6b9d20; color: var(--pink); }
+        .freq-e { background: #ffe66d20; color: var(--yellow); }
+
+        /* ── APTITUDES RADAR ── */
+        .apt-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 12px; }
+        .apt-card { background: var(--bg3); border-radius: 12px; padding: 12px;
+                    border: 1px solid var(--border); cursor: pointer; transition: border-color 0.15s; }
+        .apt-card:active { transform: scale(0.97); }
+        .apt-header { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
+        .apt-emoji  { font-size: 1.4em; }
+        .apt-name   { font-size: 0.84em; font-weight: 700; }
+        .apt-nivel  { font-size: 0.7em; margin-bottom: 6px; }
+        .apt-bar-wrap { background: #1a1a1a; border-radius: 10px; height: 5px; }
+        .apt-bar    { height: 100%; border-radius: 10px; transition: width 0.5s ease; }
+        .apt-xp-txt { font-size: 0.68em; color: var(--dim); margin-top: 4px; }
+
+        /* ── RADAR SVG ── */
+        .radar-wrap { display: flex; justify-content: center; padding: 8px 0; }
+
+        /* ── VIRAL GENERATOR ── */
+        .viral-form { display: flex; flex-direction: column; gap: 10px; }
+        select, textarea, input[type=text], input[type=number] {
+            background: var(--bg3); border: 1px solid var(--border); color: var(--txt);
+            padding: 10px 12px; border-radius: 10px; font-size: 0.88em; font-family: inherit;
+            width: 100%;
+        }
+        select:focus, textarea:focus, input:focus { outline: none; border-color: var(--pink); }
+
+        .btn { padding: 12px 20px; border-radius: 10px; cursor: pointer; font-size: 0.9em;
+               font-weight: 700; letter-spacing: 0.5px; border: none; transition: all 0.15s; }
+        .btn:active { transform: scale(0.97); }
+        .btn-pink   { background: var(--pink); color: #000; }
+        .btn-pink:hover { background: #ff4d8e; }
+        .btn-green  { background: var(--green); color: #000; }
+        .btn-outline { background: transparent; border: 1px solid var(--border); color: var(--dim); }
+        .btn-outline:hover { border-color: var(--pink); color: var(--pink); }
+        .btn-full   { width: 100%; }
+
+        /* ── RESULTADO VIRAL ── */
+        .viral-result { display: none; }
+        .viral-result.show { display: block; }
+        .hook-big { font-size: 1em; font-weight: 700; color: #fff; background: #1a0a1a;
+                    border: 1px solid #3a1a4a; border-radius: 12px; padding: 14px;
+                    margin: 10px 0; line-height: 1.5; }
+        .estructura-item { display: flex; gap: 10px; padding: 8px 0;
+                            border-bottom: 1px solid var(--border); }
+        .estructura-item:last-child { border-bottom: none; }
+        .seg-lbl { font-size: 0.74em; color: var(--cyan); font-weight: 700;
+                    min-width: 55px; flex-shrink: 0; }
+        .seg-txt { font-size: 0.84em; color: var(--txt); }
+        .hashtags-wrap { display: flex; flex-wrap: wrap; gap: 6px; margin: 10px 0; }
+        .htag { font-size: 0.76em; color: var(--cyan); background: #004d4d30;
+                border: 1px solid #4ecdc440; padding: 3px 8px; border-radius: 20px; }
+
+        /* ── BADGES ── */
+        .badges-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
+        .badge-item { background: var(--bg3); border: 1px solid var(--border); border-radius: 10px;
+                      padding: 10px 6px; text-align: center; }
+        .badge-item.unlocked { border-color: var(--yellow); background: #1a1500; }
+        .badge-emoji { font-size: 1.6em; display: block; }
+        .badge-name  { font-size: 0.62em; color: var(--dim); margin-top: 4px; }
+        .badge-item.unlocked .badge-name { color: var(--yellow); }
+        .badge-item.locked { opacity: 0.3; filter: grayscale(1); }
+
+        /* ── TUTOR IA ── */
+        .tutor-chat { height: 280px; overflow-y: auto; background: var(--bg3);
+                      border: 1px solid var(--border); border-radius: 12px; padding: 12px;
+                      margin-bottom: 10px; display: flex; flex-direction: column; gap: 10px; }
+        .msg { max-width: 85%; }
+        .msg.user { align-self: flex-end; background: var(--pink); color: #000;
+                     border-radius: 14px 14px 0 14px; padding: 8px 12px; font-size: 0.86em; }
+        .msg.nexus { align-self: flex-start; background: var(--bg2); border: 1px solid var(--border);
+                      border-radius: 14px 14px 14px 0; padding: 8px 12px; font-size: 0.86em; line-height: 1.5; }
+        .tutor-input-row { display: flex; gap: 8px; }
+        .tutor-input-row input { flex: 1; }
+        .tutor-input-row button { padding: 10px 16px; border-radius: 10px; background: var(--pink);
+                                   border: none; color: #000; cursor: pointer; font-size: 0.9em;
+                                   font-weight: 700; flex-shrink: 0; }
+
+        /* ── TOAST ── */
+        .toast { position: fixed; bottom: 80px; left: 50%; transform: translateX(-50%) translateY(20px);
+                 background: var(--bg2); border: 1px solid var(--border); border-radius: 12px;
+                 padding: 12px 20px; font-size: 0.86em; z-index: 9999; opacity: 0;
+                 transition: all 0.3s; pointer-events: none; white-space: nowrap; }
+        .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+        /* ── MODAL IMPULSOR ── */
+        .modal-overlay { position: fixed; inset: 0; background: #000a; z-index: 1000;
+                          display: none; align-items: flex-end; justify-content: center; }
+        .modal-overlay.show { display: flex; }
+        .modal { background: var(--bg2); border: 1px solid var(--border); border-radius: 20px 20px 0 0;
+                 padding: 20px; width: 100%; max-width: 500px;
+                 max-height: 80vh; overflow-y: auto; animation: slideUp 0.3s ease; }
+        @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
+        .modal h3 { font-size: 1em; margin-bottom: 4px; }
+        .modal .nivel-tag { font-size: 0.78em; margin-bottom: 14px; }
+        .roadmap-list { list-style: none; }
+        .roadmap-list li { padding: 8px 0; border-bottom: 1px solid var(--border);
+                            font-size: 0.86em; display: flex; gap: 8px; align-items: flex-start; }
+        .roadmap-list li:last-child { border-bottom: none; }
+        .roadmap-list .check { font-size: 0.9em; flex-shrink: 0; margin-top: 1px; }
+        .consejo-box { background: var(--bg3); border-radius: 10px; padding: 12px;
+                        margin: 12px 0; font-size: 0.86em; line-height: 1.6;
+                        border-left: 3px solid var(--purple); }
+
+        /* ── LEADERBOARD ── */
+        .lb-row { display: flex; align-items: center; gap: 10px; padding: 8px 0;
+                   border-bottom: 1px solid var(--border); }
+        .lb-row:last-child { border-bottom: none; }
+        .lb-pos { font-size: 0.9em; font-weight: 900; min-width: 22px; color: var(--dim); }
+        .lb-pos.gold   { color: var(--yellow); }
+        .lb-pos.silver { color: #aaa; }
+        .lb-pos.bronze { color: #cd7f32; }
+        .lb-name { flex: 1; font-size: 0.88em; }
+        .lb-tok  { font-size: 0.82em; color: var(--yellow); font-weight: bold; }
+        .lb-fire { font-size: 0.78em; color: var(--orange); }
+
+        /* ── CONTROL PARENTAL ── */
+        .parent-form { display: flex; flex-direction: column; gap: 10px; }
+        .toggle-row { display: flex; align-items: center; justify-content: space-between;
+                      padding: 10px 0; border-bottom: 1px solid var(--border); }
+        .toggle-row:last-child { border-bottom: none; }
+        .toggle-row .lbl { font-size: 0.88em; }
+        .toggle { width: 42px; height: 24px; background: var(--bg3); border-radius: 20px;
+                   cursor: pointer; position: relative; border: 1px solid var(--border);
+                   transition: background 0.2s; }
+        .toggle.on { background: var(--green); }
+        .toggle::after { content: ''; position: absolute; top: 3px; left: 3px; width: 16px;
+                          height: 16px; background: #fff; border-radius: 50%; transition: left 0.2s; }
+        .toggle.on::after { left: 21px; }
+
+        /* Scrollbar teen style */
+        .content::-webkit-scrollbar { width: 3px; }
+        .content::-webkit-scrollbar-track { background: transparent; }
+        .content::-webkit-scrollbar-thumb { background: var(--pink); border-radius: 10px; }
+
+        /* Animación de brillo en aptitudes al hover */
+        .apt-card:hover { border-color: var(--pink); }
+        @keyframes pulse { 0%,100% { opacity:1 } 50% { opacity:.5 } }
+        .loading-pulse { animation: pulse 1.2s infinite; color: var(--dim); text-align: center;
+                          padding: 20px; font-size: 0.84em; }
+    </style>
+</head>
+<body>
+<div class="app">
+
+    <!-- TOPBAR -->
+    <div class="topbar">
+        <span class="logo">⚡ NEXUS</span>
+        <span class="badge-tag">TEENS</span>
+        <span style="flex:1"></span>
+        <span class="racha" id="racha-top">🔥 —</span>
+        <span class="tokens" id="tokens-top">🪙 —</span>
+    </div>
+
+    <!-- TABS -->
+    <div class="tabs">
+        <div class="tab active" onclick="go('inicio')">🏠 Inicio</div>
+        <div class="tab" onclick="go('misiones')">🎯 Misiones</div>
+        <div class="tab" onclick="go('aptitudes')">⚡ Aptitudes</div>
+        <div class="tab" onclick="go('viral')">📱 Viral</div>
+        <div class="tab" onclick="go('tutor')">🤖 Tutor</div>
+        <div class="tab" onclick="go('badges')">🏆 Logros</div>
+        <div class="tab" onclick="go('ranking')">👑 Ranking</div>
+        <div class="tab" onclick="go('familia')">🤝 Familia</div>
+    </div>
+
+    <!-- CONTENT -->
+    <div class="content">
+
+    <!-- ░░ INICIO ░░ -->
+    <div class="panel active" id="panel-inicio">
+        <div class="hero" id="hero-block">
+            <div class="avatar" id="avatar-emoji">🎮</div>
+            <h2 id="hero-nombre">Cargando...</h2>
+            <div class="nivel-txt" id="hero-nivel">Nivel 1</div>
+            <div class="xp-bar-wrap"><div class="xp-bar" id="xp-bar" style="width:0%"></div></div>
+            <div style="font-size:0.72em;color:var(--dim);margin-top:4px" id="xp-txt">0 XP</div>
+            <div class="hero-stats">
+                <div class="stat"><div class="num" style="color:var(--yellow)" id="s-tokens">0</div><div class="lbl">Tokens</div></div>
+                <div class="stat"><div class="num" style="color:var(--orange)" id="s-racha">0</div><div class="lbl">Racha</div></div>
+                <div class="stat"><div class="num" style="color:var(--pink)" id="s-badges">0</div><div class="lbl">Badges</div></div>
+            </div>
+        </div>
+
+        <!-- Misión del día -->
+        <div class="card">
+            <div class="card-title" style="color:var(--green)">🎯 Misión sugerida hoy</div>
+            <div id="mision-hoy"><div class="loading-pulse">Cargando misión...</div></div>
+        </div>
+
+        <!-- Aptitud destacada (la más baja) -->
+        <div class="card">
+            <div class="card-title" style="color:var(--purple)">⚡ Tu aptitud a impulsar</div>
+            <div id="apt-destacada"><div class="loading-pulse">Analizando...</div></div>
+        </div>
+    </div>
+
+    <!-- ░░ MISIONES ░░ -->
+    <div class="panel" id="panel-misiones">
+        <div style="display:flex;gap:8px;margin-bottom:10px;overflow-x:auto;padding-bottom:2px">
+            <button class="btn btn-pink" onclick="filtrarMisiones('todas')" id="f-todas">Todas</button>
+            <button class="btn btn-outline" onclick="filtrarMisiones('diaria')" id="f-diaria">🌅 Diarias</button>
+            <button class="btn btn-outline" onclick="filtrarMisiones('semanal')" id="f-semanal">📅 Semanales</button>
+            <button class="btn btn-outline" onclick="filtrarMisiones('unica')" id="f-unica">⭐ Épicas</button>
+        </div>
+        <div id="lista-misiones"><div class="loading-pulse">Cargando misiones...</div></div>
+    </div>
+
+    <!-- ░░ APTITUDES ░░ -->
+    <div class="panel" id="panel-aptitudes">
+        <!-- Radar visual -->
+        <div class="card">
+            <div class="card-title" style="color:var(--cyan)">🕸️ Radar de Talento</div>
+            <div class="radar-wrap">
+                <canvas id="radar-canvas" width="260" height="220"></canvas>
+            </div>
+        </div>
+        <!-- Grid de aptitudes -->
+        <div class="apt-grid" id="apt-grid">
+            <div class="loading-pulse" style="grid-column:span 2">Cargando aptitudes...</div>
+        </div>
+    </div>
+
+    <!-- ░░ VIRAL GENERATOR ░░ -->
+    <div class="panel" id="panel-viral">
+        <div class="card">
+            <div class="card-title" style="color:var(--pink)">📱 Generador de Contenido Viral</div>
+            <div class="viral-form">
+                <div>
+                    <label style="font-size:0.78em;color:var(--dim);margin-bottom:4px;display:block">¿Sobre qué aptitud?</label>
+                    <select id="viral-apt">
+                        <option value="general">🌟 General / Cualquiera</option>
+                        <option value="creatividad">🎨 Creatividad</option>
+                        <option value="comunicacion">🎤 Comunicación</option>
+                        <option value="liderazgo">🚀 Liderazgo</option>
+                        <option value="emprendimiento">💡 Emprendimiento</option>
+                        <option value="tecnologia">💻 Tecnología</option>
+                        <option value="arte">🌈 Arte Visual</option>
+                    </select>
+                </div>
+                <div>
+                    <label style="font-size:0.78em;color:var(--dim);margin-bottom:4px;display:block">Tema del video (opcional)</label>
+                    <input type="text" id="viral-tema" placeholder="Ej: editar fotos con IA, mi primer cliente...">
+                </div>
+                <div style="display:flex;gap:8px">
+                    <button class="btn btn-pink" style="flex:1" onclick="generarViral()">⚡ Generar Idea Viral</button>
+                    <button class="btn btn-outline" onclick="generarGuion()">📝 Guión Reel</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="viral-result" id="viral-result">
+            <div class="card">
+                <div class="card-title" style="color:var(--pink)">🪝 Tu Hook</div>
+                <div class="hook-big" id="hook-txt"></div>
+                <div style="font-size:0.78em;color:var(--cyan);margin-bottom:6px" id="formato-txt"></div>
+                <div style="font-size:0.78em;color:var(--dim)">💡 Tip: <span id="tip-txt" style="color:var(--txt)"></span></div>
+            </div>
+
+            <div class="card" id="guion-card" style="display:none">
+                <div class="card-title" style="color:var(--yellow)">🎬 Guión del Reel</div>
+                <div id="estructura-list"></div>
+            </div>
+
+            <div class="card">
+                <div class="card-title" style="color:var(--cyan)">🏷️ Hashtags</div>
+                <div class="hashtags-wrap" id="hashtags-wrap"></div>
+            </div>
+
+            <div class="card">
+                <div class="card-title" style="color:var(--purple)">📋 Caption listo</div>
+                <textarea id="caption-txt" rows="5" readonly style="font-size:0.82em;line-height:1.5;resize:none"></textarea>
+                <button class="btn btn-outline btn-full" style="margin-top:8px" onclick="copiarCaption()">📋 Copiar Caption</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ░░ TUTOR IA ░░ -->
+    <div class="panel" id="panel-tutor">
+        <div class="card">
+            <div class="card-title" style="color:var(--green)">🤖 Tutor NEXUS — Pregunta lo que quieras</div>
+            <div class="tutor-chat" id="tutor-chat">
+                <div class="msg nexus">¡Hey! Soy tu tutor NEXUS 🤖<br>Puedo explicarte cualquier tema, enseñarte a usar herramientas digitales o ayudarte con tu contenido.<br><br>¿Qué quieres aprender hoy? 🚀</div>
+            </div>
+            <div class="tutor-input-row">
+                <input type="text" id="tutor-input" placeholder="Pregunta algo..." onkeydown="if(e.key==='Enter')enviarTutor(event)">
+                <button onclick="enviarTutor(event)">Enviar</button>
+            </div>
+        </div>
+        <div class="card">
+            <div class="card-title" style="color:var(--cyan)">💡 Preguntas rápidas</div>
+            <div style="display:flex;flex-wrap:wrap;gap:7px">
+                <button class="btn btn-outline" style="font-size:0.78em" onclick="preguntaRapida('¿Cómo hago un buen gancho para TikTok?')">Gancho TikTok</button>
+                <button class="btn btn-outline" style="font-size:0.78em" onclick="preguntaRapida('¿Cómo puedo ganar mi primer dinero con mis habilidades?')">Primer dinero</button>
+                <button class="btn btn-outline" style="font-size:0.78em" onclick="preguntaRapida('¿Qué herramientas de IA puedo usar gratis?')">IA gratis</button>
+                <button class="btn btn-outline" style="font-size:0.78em" onclick="preguntaRapida('¿Cómo consigo más seguidores reales?')">Más seguidores</button>
+                <button class="btn btn-outline" style="font-size:0.78em" onclick="preguntaRapida('¿Cómo organizo mi tiempo siendo estudiante?')">Gestión tiempo</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ░░ BADGES ░░ -->
+    <div class="panel" id="panel-badges">
+        <div class="card">
+            <div class="card-title" style="color:var(--yellow)">🏆 Logros y Badges</div>
+            <div class="badges-grid" id="badges-grid">
+                <div class="loading-pulse" style="grid-column:span 4">Cargando logros...</div>
+            </div>
+        </div>
+        <div class="card">
+            <div class="card-title" style="color:var(--purple)">📊 Tu progreso</div>
+            <div id="progreso-txt" style="font-size:0.86em;color:var(--dim);line-height:1.8"></div>
+        </div>
+    </div>
+
+    <!-- ░░ RANKING ░░ -->
+    <div class="panel" id="panel-ranking">
+        <div class="card">
+            <div class="card-title" style="color:var(--yellow)">👑 Leaderboard de la Semana</div>
+            <div id="leaderboard-list"><div class="loading-pulse">Cargando ranking...</div></div>
+        </div>
+    </div>
+
+    <!-- ░░ FAMILIA — Bloque unificado Teen + Padres ░░ -->
+    <div class="panel" id="panel-familia">
+
+        <!-- CHECK-IN DE HUMOR -->
+        <div class="card" id="card-checkin">
+            <div class="card-title" style="color:var(--pink)">💫 ¿Cómo estás hoy?</div>
+            <div style="display:flex;gap:8px;flex-wrap:wrap;justify-content:center;margin-bottom:10px" id="checkin-emojis">
+                <button class="btn btn-outline" style="font-size:1.4em;padding:8px 12px" onclick="hacerCheckin('genial')">🔥</button>
+                <button class="btn btn-outline" style="font-size:1.4em;padding:8px 12px" onclick="hacerCheckin('bien')">😊</button>
+                <button class="btn btn-outline" style="font-size:1.4em;padding:8px 12px" onclick="hacerCheckin('regular')">😐</button>
+                <button class="btn btn-outline" style="font-size:1.4em;padding:8px 12px" onclick="hacerCheckin('cansado')">😴</button>
+                <button class="btn btn-outline" style="font-size:1.4em;padding:8px 12px" onclick="hacerCheckin('mal')">😔</button>
+                <button class="btn btn-outline" style="font-size:1.4em;padding:8px 12px" onclick="hacerCheckin('estresado')">😤</button>
+            </div>
+            <div id="checkin-semana" style="display:flex;gap:6px;justify-content:center"></div>
+        </div>
+
+        <!-- RECONOCIMIENTOS NO LEÍDOS -->
+        <div class="card" id="card-recs" style="display:none">
+            <div class="card-title" style="color:var(--yellow)">⭐ Tu familia te dice...</div>
+            <div id="lista-recs"></div>
+        </div>
+
+        <!-- PUNTOS DE CONFIANZA -->
+        <div class="card">
+            <div class="card-title" style="color:var(--cyan)">🛡️ Puntos de Confianza</div>
+            <div style="display:flex;align-items:center;gap:14px">
+                <div style="font-size:2.5em;font-weight:900;color:var(--cyan)" id="pts-confianza">—</div>
+                <div style="flex:1">
+                    <div style="font-size:0.78em;color:var(--dim);margin-bottom:6px">Se gana cumpliendo acuerdos y valores</div>
+                    <div class="apt-bar-wrap"><div class="apt-bar" id="bar-confianza" style="background:var(--cyan)"></div></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- CÓDIGO DE HONOR -->
+        <div class="card" id="card-honor">
+            <div class="card-title" style="color:var(--purple)">📜 Código de Honor Familiar</div>
+            <div id="honor-contenido">
+                <p style="font-size:0.84em;color:var(--dim);margin-bottom:12px">
+                    El manifiesto de su familia. 3-7 frases que ambos redactan y firman.
+                </p>
+                <div id="frases-honor"></div>
+                <button class="btn btn-outline btn-full" style="margin-top:8px" onclick="abrirEditorHonor()">
+                    ✏️ Crear / Editar Código de Honor
+                </button>
+            </div>
+        </div>
+
+        <!-- ACUERDOS -->
+        <div class="card">
+            <div class="card-title" style="color:var(--green)">🤝 Acuerdos Activos</div>
+            <div id="lista-acuerdos"><div class="loading-pulse">Cargando acuerdos...</div></div>
+            <button class="btn btn-green btn-full" style="margin-top:10px" onclick="abrirNuevoAcuerdo()">
+                + Nuevo Acuerdo
+            </button>
+        </div>
+
+        <!-- VALORES -->
+        <div class="card">
+            <div class="card-title" style="color:var(--orange)">💎 Valores que construyes</div>
+            <div id="valores-grid" style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+                <div class="loading-pulse" style="grid-column:span 2">Cargando valores...</div>
+            </div>
+        </div>
+
+        <!-- ECONOMÍA FAMILIAR (Tokens ↔ Privilegios) -->
+        <div class="card">
+            <div class="card-title" style="color:var(--yellow)">🪙 Tus Tokens → Privilegios</div>
+            <div style="font-size:0.82em;color:var(--dim);margin-bottom:10px">
+                Gana tokens completando misiones y acuerdos. Canjéalos con tu familia.
+            </div>
+            <div id="lista-privilegios"><div class="loading-pulse">Cargando privilegios...</div></div>
+        </div>
+
+        <!-- SECCIÓN PADRE (requiere PIN) -->
+        <div class="card" style="border-color:#2a1a1a">
+            <div class="card-title" style="color:var(--orange)">🔐 Panel del Padre / Tutor</div>
+            <div style="display:flex;gap:8px;margin-bottom:10px">
+                <input type="password" id="pin-padre-fam" placeholder="PIN del padre" maxlength="6" style="flex:1">
+                <button class="btn btn-outline" onclick="abrirMonitor()">📊 Ver Monitor</button>
+            </div>
+            <div style="display:flex;gap:8px;margin-bottom:8px">
+                <button class="btn btn-outline" style="flex:1;font-size:0.8em" onclick="abrirDarReconocimiento()">⭐ Dar Reconocimiento</button>
+                <button class="btn btn-outline" style="flex:1;font-size:0.8em" onclick="abrirConfigCP()">⚙️ Control Parental</button>
+            </div>
+            <!-- Monitor parental (se muestra al validar PIN) -->
+            <div id="monitor-bloque" style="display:none">
+                <div style="border-top:1px solid var(--border);padding-top:12px;margin-top:8px">
+                    <div id="monitor-contenido"></div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    </div><!-- /content -->
+</div><!-- /app -->
+
+<!-- MODAL IMPULSOR DE APTITUD -->
+<div class="modal-overlay" id="modal-apt" onclick="cerrarModalApt(event)">
+    <div class="modal" id="modal-apt-content">
+        <button onclick="cerrarModalApt()" style="float:right;background:none;border:none;color:var(--dim);font-size:1.2em;cursor:pointer">✕</button>
+        <div id="modal-apt-body"></div>
+    </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<script>
+// ── CONFIG ─────────────────────────────────────────────────────────────────
+const USER_ID = localStorage.getItem('nexus_teens_uid') || 'teen_' + Math.random().toString(36).slice(2, 8);
+const NOMBRE  = localStorage.getItem('nexus_teens_nombre') || 'Tú';
+localStorage.setItem('nexus_teens_uid', USER_ID);
+
+let _perfil = null;
+let _misiones = [];
+let _misiones_filtro = 'todas';
+
+// ── NAVEGACIÓN ────────────────────────────────────────────────────────────
+function go(panel) {
+    document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+    document.getElementById('panel-' + panel).classList.add('active');
+    event.currentTarget.classList.add('active');
+    if (panel === 'aptitudes') dibujarRadar();
+    if (panel === 'badges')    renderBadges();
+    if (panel === 'ranking')   cargarRanking();
+    if (panel === 'misiones')  renderMisiones();
+}
+
+// ── INICIALIZACIÓN ────────────────────────────────────────────────────────
+async function init() {
+    // Registrar usuario si no existe
+    await fetch('/api/teens/usuario', {
+        method: 'POST',
+        headers: {'Content-Type':'application/json'},
+        body: JSON.stringify({ user_id: USER_ID, nombre: NOMBRE, edad: 17 })
+    }).catch(() => {});
+
+    await cargarPerfil();
+    await cargarMisionesData();
+    renderInicio();
+}
+
+async function cargarPerfil() {
+    try {
+        const r = await fetch(`/api/teens/perfil/${USER_ID}`);
+        const d = await r.json();
+        if (d.ok) _perfil = d.perfil;
+    } catch(e) {}
+}
+
+async function cargarMisionesData() {
+    try {
+        const r = await fetch(`/api/teens/misiones/${USER_ID}`);
+        _misiones = await r.json();
+    } catch(e) {}
+}
+
+// ── INICIO ────────────────────────────────────────────────────────────────
+function renderInicio() {
+    if (!_perfil) return;
+
+    // Topbar
+    document.getElementById('tokens-top').textContent = `🪙 ${_perfil.tokens}`;
+    document.getElementById('racha-top').textContent  = `🔥 ${_perfil.racha}`;
+
+    // Hero
+    document.getElementById('hero-nombre').textContent = _perfil.nombre || NOMBRE;
+    document.getElementById('hero-nivel').textContent  = `Nivel ${_perfil.nivel_global}`;
+    document.getElementById('s-tokens').textContent    = _perfil.tokens;
+    document.getElementById('s-racha').textContent     = _perfil.racha;
+    document.getElementById('s-badges').textContent    = (_perfil.badges||[]).length;
+
+    // XP bar
+    const xpActual = _perfil.xp_total || 0;
+    const xpNivel  = _perfil.nivel_global * 300;
+    const xpPrev   = (_perfil.nivel_global - 1) * 300;
+    const pct      = Math.min(100, ((xpActual - xpPrev) / 300) * 100);
+    document.getElementById('xp-bar').style.width = pct + '%';
+    document.getElementById('xp-txt').textContent = `${xpActual} XP — Nivel ${_perfil.nivel_global}`;
+
+    // Misión sugerida
+    const ms = _perfil.mision_sugerida;
+    const mEl = document.getElementById('mision-hoy');
+    if (ms) {
+        mEl.innerHTML = renderMisionCard(ms);
+    } else {
+        mEl.innerHTML = '<div style="color:var(--green);text-align:center;padding:16px">🏆 ¡Completaste todas las misiones!</div>';
+    }
+
+    // Aptitud a impulsar (la con menos XP)
+    const apts = Object.entries(_perfil.aptitudes || {});
+    const [aptMin] = apts.sort((a,b) => a[1].xp - b[1].xp);
+    const aEl = document.getElementById('apt-destacada');
+    if (aptMin) {
+        const info = _perfil.aptitudes[aptMin[0]];
+        aEl.innerHTML = `
+            <div class="apt-header" onclick="abrirImpulsor('${aptMin[0]}')" style="cursor:pointer">
+                <span class="apt-emoji">${info.emoji||'⚡'}</span>
+                <div>
+                    <div class="apt-name">${info.nombre||aptMin[0]}</div>
+                    <div class="apt-nivel" style="color:${info.color}">${info.nombre_nivel||'—'}</div>
+                </div>
+            </div>
+            <div class="apt-bar-wrap"><div class="apt-bar" style="width:${info.progreso_pct||0}%;background:${info.color}"></div></div>
+            <div class="apt-xp-txt">${info.xp||0} XP · Faltan ${info.xp_falta||0} para subir de nivel</div>
+            <button class="btn btn-outline btn-full" style="margin-top:10px;font-size:0.82em" onclick="abrirImpulsor('${aptMin[0]}')">⚡ Ver plan de impulso →</button>`;
+    }
+}
+
+// ── MISIONES ──────────────────────────────────────────────────────────────
+function renderMisionCard(m) {
+    const freqCls = {diaria:'freq-d', semanal:'freq-s', unica:'freq-e'}[m.frecuencia] || 'freq-d';
+    const freqLbl = {diaria:'Diaria', semanal:'Semanal', unica:'Épica'}[m.frecuencia] || '';
+    const done    = m.completada ? 'done' : '';
+    const apt     = m.aptitud_info || {};
+    return `<div class="mision-card ${done}" onclick="${m.completada ? '' : `completarMision('${m.id}')`}">
+        <div class="tipo-badge" style="background:${apt.color||'#222'}22;color:${apt.color||'#fff'}">${apt.emoji||'🎯'}</div>
+        <div class="info">
+            <div class="title">${m.nombre}</div>
+            <div class="desc">${m.desc}</div>
+            <span class="freq-badge ${freqCls}">${freqLbl}</span>
+        </div>
+        <div class="recompensa">
+            <div class="tok">🪙 ${m.tokens}</div>
+            <div class="xp">+${m.xp} XP</div>
+            ${m.completada ? '<div style="font-size:1.2em">✅</div>' : ''}
+        </div>
+    </div>`;
+}
+
+function filtrarMisiones(f) {
+    _misiones_filtro = f;
+    document.querySelectorAll('[id^="f-"]').forEach(b => b.classList.replace('btn-pink','btn-outline'));
+    document.getElementById('f-' + (f==='todas'?'todas':f)).classList.replace('btn-outline','btn-pink');
+    renderMisiones();
+}
+
+function renderMisiones() {
+    const el = document.getElementById('lista-misiones');
+    let list  = _misiones;
+    if (_misiones_filtro !== 'todas') list = list.filter(m => m.frecuencia === _misiones_filtro);
+    if (!list.length) { el.innerHTML = '<div class="loading-pulse">Sin misiones en esta categoría</div>'; return; }
+    el.innerHTML = list.map(renderMisionCard).join('');
+}
+
+async function completarMision(id) {
+    const r = await fetch('/api/teens/completar', {
+        method: 'POST',
+        headers: {'Content-Type':'application/json'},
+        body: JSON.stringify({ user_id: USER_ID, mision_id: id })
+    });
+    const d = await r.json();
+    if (d.ok) {
+        mostrarToast(`✅ +${d.xp_ganado} XP · 🪙 +${d.tokens_ganado} tokens`);
+        if (d.nuevos_badges?.length) {
+            setTimeout(() => mostrarToast(`🏆 Nuevo badge: ${d.nuevos_badges[0].emoji} ${d.nuevos_badges[0].nombre}`), 1500);
+        }
+        await cargarPerfil();
+        await cargarMisionesData();
+        renderInicio();
+        renderMisiones();
+    } else {
+        mostrarToast(d.error || 'Error al completar misión');
+    }
+}
+
+// ── APTITUDES ─────────────────────────────────────────────────────────────
+function renderAptGrid() {
+    if (!_perfil) return;
+    const apts = _perfil.aptitudes || {};
+    const el   = document.getElementById('apt-grid');
+    el.innerHTML = Object.entries(apts).map(([k, v]) =>
+        `<div class="apt-card" onclick="abrirImpulsor('${k}')">
+            <div class="apt-header">
+                <span class="apt-emoji">${v.emoji||'⚡'}</span>
+                <div>
+                    <div class="apt-name">${v.nombre||k}</div>
+                </div>
+            </div>
+            <div class="apt-nivel" style="color:${v.color}">${v.nombre_nivel||'Nivel 0'}</div>
+            <div class="apt-bar-wrap"><div class="apt-bar" style="width:${v.progreso_pct||0}%;background:${v.color}"></div></div>
+            <div class="apt-xp-txt">${v.xp||0} XP · ${v.xp_falta||0} para subir</div>
+        </div>`
+    ).join('');
+}
+
+function dibujarRadar() {
+    if (!_perfil?.radar) return;
+    renderAptGrid();
+    const canvas = document.getElementById('radar-canvas');
+    const ctx    = canvas.getContext('2d');
+    const W = canvas.width, H = canvas.height;
+    const cx = W/2, cy = H/2 + 10;
+    const R  = Math.min(W, H) * 0.38;
+
+    const keys   = Object.keys(_perfil.radar);
+    const values = Object.values(_perfil.radar); // 0-100
+    const n      = keys.length;
+    const colors = ['#ff6b9d','#4ecdc4','#ffe66d','#a8ff78','#ff9a3c','#c471ed','#56ab2f'];
+
+    ctx.clearRect(0, 0, W, H);
+
+    // Grids
+    for (let g = 1; g <= 4; g++) {
+        ctx.beginPath();
+        for (let i = 0; i <= n; i++) {
+            const a = (i / n) * Math.PI * 2 - Math.PI / 2;
+            const r = R * g / 4;
+            const x = cx + r * Math.cos(a), y = cy + r * Math.sin(a);
+            i === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
+        }
+        ctx.strokeStyle = '#1e1e2e';
+        ctx.lineWidth   = 1;
+        ctx.stroke();
+    }
+
+    // Ejes
+    for (let i = 0; i < n; i++) {
+        const a = (i / n) * Math.PI * 2 - Math.PI / 2;
+        ctx.beginPath();
+        ctx.moveTo(cx, cy);
+        ctx.lineTo(cx + R * Math.cos(a), cy + R * Math.sin(a));
+        ctx.strokeStyle = '#2a2a3a';
+        ctx.lineWidth   = 1;
+        ctx.stroke();
+
+        // Labels
+        const lx = cx + (R + 18) * Math.cos(a);
+        const ly = cy + (R + 18) * Math.sin(a);
+        const apt = _perfil.aptitudes[keys[i]];
+        ctx.font      = '13px system-ui';
+        ctx.textAlign = 'center';
+        ctx.fillStyle = apt?.color || '#aaa';
+        ctx.fillText(apt?.emoji || '⚡', lx, ly);
+    }
+
+    // Polígono de datos
+    ctx.beginPath();
+    for (let i = 0; i < n; i++) {
+        const a  = (i / n) * Math.PI * 2 - Math.PI / 2;
+        const r  = R * (values[i] / 100);
+        const x  = cx + r * Math.cos(a);
+        const y  = cy + r * Math.sin(a);
+        i === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
+    }
+    ctx.closePath();
+    ctx.fillStyle   = 'rgba(255,107,157,0.15)';
+    ctx.strokeStyle = '#ff6b9d';
+    ctx.lineWidth   = 2;
+    ctx.fill();
+    ctx.stroke();
+
+    // Puntos
+    for (let i = 0; i < n; i++) {
+        const a = (i / n) * Math.PI * 2 - Math.PI / 2;
+        const r = R * (values[i] / 100);
+        ctx.beginPath();
+        ctx.arc(cx + r * Math.cos(a), cy + r * Math.sin(a), 4, 0, Math.PI * 2);
+        ctx.fillStyle = colors[i % colors.length];
+        ctx.fill();
+    }
+}
+
+async function abrirImpulsor(apt) {
+    const r = await fetch(`/api/teens/impulsar/${USER_ID}/${apt}`);
+    const d = await r.json();
+    if (!d.ok) return;
+
+    const pasos = d.roadmap_completo.map((p, i) =>
+        `<li><span class="check" style="color:${i <= d.nivel_actual ? d.color : 'var(--dim)'}">
+            ${i <= d.nivel_actual ? '✅' : '○'}
+        </span>${p}</li>`
+    ).join('');
+
+    const misionesPend = (d.misiones_pendientes||[]).slice(0,2).map(m =>
+        `<div class="mision-card" onclick="completarMision('${m.id}');cerrarModalApt()">
+            <div class="tipo-badge" style="background:#ff6b9d22;color:var(--pink)">🎯</div>
+            <div class="info"><div class="title">${m.nombre}</div><div class="desc">${m.desc}</div></div>
+            <div class="recompensa"><div class="tok">🪙 ${m.tokens}</div><div class="xp">+${m.xp} XP</div></div>
+        </div>`
+    ).join('');
+
+    document.getElementById('modal-apt-body').innerHTML = `
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:4px">
+            <span style="font-size:2em">${d.emoji}</span>
+            <div>
+                <h3 style="color:${d.color}">${d.nombre}</h3>
+                <div class="nivel-tag" style="color:var(--dim)">${d.nombre_nivel}</div>
+            </div>
+        </div>
+        <div style="font-size:0.82em;color:var(--dim);margin-bottom:14px">${d.descripcion}</div>
+
+        <div class="apt-bar-wrap" style="height:8px;margin-bottom:6px">
+            <div class="apt-bar" style="width:${Math.min(100, (d.xp_actual/Math.max(1,d.xp_siguiente))*100)}%;background:${d.color}"></div>
+        </div>
+        <div style="font-size:0.76em;color:var(--dim);margin-bottom:14px">${d.xp_actual} / ${d.xp_siguiente} XP · Faltan ${d.falta_xp}</div>
+
+        <div class="consejo-box">${d.consejo}</div>
+
+        <div style="font-size:0.78em;color:${d.color};font-weight:700;text-transform:uppercase;letter-spacing:1px;margin:14px 0 8px">Roadmap</div>
+        <ul class="roadmap-list">${pasos}</ul>
+
+        ${misionesPend ? `<div style="font-size:0.78em;color:var(--pink);font-weight:700;text-transform:uppercase;letter-spacing:1px;margin:14px 0 8px">Próximas misiones</div>${misionesPend}` : ''}
+    `;
+    document.getElementById('modal-apt').classList.add('show');
+}
+
+function cerrarModalApt(e) {
+    if (!e || e.target === document.getElementById('modal-apt')) {
+        document.getElementById('modal-apt').classList.remove('show');
+    }
+}
+
+// ── VIRAL GENERATOR ───────────────────────────────────────────────────────
+async function generarViral() {
+    const apt   = document.getElementById('viral-apt').value;
+    const r     = await fetch(`/api/teens/viral/${apt}`);
+    const d     = await r.json();
+    if (!d.ok) { mostrarToast('Error generando idea'); return; }
+
+    document.getElementById('hook-txt').textContent    = d.hook;
+    document.getElementById('formato-txt').textContent = '📐 Formato: ' + d.formato;
+    document.getElementById('tip-txt').textContent     = d.tip_extra || d.tip;
+    document.getElementById('hashtags-wrap').innerHTML =
+        (d.hashtags||[]).map(h => `<span class="htag">${h}</span>`).join('');
+    document.getElementById('caption-txt').value = d.caption || '';
+    document.getElementById('guion-card').style.display = 'none';
+    document.getElementById('viral-result').classList.add('show');
+}
+
+async function generarGuion() {
+    const apt   = document.getElementById('viral-apt').value;
+    const tema  = document.getElementById('viral-tema').value || 'mi contenido';
+    const r     = await fetch(`/api/teens/guion?tema=${encodeURIComponent(tema)}&aptitud=${apt}&duracion=60`);
+    const d     = await r.json();
+    if (!d.ok) { mostrarToast('Error generando guión'); return; }
+
+    document.getElementById('hook-txt').textContent    = d.hook;
+    document.getElementById('formato-txt').textContent = '📐 ' + d.formato;
+    document.getElementById('tip-txt').textContent     = d.tip || '';
+    document.getElementById('hashtags-wrap').innerHTML =
+        (d.hashtags||[]).map(h => `<span class="htag">${h}</span>`).join('');
+    document.getElementById('caption-txt').value = d.caption || '';
+
+    const guionEl = document.getElementById('estructura-list');
+    guionEl.innerHTML = (d.estructura||[]).map(e =>
+        `<div class="estructura-item"><span class="seg-lbl">${e.seg}</span><span class="seg-txt">${e.accion}</span></div>`
+    ).join('');
+    document.getElementById('guion-card').style.display = 'block';
+    document.getElementById('viral-result').classList.add('show');
+}
+
+function copiarCaption() {
+    const txt = document.getElementById('caption-txt').value;
+    navigator.clipboard.writeText(txt).then(() => mostrarToast('📋 Caption copiado'));
+}
+
+// ── TUTOR IA ──────────────────────────────────────────────────────────────
+async function enviarTutor(e) {
+    if (e) e.preventDefault();
+    const input = document.getElementById('tutor-input');
+    const msg   = input.value.trim();
+    if (!msg) return;
+    input.value = '';
+    appendMsg(msg, 'user');
+    const typing = appendMsg('...', 'nexus');
+    try {
+        const r = await fetch('/api/teens/tutor', {
+            method: 'POST',
+            headers: {'Content-Type':'application/json'},
+            body: JSON.stringify({ mensaje: msg, user_id: USER_ID })
+        });
+        const d = await r.json();
+        typing.textContent = d.respuesta || 'Sin respuesta del tutor';
+    } catch(err) {
+        typing.textContent = 'No pude conectarme al tutor. ¿Tienes internet?';
+    }
+}
+
+function preguntaRapida(q) {
+    document.getElementById('tutor-input').value = q;
+    enviarTutor(null);
+}
+
+function appendMsg(text, tipo) {
+    const chat = document.getElementById('tutor-chat');
+    const div  = document.createElement('div');
+    div.className = 'msg ' + tipo;
+    div.textContent = text;
+    chat.appendChild(div);
+    chat.scrollTop = chat.scrollHeight;
+    return div;
+}
+
+// ── BADGES ────────────────────────────────────────────────────────────────
+function renderBadges() {
+    if (!_perfil) return;
+    const unlocked = new Set(_perfil.badges || []);
+    const BADGES_DEF = {
+        primera_mision:  {n:'Primeros Pasos',     e:'👟'},
+        racha_7:         {n:'Semana Perfecta',     e:'🔥'},
+        racha_30:        {n:'Mes Legendario',      e:'⚡'},
+        creativo_2:      {n:'Mente Creativa',      e:'🎨'},
+        comunicador_2:   {n:'Voz que Conecta',     e:'🎤'},
+        lider_2:         {n:'Nace un Líder',       e:'🚀'},
+        tech_2:          {n:'Digital Native',      e:'💻'},
+        emprendedor_2:   {n:'Instinto Emprendedor',e:'💡'},
+        artista_2:       {n:'Ojo de Artista',      e:'🌈'},
+        zen_2:           {n:'Mente Equilibrada',   e:'🧘'},
+        viral:           {n:'Viral en Potencia',   e:'📱'},
+        mini_ceo:        {n:'Mini CEO',            e:'👑'},
+        completo:        {n:'Todo Terreno',        e:'🏆'},
+    };
+    const el = document.getElementById('badges-grid');
+    el.innerHTML = Object.entries(BADGES_DEF).map(([id, b]) => {
+        const ok = unlocked.has(id);
+        return `<div class="badge-item ${ok ? 'unlocked' : 'locked'}">
+            <span class="badge-emoji">${b.e}</span>
+            <div class="badge-name">${b.n}</div>
+        </div>`;
+    }).join('');
+
+    document.getElementById('progreso-txt').innerHTML =
+        `Badges desbloqueados: <b style="color:var(--yellow)">${unlocked.size} / ${Object.keys(BADGES_DEF).length}</b><br>
+         XP Total: <b style="color:var(--purple)">${_perfil.xp_total}</b><br>
+         Tokens acumulados: <b style="color:var(--yellow)">${_perfil.tokens}</b><br>
+         Racha actual: <b style="color:var(--orange)">${_perfil.racha} días 🔥</b>`;
+}
+
+// ── RANKING ───────────────────────────────────────────────────────────────
+async function cargarRanking() {
+    const r  = await fetch('/api/teens/leaderboard');
+    const lb = await r.json();
+    const medals = ['🥇','🥈','🥉'];
+    const posCls = ['gold','silver','bronze'];
+    const el = document.getElementById('leaderboard-list');
+    if (!lb.length) { el.innerHTML = '<div class="loading-pulse">Sin jugadores aún</div>'; return; }
+    el.innerHTML = lb.map((u, i) =>
+        `<div class="lb-row">
+            <span class="lb-pos ${posCls[i]||''}">${medals[i] || '#'+(i+1)}</span>
+            <span class="lb-name">${u.nombre} <span style="font-size:0.7em;color:var(--dim)">Nv.${u.nivel}</span></span>
+            <span class="lb-fire">🔥${u.racha}</span>
+            <span class="lb-tok">🪙 ${u.tokens}</span>
+        </div>`
+    ).join('');
+}
+
+// ── CONTROL PARENTAL ──────────────────────────────────────────────────────
+let cpActivo = false;
+function toggleCP() {
+    cpActivo = !cpActivo;
+    const t = document.getElementById('toggle-cp');
+    t.classList.toggle('on', cpActivo);
+}
+async function guardarCP() {
+    const pin   = document.getElementById('pin-padre').value || '0000';
+    const ini   = document.getElementById('hora-inicio').value;
+    const fin   = document.getElementById('hora-fin').value;
+    const r = await fetch('/api/teens/parental', {
+        method: 'POST',
+        headers: {'Content-Type':'application/json'},
+        body: JSON.stringify({
+            user_id: USER_ID, pin, config: { activo: cpActivo, horario_inicio: ini, horario_fin: fin }
+        })
+    });
+    const d = await r.json();
+    mostrarToast(d.ok ? '✅ Configuración guardada' : ('❌ ' + (d.error||'PIN incorrecto')));
+}
+
+// ── TOAST ─────────────────────────────────────────────────────────────────
+let _toastTimeout;
+function mostrarToast(msg, dur = 2800) {
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.classList.add('show');
+    clearTimeout(_toastTimeout);
+    _toastTimeout = setTimeout(() => t.classList.remove('show'), dur);
+}
+
+// ── FAMILIA ───────────────────────────────────────────────────────────────
+async function cargarFamilia() {
+    const r = await fetch(`/api/teens/familia/${USER_ID}`);
+    const d = await r.json();
+    if (!d.ok) return;
+
+    // Puntos de confianza
+    const pts = d.puntos_confianza || 100;
+    document.getElementById('pts-confianza').textContent = pts;
+    const barPct = Math.min(100, pts / 2);
+    document.getElementById('bar-confianza').style.width = barPct + '%';
+
+    // Reconocimientos no leídos
+    const recs = d.reconocimientos_recientes || [];
+    const noLeidos = recs.filter(r => !r.leido);
+    if (noLeidos.length) {
+        document.getElementById('card-recs').style.display = 'block';
+        document.getElementById('lista-recs').innerHTML = noLeidos.map(r =>
+            `<div style="background:var(--bg3);border-radius:10px;padding:12px;margin-bottom:8px;border-left:3px solid var(--yellow)">
+                <div style="font-size:1.3em;margin-bottom:4px">${r.emoji} <b style="color:var(--yellow)">${r.label}</b></div>
+                ${r.mensaje ? `<div style="font-size:0.84em;color:var(--txt);margin-top:4px">"${r.mensaje}"</div>` : ''}
+                <div style="font-size:0.72em;color:var(--dim);margin-top:6px">${r.fecha}</div>
+                <button class="btn btn-outline" style="margin-top:8px;font-size:0.74em"
+                        onclick="fetch('/api/teens/reconocimiento_leido',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({user_id:'${USER_ID}',rec_id:'${r.id}'})}).then(()=>{cargarFamilia()})">
+                    ✓ Recibido con amor
+                </button>
+            </div>`
+        ).join('');
+    }
+
+    // Código de Honor
+    if (d.codigo_honor) {
+        const frases = d.codigo_honor.frases || [];
+        document.getElementById('frases-honor').innerHTML = frases.map((f, i) =>
+            `<div style="padding:8px 0;border-bottom:1px solid var(--border);font-size:0.86em;display:flex;gap:8px">
+                <span style="color:var(--purple);font-weight:700">${i+1}.</span>
+                <span>${f}</span>
+            </div>`
+        ).join('');
+    }
+
+    await cargarAcuerdos();
+    await cargarValores();
+    await cargarPrivilegios();
+    await cargarCheckins();
+}
+
+async function cargarAcuerdos() {
+    const r = await fetch(`/api/teens/acuerdos/${USER_ID}`);
+    const d = await r.json();
+    const el = document.getElementById('lista-acuerdos');
+    if (!d.ok || !d.activos?.length) {
+        el.innerHTML = `<div style="color:var(--dim);font-size:0.84em;text-align:center;padding:14px">
+            Sin acuerdos activos. ¡Crea el primero con tu familia!</div>`;
+        return;
+    }
+    el.innerHTML = d.activos.map(a =>
+        `<div style="background:var(--bg3);border-radius:10px;padding:12px;margin-bottom:8px;border-left:3px solid var(--green)">
+            <div style="font-weight:700;font-size:0.9em;margin-bottom:4px">🤝 ${a.titulo}</div>
+            <div style="font-size:0.8em;color:var(--dim)">${a.descripcion}</div>
+            <div style="font-size:0.76em;margin-top:6px;display:flex;justify-content:space-between">
+                <span style="color:var(--yellow)">🏆 ${a.recompensa}</span>
+                <span style="color:var(--dim)">Vence: ${a.fecha_vence}</span>
+            </div>
+            <div style="display:flex;gap:6px;margin-top:8px">
+                <button class="btn btn-green" style="flex:1;font-size:0.74em;padding:6px"
+                        onclick="resolverAcuerdo('${a.id}','cumplido')">✅ Cumplido</button>
+                <button class="btn btn-outline" style="flex:1;font-size:0.74em;padding:6px"
+                        onclick="resolverAcuerdo('${a.id}','roto')">❌ No cumplido</button>
+            </div>
+        </div>`
+    ).join('');
+}
+
+async function resolverAcuerdo(id, estado) {
+    const pin = document.getElementById('pin-padre-fam')?.value || '0000';
+    const r = await fetch('/api/teens/acuerdo/resolver', {
+        method: 'POST', headers: {'Content-Type':'application/json'},
+        body: JSON.stringify({user_id: USER_ID, acuerdo_id: id, estado, pin_padre: pin})
+    });
+    const d = await r.json();
+    if (d.ok) {
+        mostrarToast(estado === 'cumplido'
+            ? `🎉 ¡Acuerdo cumplido! +${d.tokens_ganados} tokens 🪙`
+            : '❌ Acuerdo marcado como no cumplido');
+        if (estado === 'cumplido' && window.NX) NX.hablar('¡Felicidades! Cumpliste tu acuerdo. La confianza crece.');
+        await cargarPerfil(); renderInicio(); cargarFamilia();
+    } else {
+        mostrarToast(d.error || 'Error');
+    }
+}
+
+async function cargarValores() {
+    const r = await fetch('/api/teens/valores');
+    const v = await r.json();
+    const el = document.getElementById('valores-grid');
+    el.innerHTML = Object.entries(v).map(([k, val]) =>
+        `<div style="background:var(--bg3);border-radius:10px;padding:10px;border:1px solid var(--border);cursor:pointer"
+              onclick="abrirValor('${k}')">
+            <div style="font-size:1.3em">${val.emoji}</div>
+            <div style="font-size:0.8em;font-weight:700;color:${val.color};margin-top:4px">${val.nombre}</div>
+            <div style="font-size:0.7em;color:var(--dim);margin-top:2px;line-height:1.3">${val.descripcion.slice(0,55)}...</div>
+        </div>`
+    ).join('');
+}
+
+let _valoresCatalogo = {};
+async function abrirValor(k) {
+    if (!Object.keys(_valoresCatalogo).length) {
+        const r = await fetch('/api/teens/valores');
+        _valoresCatalogo = await r.json();
+    }
+    const v = _valoresCatalogo[k];
+    if (!v) return;
+    document.getElementById('modal-apt-body').innerHTML = `
+        <div style="text-align:center;margin-bottom:14px">
+            <span style="font-size:2.5em">${v.emoji}</span>
+            <h3 style="color:${v.color};margin-top:6px">${v.nombre}</h3>
+            <p style="font-size:0.84em;color:var(--dim);margin-top:4px">${v.descripcion}</p>
+        </div>
+        <div class="consejo-box" style="border-color:${v.color}">
+            <b>Reflexión del día:</b><br>${v.reflexion}
+        </div>
+        <div style="font-size:0.78em;color:${v.color};font-weight:700;text-transform:uppercase;letter-spacing:1px;margin:14px 0 8px">Misiones de este valor</div>
+        ${v.misiones.map((m,i) => `<div class="mision-card" style="cursor:default">
+            <div class="tipo-badge" style="background:${v.color}22;color:${v.color}">${i+1}</div>
+            <div class="info"><div class="title">${m}</div></div>
+        </div>`).join('')}
+    `;
+    document.getElementById('modal-apt').classList.add('show');
+}
+
+async function cargarPrivilegios() {
+    const r  = await fetch(`/api/teens/privilegios/${USER_ID}`);
+    const d  = await r.json();
+    const el = document.getElementById('lista-privilegios');
+    if (!d.ok) { el.innerHTML = ''; return; }
+    el.innerHTML = (d.privilegios || []).filter(p => p.activo).map(p =>
+        `<div style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--border)">
+            <span style="font-size:0.88em;flex:1">${p.nombre}</span>
+            <span style="font-size:0.78em;color:var(--yellow)">🪙 ${p.costo_tokens}</span>
+            <button class="btn btn-outline" style="font-size:0.72em;padding:4px 8px"
+                    onclick="solicitarCanje('${p.id}','${p.nombre}',${p.costo_tokens})">Canjear</button>
+        </div>`
+    ).join('');
+}
+
+async function solicitarCanje(id, nombre, costo) {
+    const tok = _perfil?.tokens || 0;
+    if (tok < costo) { mostrarToast(`Necesitas 🪙 ${costo} · Tienes ${tok}`); return; }
+    const pin = document.getElementById('pin-padre-fam')?.value || '0000';
+    const r = await fetch('/api/teens/canje', {
+        method: 'POST', headers: {'Content-Type':'application/json'},
+        body: JSON.stringify({user_id: USER_ID, privilegio_id: id, pin_padre: pin})
+    });
+    const d = await r.json();
+    if (d.ok) {
+        mostrarToast(`🎉 Canjeado: ${nombre}`);
+        if (window.NX) NX.hablar(`¡Canjeaste ${nombre}! Bien merecido.`);
+        await cargarPerfil(); renderInicio(); cargarFamilia();
+    } else {
+        mostrarToast(d.error || 'El padre debe aprobar con su PIN');
+    }
+}
+
+async function cargarCheckins() {
+    const r = await fetch(`/api/teens/checkins/${USER_ID}`);
+    const d = await r.json();
+    const el = document.getElementById('checkin-semana');
+    if (!d.ok || !d.semana) return;
+    el.innerHTML = d.semana.map(c =>
+        `<div style="text-align:center;font-size:0.7em">
+            <div style="font-size:1.4em">${c.emoji || '○'}</div>
+            <div style="color:var(--dim)">${c.fecha.slice(5)}</div>
+        </div>`
+    ).join('');
+}
+
+async function hacerCheckin(estado) {
+    const r = await fetch('/api/teens/checkin', {
+        method: 'POST', headers: {'Content-Type':'application/json'},
+        body: JSON.stringify({user_id: USER_ID, estado})
+    });
+    const d = await r.json();
+    const etiquetas = {genial:'Genial 🔥',bien:'Bien 😊',regular:'Regular 😐',
+                       cansado:'Cansado 😴',mal:'No tan bien 😔',estresado:'Estresado 😤'};
+    if (d.ok) {
+        mostrarToast(`Check-in: ${etiquetas[estado]} · +${d.xp_ganado} XP`);
+        if (window.NX) {
+            const msg = {genial:'¡Qué energía!',bien:'¡Qué bien!',regular:'Ok, así también se avanza.',
+                         cansado:'Descansa, tu cuerpo lo sabe.',mal:'Ey, aquí estoy. Un día a la vez.',
+                         estresado:'Respira. Lo vas a superar.'}[estado] || '¡Gracias por compartir!';
+            NX.hablar(msg);
+        }
+        await cargarCheckins();
+    }
+}
+
+async function abrirMonitor() {
+    const pin = document.getElementById('pin-padre-fam')?.value || '0000';
+    const r   = await fetch(`/api/teens/monitor/${USER_ID}?pin=${pin}`);
+    const d   = await r.json();
+    if (!d.ok) { mostrarToast(d.error || 'PIN incorrecto'); return; }
+
+    const humor = d.humor_semana?.semana?.map(c =>
+        `<span style="font-size:1.1em">${c.emoji}</span>`).join(' ') || '—';
+
+    document.getElementById('monitor-contenido').innerHTML = `
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px">
+            <div class="chip"><span>🎯</span><div><div class="n" style="color:var(--green)">${d.nivel_global}</div><div style="font-size:0.7em;color:var(--dim)">Nivel</div></div></div>
+            <div class="chip"><span>🪙</span><div><div class="n" style="color:var(--yellow)">${d.tokens}</div><div style="font-size:0.7em;color:var(--dim)">Tokens</div></div></div>
+            <div class="chip"><span>🔥</span><div><div class="n" style="color:var(--orange)">${d.racha}</div><div style="font-size:0.7em;color:var(--dim)">Racha</div></div></div>
+            <div class="chip"><span>🛡️</span><div><div class="n" style="color:var(--cyan)">${d.puntos_confianza}</div><div style="font-size:0.7em;color:var(--dim)">Confianza</div></div></div>
+        </div>
+        <div style="font-size:0.8em;color:var(--dim);margin-bottom:4px">Humor esta semana</div>
+        <div style="margin-bottom:12px;font-size:0.9em">${humor}</div>
+        ${d.alerta_bienestar ? '<div style="background:#ff440020;border:1px solid #ff4444;border-radius:8px;padding:10px;font-size:0.82em;color:#ff6666;margin-bottom:10px">⚠️ 3+ días con estado bajo. Habla con tu hijo/a.</div>' : ''}
+        <div style="font-size:0.8em;color:var(--dim)">Aptitud más fuerte: <b style="color:var(--green)">${d.aptitud_fuerte?.nombre||'—'}</b></div>
+        <div style="font-size:0.8em;color:var(--dim)">A impulsar: <b style="color:var(--pink)">${d.aptitud_debil?.nombre||'—'}</b></div>
+        <div style="font-size:0.8em;color:var(--dim);margin-top:4px">Acuerdos activos: <b>${d.acuerdos_activos}</b> · Tasa cumplimiento: <b>${d.tasa_cumplimiento}%</b></div>
+    `;
+    document.getElementById('monitor-bloque').style.display = 'block';
+}
+
+function abrirNuevoAcuerdo() {
+    document.getElementById('modal-apt-body').innerHTML = `
+        <h3 style="margin-bottom:14px;color:var(--green)">🤝 Nuevo Acuerdo Familiar</h3>
+        <div style="display:flex;flex-direction:column;gap:8px">
+            <input id="ac-titulo" placeholder="Título del acuerdo" style="background:var(--bg3);border:1px solid var(--border);color:var(--txt);padding:10px;border-radius:8px;font-family:inherit">
+            <textarea id="ac-desc" rows="2" placeholder="¿En qué consiste el acuerdo?" style="background:var(--bg3);border:1px solid var(--border);color:var(--txt);padding:10px;border-radius:8px;font-family:inherit;resize:none"></textarea>
+            <input id="ac-meta" placeholder="Meta concreta (ej: 7 días sin excepciones)" style="background:var(--bg3);border:1px solid var(--border);color:var(--txt);padding:10px;border-radius:8px;font-family:inherit">
+            <input id="ac-rec" placeholder="Recompensa si se cumple" style="background:var(--bg3);border:1px solid var(--border);color:var(--txt);padding:10px;border-radius:8px;font-family:inherit">
+            <div style="display:flex;gap:8px">
+                <input type="number" id="ac-dias" placeholder="Plazo (días)" value="7" min="1" max="90" style="flex:1;background:var(--bg3);border:1px solid var(--border);color:var(--txt);padding:10px;border-radius:8px;font-family:inherit">
+                <input type="password" id="ac-pin" placeholder="PIN del padre" style="flex:1;background:var(--bg3);border:1px solid var(--border);color:var(--txt);padding:10px;border-radius:8px;font-family:inherit">
+            </div>
+            <button class="btn btn-green btn-full" onclick="guardarNuevoAcuerdo()">✅ Firmar Acuerdo</button>
+        </div>
+    `;
+    document.getElementById('modal-apt').classList.add('show');
+}
+
+async function guardarNuevoAcuerdo() {
+    const body = {
+        user_id:     USER_ID,
+        titulo:      document.getElementById('ac-titulo').value,
+        descripcion: document.getElementById('ac-desc').value,
+        meta:        document.getElementById('ac-meta').value,
+        recompensa:  document.getElementById('ac-rec').value,
+        plazo_dias:  parseInt(document.getElementById('ac-dias').value) || 7,
+        pin_padre:   document.getElementById('ac-pin').value || '0000',
+    };
+    if (!body.titulo || !body.descripcion) { mostrarToast('Completa título y descripción'); return; }
+    const r = await fetch('/api/teens/acuerdo/crear', {
+        method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(body)
+    });
+    const d = await r.json();
+    if (d.ok) {
+        mostrarToast('🤝 Acuerdo firmado y activo');
+        if (window.NX) NX.hablar(`Acuerdo firmado. ¡Tú puedes cumplirlo!`);
+        document.getElementById('modal-apt').classList.remove('show');
+        await cargarAcuerdos();
+    } else {
+        mostrarToast(d.error || 'Error creando acuerdo');
+    }
+}
+
+function abrirEditorHonor() {
+    document.getElementById('modal-apt-body').innerHTML = `
+        <h3 style="margin-bottom:14px;color:var(--purple)">📜 Código de Honor Familiar</h3>
+        <p style="font-size:0.82em;color:var(--dim);margin-bottom:12px">
+            Entre 3 y 7 frases que los dos crean y firman. Ejemplos:<br>
+            "En esta familia, la honestidad es la base."<br>
+            "Nos apoyamos aunque sea difícil."
+        </p>
+        ${[1,2,3,4,5].map(i =>
+            `<input id="hon-${i}" placeholder="Frase ${i}${i<=3?' (requerida)':' (opcional)'}"
+             style="background:var(--bg3);border:1px solid var(--border);color:var(--txt);
+                    padding:10px;border-radius:8px;font-family:inherit;width:100%;margin-bottom:8px">`
+        ).join('')}
+        <input type="password" id="hon-pin" placeholder="PIN del padre para firmar"
+               style="background:var(--bg3);border:1px solid var(--border);color:var(--txt);
+                      padding:10px;border-radius:8px;font-family:inherit;width:100%;margin-bottom:10px">
+        <button class="btn btn-full" style="background:var(--purple);color:#fff"
+                onclick="guardarCodigoHonor()">📜 Firmar Código de Honor</button>
+    `;
+    document.getElementById('modal-apt').classList.add('show');
+}
+
+async function guardarCodigoHonor() {
+    const frases = [1,2,3,4,5].map(i => document.getElementById(`hon-${i}`)?.value?.trim()).filter(Boolean);
+    const pin    = document.getElementById('hon-pin')?.value || '0000';
+    if (frases.length < 3) { mostrarToast('Necesitas al menos 3 frases'); return; }
+    const r = await fetch('/api/teens/codigo_honor', {
+        method:'POST', headers:{'Content-Type':'application/json'},
+        body: JSON.stringify({user_id: USER_ID, frases, pin_padre: pin})
+    });
+    const d = await r.json();
+    if (d.ok) {
+        mostrarToast('📜 Código de Honor firmado +100 tokens');
+        if (window.NX) NX.hablar('¡Su código de honor está firmado! Este es el pacto de su familia.');
+        document.getElementById('modal-apt').classList.remove('show');
+        await cargarFamilia();
+    } else {
+        mostrarToast(d.error || 'Error');
+    }
+}
+
+function abrirDarReconocimiento() {
+    const pin = document.getElementById('pin-padre-fam')?.value || '';
+    const tipos = [
+        {id:'orgullo',e:'⭐',l:'Estoy muy orgulloso/a'},
+        {id:'honesto',e:'🤍',l:'Fuiste honesto/a'},
+        {id:'maduro', e:'🌱',l:'Tomaste una decisión madura'},
+        {id:'ayudaste',e:'🤝',l:'Ayudaste sin que te lo pidieran'},
+        {id:'perseveraste',e:'🔥',l:'No te rendiste'},
+        {id:'creativo',e:'💡',l:'Tuviste una idea brillante'},
+        {id:'especial',e:'💛',l:'Eres especial para mí'},
+    ];
+    document.getElementById('modal-apt-body').innerHTML = `
+        <h3 style="margin-bottom:14px;color:var(--yellow)">⭐ Dar Reconocimiento</h3>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px">
+            ${tipos.map(t => `
+                <button class="btn btn-outline" id="rec-btn-${t.id}"
+                        onclick="seleccionarRec('${t.id}')"
+                        style="text-align:left;padding:10px;font-size:0.8em">
+                    ${t.e} ${t.l}
+                </button>`
+            ).join('')}
+        </div>
+        <textarea id="rec-msg" rows="2" placeholder="Mensaje personal (opcional)"
+                  style="background:var(--bg3);border:1px solid var(--border);color:var(--txt);
+                         padding:10px;border-radius:8px;font-family:inherit;resize:none;width:100%;margin-bottom:8px"></textarea>
+        <input type="hidden" id="rec-tipo-sel" value="">
+        <button class="btn btn-full" style="background:var(--yellow);color:#000"
+                onclick="darReconocimiento()">⭐ Entregar Reconocimiento</button>
+    `;
+    document.getElementById('modal-apt').classList.add('show');
+}
+
+let _recTipoSel = '';
+function seleccionarRec(id) {
+    _recTipoSel = id;
+    document.querySelectorAll('[id^="rec-btn-"]').forEach(b => b.classList.replace('btn-pink','btn-outline'));
+    const btn = document.getElementById(`rec-btn-${id}`);
+    if (btn) { btn.style.borderColor = 'var(--yellow)'; btn.style.color = 'var(--yellow)'; }
+}
+
+async function darReconocimiento() {
+    if (!_recTipoSel) { mostrarToast('Selecciona un tipo de reconocimiento'); return; }
+    const pin = document.getElementById('pin-padre-fam')?.value || '0000';
+    const msg = document.getElementById('rec-msg')?.value || '';
+    const r = await fetch('/api/teens/reconocimiento', {
+        method:'POST', headers:{'Content-Type':'application/json'},
+        body: JSON.stringify({user_id: USER_ID, tipo: _recTipoSel, mensaje: msg, pin_padre: pin})
+    });
+    const d = await r.json();
+    if (d.ok) {
+        mostrarToast('⭐ Reconocimiento entregado con amor');
+        document.getElementById('modal-apt').classList.remove('show');
+        await cargarFamilia();
+    } else {
+        mostrarToast(d.error || 'PIN incorrecto');
+    }
+}
+
+function abrirConfigCP() {
+    document.getElementById('modal-apt-body').innerHTML = `
+        <h3 style="margin-bottom:14px;color:var(--cyan)">⚙️ Control Parental</h3>
+        <div style="display:flex;flex-direction:column;gap:10px">
+            <div class="toggle-row">
+                <span class="lbl">🔒 Control parental activo</span>
+                <div class="toggle" id="modal-toggle-cp" onclick="this.classList.toggle('on')"></div>
+            </div>
+            <div>
+                <label style="font-size:0.78em;color:var(--dim);display:block;margin-bottom:4px">🌙 Horario de uso</label>
+                <div style="display:flex;gap:8px">
+                    <input type="time" id="modal-hora-ini" value="07:00" style="flex:1;background:var(--bg3);border:1px solid var(--border);color:var(--txt);padding:8px;border-radius:8px">
+                    <input type="time" id="modal-hora-fin" value="22:00" style="flex:1;background:var(--bg3);border:1px solid var(--border);color:var(--txt);padding:8px;border-radius:8px">
+                </div>
+            </div>
+            <button class="btn btn-green btn-full" onclick="guardarCPModal()">💾 Guardar</button>
+        </div>
+    `;
+    document.getElementById('modal-apt').classList.add('show');
+}
+
+async function guardarCPModal() {
+    const pin  = document.getElementById('pin-padre-fam')?.value || '0000';
+    const act  = document.getElementById('modal-toggle-cp')?.classList.contains('on') || false;
+    const ini  = document.getElementById('modal-hora-ini')?.value;
+    const fin  = document.getElementById('modal-hora-fin')?.value;
+    const r = await fetch('/api/teens/parental', {
+        method:'POST', headers:{'Content-Type':'application/json'},
+        body: JSON.stringify({user_id: USER_ID, pin, config:{activo:act,horario_inicio:ini,horario_fin:fin}})
+    });
+    const d = await r.json();
+    mostrarToast(d.ok ? '✅ Configuración guardada' : ('❌ ' + (d.error||'PIN incorrecto')));
+    if (d.ok) document.getElementById('modal-apt').classList.remove('show');
+}
+
+// Extender go() para cargar familia
+const _goOriginal = window.go || function(){};
+function go(panel) {
+    document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+    document.getElementById('panel-' + panel).classList.add('active');
+    if (event?.currentTarget) event.currentTarget.classList.add('active');
+    if (panel === 'aptitudes') dibujarRadar();
+    if (panel === 'badges')    renderBadges();
+    if (panel === 'ranking')   cargarRanking();
+    if (panel === 'misiones')  renderMisiones();
+    if (panel === 'familia')   cargarFamilia();
+}
+
+// ── INIT ─────────────────────────────────────────────────────────────────
+init();
+</script>
+
+<!-- ══════════════════════════════════════ NEXUS VOICE ENGINE ══════════ -->
+
+<!-- Onboarding overlay -->
+<div id="onboarding-overlay" style="
+    position:fixed;inset:0;background:#000000ee;z-index:2000;
+    display:none;align-items:center;justify-content:center;
+    padding:24px;">
+    <div style="background:#111118;border:1px solid #2a1a3a;border-radius:20px;
+                padding:28px 22px;max-width:380px;width:100%;text-align:center">
+        <div id="ob-avatar" style="font-size:3.5em;margin-bottom:10px">🤖</div>
+        <div id="ob-msg" style="font-size:0.96em;color:#e0e0e0;line-height:1.7;margin-bottom:18px">
+            Cargando NEXUS...
+        </div>
+        <input type="text" id="ob-input"
+               placeholder="Escribe aquí o habla..."
+               style="background:#0a0a0a;border:1px solid #3a1a4a;color:#e0e0e0;
+                      padding:12px 16px;border-radius:12px;font-size:1em;width:100%;
+                      text-align:center;margin-bottom:12px"
+               onkeydown="if(event.key==='Enter')NX.obResponder()">
+        <div style="display:flex;gap:8px;justify-content:center">
+            <button onclick="NX.obMic()"
+                    style="background:#ff6b9d;border:none;border-radius:10px;
+                           padding:11px 18px;color:#000;font-weight:700;cursor:pointer;font-size:0.9em">
+                🎤 Hablar
+            </button>
+            <button onclick="NX.obResponder()"
+                    style="background:#4ecdc4;border:none;border-radius:10px;
+                           padding:11px 18px;color:#000;font-weight:700;cursor:pointer;font-size:0.9em">
+                ✓ Listo
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- FAB de voz flotante -->
+<div id="nx-mic-fab" onclick="NX.toggleVoiceMode()"
+     style="position:fixed;bottom:calc(24px + env(safe-area-inset-bottom,0px));right:18px;
+            width:56px;height:56px;border-radius:50%;
+            background:linear-gradient(135deg,#ff6b9d,#c471ed);
+            display:flex;align-items:center;justify-content:center;
+            font-size:1.5em;cursor:pointer;z-index:500;
+            box-shadow:0 4px 20px #ff6b9d44;transition:all 0.2s;
+            user-select:none;-webkit-user-select:none">🎤</div>
+
+<!-- Burbuja de voz -->
+<div id="voice-bubble"
+     style="position:fixed;bottom:calc(90px + env(safe-area-inset-bottom,0px));right:18px;
+            background:#111118;border:1px solid #3a1a4a;border-radius:14px 14px 0 14px;
+            padding:10px 14px;font-size:0.82em;color:#e0e0e0;max-width:220px;
+            display:none;z-index:500;line-height:1.5">
+    Escuchando...
+</div>
+
+<script>
+const NX = (() => {
+    const OB_KEY     = 'nexus_teens_onboarded';
+    const NOMBRE_KEY = 'nexus_teens_nombre';
+    const EDAD_KEY   = 'nexus_teens_edad';
+
+    let _voz        = null;
+    let _rec        = null;
+    let _escuchando = false;
+    let _ob_paso    = 0;
+    let _ob_nombre  = '';
+    let _ob_edad    = 16;
+
+    // ── Selección de voz ──────────────────────────────────
+    function _elegirVoz() {
+        const vs = speechSynthesis.getVoices();
+        const pruebas = [
+            v => v.lang.startsWith('es') && /sabina|paulina|google/i.test(v.name),
+            v => v.lang.startsWith('es-MX'),
+            v => v.lang.startsWith('es'),
+            v => /google/i.test(v.name),
+            () => vs[0],
+        ];
+        for (const fn of pruebas) { const v = vs.find(fn); if (v) { _voz = v; return; } }
+    }
+
+    // ── TTS ───────────────────────────────────────────────
+    function hablar(texto, onEnd) {
+        if (!window.speechSynthesis) { onEnd?.(); return; }
+        speechSynthesis.cancel();
+        if (!_voz) _elegirVoz();
+        const u   = new SpeechSynthesisUtterance(texto);
+        u.voice   = _voz;
+        u.lang    = 'es-MX';
+        u.rate    = 0.93;
+        u.pitch   = 1.08;
+        u.volume  = 0.95;
+        u.onend   = () => onEnd?.();
+        speechSynthesis.speak(u);
+    }
+
+    // ── STT ───────────────────────────────────────────────
+    function _escuchar(onResult) {
+        const Rec = window.SpeechRecognition || window.webkitSpeechRecognition;
+        if (!Rec) { onResult(''); return; }
+        try { _rec?.stop(); } catch(e){}
+        _rec = new Rec();
+        _rec.lang = 'es-MX';
+        _rec.continuous = false;
+        _rec.interimResults = false;
+        _rec.onresult = e => onResult(e.results[0][0].transcript);
+        _rec.onerror  = ()  => onResult('');
+        _rec.onend    = ()  => { _escuchando = false; _fabUpdate(); };
+        _rec.start();
+        _escuchando = true;
+        _fabUpdate();
+    }
+
+    function _fabUpdate() {
+        const f = document.getElementById('nx-mic-fab');
+        if (!f) return;
+        f.style.background = _escuchando
+            ? 'linear-gradient(135deg,#ff4444,#ff9a3c)'
+            : 'linear-gradient(135deg,#ff6b9d,#c471ed)';
+        f.textContent = _escuchando ? '🔴' : '🎤';
+    }
+
+    // ── ONBOARDING ────────────────────────────────────────
+    function _obMsg(html, ph) {
+        document.getElementById('ob-msg').innerHTML = html;
+        const inp = document.getElementById('ob-input');
+        inp.value = ''; inp.placeholder = ph || 'Escribe o habla...'; inp.focus();
+    }
+
+    function iniciarOnboarding() {
+        document.getElementById('onboarding-overlay').style.display = 'flex';
+        _ob_paso = 0;
+        function arrancar() {
+            _elegirVoz();
+            _obMsg('¡Hey! Soy <b style="color:#ff6b9d">NEXUS</b> 🤖<br>Tu nuevo asistente y amigo digital.<br>Juntos vamos a descubrir tu talento y hacer que el mundo te conozca. 🚀<br><br><b>¿Cómo te llamas?</b>', 'Tu nombre...');
+            hablar('¡Hey! Soy NEXUS, tu nuevo asistente y amigo. ¿Cómo te llamas?');
+        }
+        const vs = speechSynthesis.getVoices();
+        if (vs.length) arrancar();
+        else { speechSynthesis.onvoiceschanged = arrancar; setTimeout(arrancar, 900); }
+    }
+
+    function obResponder(texto) {
+        const val = (texto || document.getElementById('ob-input').value || '').trim();
+        if (!val) return;
+        if (_ob_paso === 0) {
+            _ob_nombre = val.split(' ')[0];
+            _ob_nombre = _ob_nombre[0].toUpperCase() + _ob_nombre.slice(1).toLowerCase();
+            _ob_paso   = 1;
+            _obMsg(`¡Qué cool, <b style="color:#4ecdc4">${_ob_nombre}</b>! 🔥<br><br>¿Cuántos años tienes?`, 'Tu edad...');
+            hablar(`¡Qué cool, ${_ob_nombre}! ¿Cuántos años tienes?`);
+        } else if (_ob_paso === 1) {
+            _ob_edad = Math.max(10, Math.min(25, parseInt(val) || 16));
+            _ob_paso = 2;
+            _obMsg(`¡${_ob_edad} años! 💪 Eres parte de la generación que está cambiando el mundo.<br><br>¿Qué te late más?<br><br>
+                <b style="color:#ffe66d">1</b> — Crear contenido (TikTok/Reels) 📱<br>
+                <b style="color:#ff6b9d">2</b> — Ganar dinero con mis habilidades 💰<br>
+                <b style="color:#4ecdc4">3</b> — Aprender tech e IA 💻<br>
+                <b style="color:#c471ed">4</b> — Todo lo anterior 🚀`, '1, 2, 3 o 4...');
+            hablar(`${_ob_edad} años, excelente. ¿Qué te late más? Crear contenido, ganar dinero, aprender tech, o todo lo anterior?`);
+        } else if (_ob_paso === 2) {
+            const intLabels = {1:'crear contenido viral',2:'ganar dinero con tu talento',3:'dominar la tech',4:'conquistarlo todo'};
+            const lab = intLabels[parseInt(val)] || 'dar lo mejor';
+            document.getElementById('ob-input').style.display = 'none';
+            _obMsg(`¡Listo <b style="color:#ff6b9d">${_ob_nombre}</b>! 🎉<br><br>
+                Estoy aquí <b>24/7</b>. Dime lo que necesites.<br><br>
+                Prueba: <b style="color:#ffe66d">"NEXUS, ¿qué hago hoy?"</b> 🎤`, '');
+            hablar(`¡Listo ${_ob_nombre}! Juntos vamos a ${lab}. Soy tu NEXUS. ¡Vamos!`);
+            localStorage.setItem(NOMBRE_KEY, _ob_nombre);
+            localStorage.setItem(EDAD_KEY,   String(_ob_edad));
+            localStorage.setItem(OB_KEY, '1');
+            localStorage.setItem('nexus_teens_nombre', _ob_nombre);
+            fetch('/api/teens/usuario', {
+                method: 'POST', headers: {'Content-Type':'application/json'},
+                body: JSON.stringify({ user_id: USER_ID, nombre: _ob_nombre, edad: _ob_edad })
+            });
+            setTimeout(() => {
+                document.getElementById('onboarding-overlay').style.display = 'none';
+                document.getElementById('ob-input').style.display = '';
+                setTimeout(() => hablar(`¿Qué reto quieres conquistar hoy, ${_ob_nombre}?`), 800);
+            }, 3000);
+        }
+    }
+
+    function obMic() {
+        _escuchar(txt => { if (txt) { document.getElementById('ob-input').value = txt; obResponder(txt); } });
+    }
+
+    // ── Modo voz libre ────────────────────────────────────
+    function toggleVoiceMode() {
+        if (_escuchando) {
+            try { _rec?.stop(); } catch(e){}
+            _escuchando = false; _fabUpdate();
+            document.getElementById('voice-bubble').style.display = 'none';
+        } else {
+            const bub = document.getElementById('voice-bubble');
+            bub.style.display = 'block'; bub.textContent = '🎤 Escuchando...';
+            _escuchar(txt => {
+                bub.style.display = 'none';
+                if (txt) _procesarComando(txt);
+            });
+        }
+    }
+
+    // ── Comandos de voz ───────────────────────────────────
+    async function _procesarComando(cmd) {
+        const c   = cmd.toLowerCase();
+        const bub = document.getElementById('voice-bubble');
+        bub.style.display = 'block'; bub.textContent = `"${cmd}"`;
+        setTimeout(() => { bub.style.display = 'none'; }, 3000);
+
+        if (c.includes('misi'))      { document.querySelector('[onclick="go(\'misiones\')"]')?.click();  hablar('Aquí están tus misiones'); return; }
+        if (c.includes('aptitud'))   { document.querySelector('[onclick="go(\'aptitudes\')"]')?.click(); hablar('Mira tu radar de talento'); return; }
+        if (c.includes('viral') || c.includes('idea')) { document.querySelector('[onclick="go(\'viral\')"]')?.click(); hablar('Generando tu idea viral'); setTimeout(generarViral, 800); return; }
+        if (c.includes('badge') || c.includes('logro')) { document.querySelector('[onclick="go(\'badges\')"]')?.click(); hablar('Aquí están tus logros'); return; }
+        if (c.includes('ranking'))   { document.querySelector('[onclick="go(\'ranking\')"]')?.click(); hablar('Veamos el ranking'); return; }
+        if (c.includes('qué hago') || c.includes('que hago hoy')) {
+            document.querySelector('[onclick="go(\'misiones\')"]')?.click();
+            const nom = localStorage.getItem(NOMBRE_KEY) || '';
+            hablar(`${nom}, tu misión de hoy es ${_perfil?.mision_sugerida?.nombre || 'revisar tus misiones'}. ¡Dale!`);
+            return;
+        }
+        if (c.includes('token') || c.includes('cuánto tengo')) {
+            const nom = localStorage.getItem(NOMBRE_KEY) || '';
+            hablar(`${nom}, tienes ${_perfil?.tokens||0} tokens y ${_perfil?.racha||0} días de racha. ¡Brutal!`);
+            return;
+        }
+        // Fallback tutor
+        document.querySelector('[onclick="go(\'tutor\')"]')?.click();
+        const inp = document.getElementById('tutor-input');
+        if (inp) { inp.value = cmd; await enviarTutor(null); }
+        setTimeout(() => {
+            const msgs = document.querySelectorAll('#tutor-chat .msg.nexus');
+            const last = msgs[msgs.length-1];
+            if (last) hablar(last.textContent.slice(0,250));
+        }, 1600);
+    }
+
+    // ── Verificar onboarding al arrancar ─────────────────
+    function verificarOnboarding() {
+        if (!localStorage.getItem(OB_KEY)) {
+            setTimeout(iniciarOnboarding, 700);
+        } else {
+            const nom  = localStorage.getItem(NOMBRE_KEY) || '';
+            const hora = new Date().getHours();
+            const sal  = hora < 13 ? 'Buenos días' : hora < 19 ? 'Buenas tardes' : 'Buenas noches';
+            if (nom) setTimeout(() => hablar(`${sal}, ${nom}. ¿Qué conquistas hoy?`), 1400);
+        }
+    }
+
+    return { hablar, toggleVoiceMode, obResponder, obMic, verificarOnboarding };
+})();
+
+// Arrancar voz después de que la app cargue
+window.addEventListener('DOMContentLoaded', () => setTimeout(NX.verificarOnboarding, 900));
+</script>
+</body>
+</html>

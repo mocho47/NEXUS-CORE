@@ -1,0 +1,173 @@
+[
+    {
+        "id": 1769385292,
+        "cliente": "ana karen ",
+        "producto": "caja de ahorro de 35000 pesos solo billetes de 100 y 50",
+        "deadline": "2026-01-26T14:00:00",
+        "status": "LISTO",
+        "area": "LASER",
+        "costo": 140,
+        "anticipo": 100,
+        "created_at": "2026-01-25T17:54:52",
+        "metadata": {
+            "telefono": "",
+            "notified_1h": false,
+            "notified_15m": false,
+            "last_nag_time": 1769502259.9961772,
+            "insistent_level": 9
+        }
+    },
+    {
+        "id": 1769402545,
+        "cliente": "gabriela ramires ",
+        "producto": "2 alcancias 10 mil",
+        "deadline": "2026-01-26T14:00:00",
+        "status": "LISTO",
+        "area": "GENERAL",
+        "costo": null,
+        "anticipo": null,
+        "created_at": null,
+        "metadata": {
+            "notified_1h": false,
+            "notified_15m": false,
+            "last_nag_time": 1769502259.9961772,
+            "insistent_level": 9
+        }
+    },
+    {
+        "id": 1769402811,
+        "cliente": "julio",
+        "producto": "1 taza  15 oz",
+        "deadline": "2026-01-26T14:00:00",
+        "status": "LISTO",
+        "area": "SUBLIMACION",
+        "costo": null,
+        "anticipo": null,
+        "created_at": null,
+        "metadata": {
+            "notified_1h": false,
+            "notified_15m": false,
+            "last_nag_time": 1769502259.9961772,
+            "insistent_level": 9
+        }
+    },
+    {
+        "id": 1769402849,
+        "cliente": "julio",
+        "producto": "caja p taza ",
+        "deadline": "2026-01-26T14:00:00",
+        "status": "LISTO",
+        "area": "SUBLIMACION",
+        "costo": null,
+        "anticipo": null,
+        "created_at": null,
+        "metadata": {
+            "notified_1h": false,
+            "notified_15m": false,
+            "last_nag_time": 1769507746.2726948,
+            "insistent_level": 11
+        }
+    },
+    {
+        "id": 1769402973,
+        "cliente": "marcos  ",
+        "producto": "caja 20x20",
+        "deadline": "2026-01-26T14:00:00",
+        "status": "LISTO",
+        "area": "LASER",
+        "costo": null,
+        "anticipo": null,
+        "created_at": null,
+        "metadata": {
+            "notified_1h": false,
+            "notified_15m": false,
+            "last_nag_time": 1769502259.9961772,
+            "insistent_level": 9
+        }
+    },
+    {
+        "id": 1769402997,
+        "cliente": "marcos  ",
+        "producto": "2 tazas",
+        "deadline": "2026-01-26T14:00:00",
+        "status": "LISTO",
+        "area": "SUBLIMACION",
+        "costo": null,
+        "anticipo": null,
+        "created_at": null,
+        "metadata": {
+            "notified_1h": false,
+            "notified_15m": false,
+            "last_nag_time": 1769502259.9961772,
+            "insistent_level": 9
+        }
+    },
+    {
+        "id": 1769403256,
+        "cliente": "lulu ",
+        "producto": "alcancia 365",
+        "deadline": "2026-01-26T14:00:00",
+        "status": "LISTO",
+        "area": "GENERAL",
+        "costo": null,
+        "anticipo": null,
+        "created_at": null,
+        "metadata": {
+            "notified_1h": false,
+            "notified_15m": false,
+            "last_nag_time": 1769508047.2695506,
+            "insistent_level": 12
+        }
+    },
+    {
+        "id": 1769402711,
+        "cliente": "maria elena ",
+        "producto": "1 taza ",
+        "deadline": "2026-01-26T14:00:00",
+        "status": "LISTO",
+        "area": "SUBLIMACION",
+        "costo": null,
+        "anticipo": null,
+        "created_at": null,
+        "metadata": {
+            "notified_1h": false,
+            "notified_15m": false,
+            "last_nag_time": 1769508047.2695506,
+            "insistent_level": 12
+        }
+    },
+    {
+        "id": 1769402595,
+        "cliente": "donas ",
+        "producto": "lampara neon flex ",
+        "deadline": "2026-01-26T14:00:00",
+        "status": "LISTO",
+        "area": "GENERAL",
+        "costo": null,
+        "anticipo": null,
+        "created_at": null,
+        "metadata": {
+            "notified_1h": false,
+            "notified_15m": false,
+            "last_nag_time": 1769508047.2695506,
+            "insistent_level": 12
+        }
+    },
+    {
+        "id": 1769394977,
+        "cliente": "michelle ramos ",
+        "producto": "1 lona de 1x1",
+        "deadline": "2026-01-26T14:00:00",
+        "status": "LISTO",
+        "area": "GENERAL",
+        "costo": null,
+        "anticipo": null,
+        "created_at": null,
+        "metadata": {
+            "notified_1h": false,
+            "notified_15m": false,
+            "last_nag_time": 1769508047.2695506,
+            "insistent_level": 12
+        }
+    }
+]

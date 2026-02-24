@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cotizar Servicios PRO</title>
+    <style>
+        body { background: #0a0a0a; color: #00ff88; font-family: Arial, sans-serif; padding: 16px; }
+        .card {
+            background: #111; border: 2px solid #222; border-radius: 12px;
+            padding: 24px; margin: 16px auto; max-width: 480px;
+            box-shadow: 0 4px 16px #222;
+        }
+        h2 { margin-top: 0; }
+        label { color: #00ff88; font-weight: bold; display: block; margin-bottom: 4px; margin-top: 12px; }
+        input, select {
+            background: #222; color: #00ff88; border: 1px solid #00ff88;
+            border-radius: 6px; padding: 10px; width: 100%; box-sizing: border-box;
+        }
+        .btn {
+            background: #00ff88; color: #0a0a0a; border: none; border-radius: 6px;
+            padding: 12px 24px; font-weight: bold; cursor: pointer; margin-top: 16px; width: 100%;
+        }
+        .btn:hover { background: #00cc66; }
+        .btn-agendar {
+            background: #111; color: #00ff88; border: 1px solid #00ff88;
+            border-radius: 6px; padding: 12px 24px; font-weight: bold;
+            cursor: pointer; margin-top: 8px; width: 100%;
+        }
+        .precio { font-size: 2em; margin: 20px 0 4px; color: #00ff88; font-weight: bold; }
+        .precio-desc { color: #555; font-size: 0.85em; margin-bottom: 16px; }
+        .nav a { color: #888; text-decoration: none; font-size: 0.9em; }
+        .sep { border-top: 1px solid #222; margin: 16px 0; }
+    </style>
+</head>
+<body>
+
+    <!-- Pasar datos reales del servidor como JSON seguro -->
+    <script type="application/json" id="precios-data">{{ db | tojson }}</script>
+
+    <div style="margin-bottom:12px;"><a class="nav" href="/dashboard" style="color:#888;text-decoration:none;">← Dashboard</a></div>
+
+    <div class="card">
+        <h2>⚡ Cotizador Rápido</h2>
+
+        <label for="servicio">Servicio:</label>
+        <select id="servicio" onchange="mostrarCampos()">
+            <option value="laser">🔴 Corte Láser</option>
+            <option value="sublimacion">🖨️ Sublimación / Personalización</option>
+            <option value="retrofit">💡 Retrofit Automotriz</option>
+            <option value="dtf">👕 DTF / Textil</option>
+        </select>
+
+        <!-- LÁSER -->
+        <div id="camposLaser">
+            <label for="minutos">Minutos de corte:</label>
+            <input type="number" id="minutos" min="1" value="5" oninput="calcularPrecio()">
+
+            <label for="material">Material:</label>
+            <select id="material" onchange="calcularPrecio()">
+                <!-- Se llena con JS desde precios reales -->
+            </select>
+            <small id="mat-area" style="color:#555;"></small>
+        </div>
+
+        <!-- SUBLIMACIÓN -->
+        <div id="camposSublimacion" style="display:none;">
+            <label for="producto">Producto:</label>
+            <select id="producto" onchange="calcularPrecio()">
+                <!-- Se llena con JS -->
+            </select>
+            <label for="cantidad">Cantidad:</label>
+            <input type="number" id="cantidad" min="1" value="1" oninput="calcularPrecio()">
+            <small id="mayoreo-hint" style="color:#555;"></small>
+        </div>
+
+        <!-- RETROFIT -->
+        <div id="camposRetrofit" style="display:none;">
+            <div id="retro-lista" style="margin-top:8px;"></div>
+        </div>
+
+        <!-- DTF -->
+        <div id="camposDTF" style="display:none;">
+            <label for="insumo">Insumo:</label>
+            <select id="insumo" onchange="calcularPrecio()"></select>
+            <label for="metros">Metros:</label>
+            <input type="number" id="metros" min="0.1" step="0.1" value="1" oninput="calcularPrecio()">
+        </div>
+
+        <div class="sep"></div>
+        <div class="precio" id="precioTotal">$0.00</div>
+        <div class="precio-desc" id="precioDesc">—</div>
+
+        <button class="btn" onclick="enviarWhatsApp()">💬 Enviar por WhatsApp</button>
+        <button class="btn-agendar" onclick="abrirPDF()">🖨️ Ver cotización PDF</button>
+        <button class="btn-agendar" onclick="agendar()">📋 Agendar como pedido</button>
+    </div>
+
+    <script>
+    const DB = JSON.parse(document.getElementById('precios-data').textContent);
+    let currentTotal = 0;
+    let currentDesc = "";
+
+    // --- POBLAR SELECTORES ---
+    function poblarMateriales() {
+        const sel = document.getElementById('material');
+        sel.innerHTML = '<option value="">Solo maquila (sin material)</option>';
+        (DB.laser?.materiales || []).forEach((m, i) => {
+            sel.innerHTML += `<option value="${i}">${m.nombre} — $${m.precio_hoja}</option>`;
+        });
+    }
+    function poblarProductos() {
+        const sel = document.getElementById('producto');
+        sel.innerHTML = '';
+        (DB.sublimacion_personalizacion || []).forEach((p, i) => {
+            const tecnicas = [];
+            if (p.precio_subli > 0) tecnicas.push(`Subli $${p.precio_subli}`);
+            if (p.precio_laser > 0) tecnicas.push(`Láser $${p.precio_laser}`);
+            if (p.precio_dtf   > 0) tecnicas.push(`DTF $${p.precio_dtf}`);
+            if (p.precio_vinil > 0) tecnicas.push(`Vinil $${p.precio_vinil}`);
+            if (tecnicas.length > 0)
+                sel.innerHTML += `<option value="${i}" data-idx="${i}">${p.cat} - ${p.nombre} | ${tecnicas[0]}</option>`;
+        });
+    }
+    function poblarRetrofit() {
+        const div = document.getElementById('retro-lista');
+        div.innerHTML = '';
+        (DB.retrofit || []).forEach((r, i) => {
+            div.innerHTML += `
+            <label style="display:flex;align-items:center;gap:8px;margin-bottom:8px;cursor:pointer;">
+                <input type="checkbox" class="retro-chk" data-price="${r.precio}" onchange="calcularPrecio()" style="width:20px;height:20px;">
+                <span>${r.nombre}</span>
+            </label>`;
+        });
+    }
+    function poblarDTF() {
+        const sel = document.getElementById('insumo');
+        const ins = DB.insumos_textil || {};
+        sel.innerHTML = '';
+        if (ins.dtf_metro)           sel.innerHTML += `<option value="${ins.dtf_metro}">DTF Normal — $${ins.dtf_metro}/m</option>`;
+        if (ins.dtf_uv_metro)        sel.innerHTML += `<option value="${ins.dtf_uv_metro}">DTF UV — $${ins.dtf_uv_metro}/m</option>`;
+        if (ins.vinil_textil_metro)  sel.innerHTML += `<option value="${ins.vinil_textil_metro}">Vinil Textil — $${ins.vinil_textil_metro}/m</option>`;
+        if (ins.bifaz_metro)         sel.innerHTML += `<option value="${ins.bifaz_metro}">Bifaz — $${ins.bifaz_metro}/m</option>`;
+    }
+
+    // --- CALCULAR PRECIO ---
+    function calcularPrecio() {
+        const servicio = document.getElementById('servicio').value;
+        let total = 0, desc = '';
+
+        if (servicio === 'laser') {
+            const min = parseFloat(document.getElementById('minutos').value) || 0;
+            const matIdx = document.getElementById('material').value;
+            const costoMin = DB.laser?.costo_minuto || 8;
+            let matCosto = 0, matNombre = 'Sin material';
+            if (matIdx !== '') {
+                const mat = DB.laser.materiales[parseInt(matIdx)];
+                matNombre = mat.nombre;
+                document.getElementById('mat-area').innerText = `Hoja: ${mat.ancho}x${mat.alto}cm`;
+                matCosto = mat.precio_hoja;
+            } else {
+                document.getElementById('mat-area').innerText = '';
+            }
+            total = (min * costoMin) + matCosto;
+            desc = `${min} min corte + ${matNombre}`;
+
+        } else if (servicio === 'sublimacion') {
+            const idx = parseInt(document.getElementById('producto').value) || 0;
+            const prod = (DB.sublimacion_personalizacion || [])[idx];
+            const cant = parseInt(document.getElementById('cantidad').value) || 1;
+            if (prod) {
+                const unitario = prod.precio_subli || prod.precio_laser || prod.precio_dtf || prod.precio_vinil || 0;
+                let mul = 1;
+                if (cant >= 12) { mul = 0.9; document.getElementById('mayoreo-hint').innerText = '✓ Descuento mayoreo 10%'; }
+                else { document.getElementById('mayoreo-hint').innerText = 'Pide 12+ para descuento mayoreo'; }
+                total = unitario * cant * mul;
+                desc = `${cant}x ${prod.nombre}`;
+            }
+
+        } else if (servicio === 'retrofit') {
+            const checks = document.querySelectorAll('.retro-chk:checked');
+            checks.forEach(c => total += parseFloat(c.dataset.price));
+            desc = `${checks.length} servicio(s) retrofit`;
+
+        } else if (servicio === 'dtf') {
+            const precio = parseFloat(document.getElementById('insumo').value) || 0;
+            const metros = parseFloat(document.getElementById('metros').value) || 0;
+            total = precio * metros;
+            desc = `${metros}m de insumo textil`;
+        }
+
+        currentTotal = total;
+        currentDesc = desc;
+        document.getElementById('precioTotal').innerText = '$' + total.toFixed(2);
+        document.getElementById('precioDesc').innerText = desc || '—';
+        return total;
+    }
+
+    // --- TABS ---
+    function mostrarCampos() {
+        ['camposLaser','camposSublimacion','camposRetrofit','camposDTF'].forEach(id =>
+            document.getElementById(id).style.display = 'none'
+        );
+        const mapa = { laser:'camposLaser', sublimacion:'camposSublimacion', retrofit:'camposRetrofit', dtf:'camposDTF' };
+        const s = document.getElementById('servicio').value;
+        document.getElementById(mapa[s]).style.display = 'block';
+        calcularPrecio();
+    }
+
+    // --- WHATSAPP ---
+    function enviarWhatsApp() {
+        if (currentTotal <= 0) { alert('Llena los campos primero'); return; }
+        const msg = `Hola! Cotización Nexus:\n${currentDesc}\n*Total: $${currentTotal.toFixed(2)} MXN*\n¿Te interesa? 🚀`;
+        window.open('https://wa.me/?text=' + encodeURIComponent(msg), '_blank');
+    }
+
+    // --- AGENDAR PEDIDO ---
+    async function agendar() {
+        if (currentTotal <= 0) { alert('Llena los campos primero'); return; }
+        const cliente = prompt('¿Nombre del cliente?');
+        if (!cliente) return;
+        const entrega = prompt('¿Hora/fecha de entrega?', 'mañana 14:00');
+        if (!entrega) return;
+        const form = new FormData();
+        form.append('cliente', cliente);
+        form.append('producto', currentDesc + ` ($${currentTotal.toFixed(2)})`);
+        form.append('entrega', entrega);
+        const r = await fetch('/nuevo_pedido', { method: 'POST', body: form });
+        if (r.ok) { alert('✅ Pedido agendado'); window.location.href = '/'; }
+    }
+
+    // --- PDF ---
+    function abrirPDF() {
+        if (currentTotal <= 0) { alert('Llena los campos primero'); return; }
+        const cliente = prompt('Nombre del cliente para la cotización:', '');
+        const servicio = document.getElementById('servicio').value;
+        const items = JSON.stringify([{
+            detalle: currentDesc,
+            precio_unit: currentTotal,
+            cantidad: 1
+        }]);
+        const url = `/cotizacion_pdf?cliente=${encodeURIComponent(cliente || 'Cliente')}&items_json=${encodeURIComponent(items)}`;
+        window.open(url, '_blank');
+    }
+
+    // --- INIT ---
+    poblarMateriales();
+    poblarProductos();
+    poblarRetrofit();
+    poblarDTF();
+    mostrarCampos();
+    </script>
+</body>
+</html>

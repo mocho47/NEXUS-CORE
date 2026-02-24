@@ -1,0 +1,99 @@
+{
+    "mdf_2.7mm": {
+        "nombre": "MDF 2.7mm",
+        "corte": {"velocidad": 20, "potencia": "Alta"},
+        "grabado": {"velocidad": 300, "potencia": "Baja", "modo": "Escaneo"},
+        "delineado": {"velocidad": 200, "potencia": 15},
+        "precio_hoja": 110
+    },
+    "acrilico_3mm": {
+        "nombre": "Acrílico 3mm",
+        "corte": {"velocidad": 20, "potencia": "Alta"},
+        "grabado": {"velocidad": 300, "potencia": "Baja"}
+    },
+    "acrilico_6mm": {
+        "nombre": "Acrílico 6mm",
+        "corte": {"velocidad": 10, "potencia": 80},
+        "grabado": {"velocidad": 300, "potencia": "Baja"}
+    },
+    "multiplay_4mm": {
+        "nombre": "Multiplay 4mm",
+        "corte": {"velocidad": 15, "potencia": "Alta"}
+    },
+    "foami": {
+        "nombre": "Foami",
+        "corte": {"velocidad": 100, "potencia": 50},
+        "grabado": {"velocidad": 150, "potencia": 40}
+    },
+    "vinil_corte": {
+        "nombre": "Vinil Textil/Adhesivo (Corte)",
+        "corte": {"velocidad": 120, "potencia": 40}
+    },
+    "termos_grabado": {
+        "nombre": "Termos (Metal - Grabado)",
+        "grabado": {"velocidad": 150, "potencia": 50}
+    },
+    "sublimacion_taza_ceramica": {
+        "nombre": "Taza Cerámica 11oz",
+        "proceso": "Sublimación",
+        "temp": "180°C",
+        "tiempo": "180 seg",
+        "presion": "Media",
+        "costo_base": 25.0,
+        "precio_sugerido": 85.0
+    },
+    "sublimacion_taza_magica": {
+        "nombre": "Taza Mágica",
+        "proceso": "Sublimación",
+        "temp": "180°C",
+        "tiempo": "180 seg",
+        "presion": "Media",
+        "costo_base": 45.0,
+        "precio_sugerido": 120.0
+    },
+    "sublimacion_termo_acero": {
+        "nombre": "Termo Acero Doble Pared",
+        "proceso": "Sublimación",
+        "temp": "180°C",
+        "tiempo": "60 seg (girar) + 60 seg",
+        "presion": "Media-Alta",
+        "costo_base": 120.0,
+        "precio_sugerido": 250.0
+    },
+    "sublimacion_playera_poliester": {
+        "nombre": "Playera Poliéster (Tacto Algodón)",
+        "proceso": "Sublimación",
+        "temp": "200°C",
+        "tiempo": "60 seg",
+        "presion": "Alta",
+        "costo_base": 65.0,
+        "precio_sugerido": 150.0
+    },
+    "vinil_textil": {
+        "nombre": "Vinil Textil (Planchado)",
+        "proceso": "Termotransferencia",
+        "temp": "160°C",
+        "tiempo": "15 seg",
+        "presion": "Media",
+        "pelado": "Tibio/Frío (según marca)",
+        "costo_base": 30.0, 
+        "precio_sugerido": 100.0
+    },
+    "bifaz": {
+        "nombre": "Tela Adhesiva Bifaz",
+        "proceso": "Parches/Escudos",
+        "temp": "180°C",
+        "tiempo": "20 seg (fijar) + 20 seg (pegar)",
+        "presion": "Alta"
+    },
+    "dtf": {
+        "nombre": "DTF (Direct To Film)",
+        "proceso": "Termotransferencia",
+        "temp": "160°C",
+        "tiempo": "15 seg",
+        "presion": "Media",
+        "pelado": "Totalmente Frío",
+        "costo_base": 50.0,
+        "precio_sugerido": 120.0
+    }
+}

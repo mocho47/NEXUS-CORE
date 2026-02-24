@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Precios - NEXUS</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { background: #0a0a0a; color: #e0e0e0; font-family: 'Segoe UI', sans-serif; padding: 16px; }
+        .nav { margin-bottom: 14px; }
+        .nav a { color: #888; text-decoration: none; font-size: 0.9em; }
+        h2 { color: #00ff88; margin-bottom: 4px; }
+        .sub { color: #555; font-size: 0.8em; margin-bottom: 20px; }
+        .section { background: #111; border: 1px solid #1e1e1e; border-radius: 10px; padding: 16px; margin-bottom: 16px; }
+        .section h3 { color: #00ff88; font-size: 0.85em; text-transform: uppercase;
+                      letter-spacing: 1px; margin-bottom: 12px; }
+        .row { display: flex; align-items: center; justify-content: space-between;
+               padding: 8px 0; border-bottom: 1px solid #0f0f0f; gap: 12px; }
+        .row:last-child { border-bottom: none; }
+        .campo { font-size: 0.88em; color: #aaa; flex: 1; }
+        .valor-wrap { display: flex; align-items: center; gap: 8px; }
+        .valor { font-size: 0.9em; color: #00ff88; font-weight: bold; min-width: 60px; text-align: right; }
+        .btn-edit {
+            background: none; border: 1px solid #333; color: #888; border-radius: 6px;
+            padding: 3px 10px; font-size: 0.78em; cursor: pointer;
+        }
+        .btn-edit:hover { border-color: #00ff8844; color: #00ff88; }
+        .inline-edit { display: none; flex-direction: column; gap: 6px; padding: 8px 0; }
+        .inline-edit input {
+            background: #0a0a0a; border: 1px solid #2a2a2a; color: #e0e0e0;
+            border-radius: 6px; padding: 8px 10px; font-size: 0.9em; width: 140px; outline: none;
+        }
+        .inline-edit input:focus { border-color: #00ff8844; }
+        .inline-actions { display: flex; gap: 6px; }
+        .btn-save { background: #00ff8822; border: 1px solid #00ff8844; color: #00ff88;
+                    border-radius: 6px; padding: 5px 14px; font-size: 0.82em; cursor: pointer; }
+        .btn-cancel { background: none; border: 1px solid #333; color: #555;
+                      border-radius: 6px; padding: 5px 10px; font-size: 0.82em; cursor: pointer; }
+        .msg { font-size: 0.8em; color: #555; margin-top: 4px; }
+        .msg.ok { color: #00ff88; }
+        .msg.err { color: #ff4444; }
+        .loading { color: #333; font-size: 0.88em; padding: 20px 0; text-align: center; }
+    </style>
+</head>
+<body>
+    <div class="nav"><a href="/dashboard">← Dashboard</a></div>
+    <h2>💰 Administrar Precios</h2>
+    <p class="sub">Los cambios se guardan inmediatamente en precios_base.json</p>
+
+    <div id="contenido"><div class="loading">Cargando precios...</div></div>
+
+    <script>
+    let preciosData = {};
+
+    function renderSeccion(nombre, obj) {
+        if (typeof obj !== 'object' || Array.isArray(obj)) return '';
+        const filas = Object.entries(obj)
+            .filter(([k, v]) => typeof v === 'number')
+            .map(([campo, val]) => `
+            <div class="row" id="row-${nombre}-${campo}">
+                <span class="campo">${campo.replace(/_/g,' ')}</span>
+                <div>
+                    <div class="valor-wrap">
+                        <span class="valor" id="val-${nombre}-${campo}">$${val}</span>
+                        <button class="btn-edit" onclick="mostrarEdit('${nombre}','${campo}',${val})">✏</button>
+                    </div>
+                    <div class="inline-edit" id="edit-${nombre}-${campo}">
+                        <input type="number" step="0.01" id="inp-${nombre}-${campo}" value="${val}">
+                        <div class="inline-actions">
+                            <button class="btn-save" onclick="guardar('${nombre}','${campo}')">Guardar</button>
+                            <button class="btn-cancel" onclick="cancelarEdit('${nombre}','${campo}')">✕</button>
+                        </div>
+                        <div class="msg" id="msg-${nombre}-${campo}"></div>
+                    </div>
+                </div>
+            </div>`).join('');
+        if (!filas) return '';
+        return `<div class="section"><h3>${nombre.replace(/_/g,' ')}</h3>${filas}</div>`;
+    }
+
+    function cargar() {
+        fetch('/api/precios').then(r => r.json()).then(data => {
+            preciosData = data;
+            const html = Object.entries(data)
+                .map(([k, v]) => renderSeccion(k, v))
+                .filter(Boolean)
+                .join('');
+            document.getElementById('contenido').innerHTML = html || '<p class="loading">Sin precios configurados aún.</p>';
+        }).catch(() => {
+            document.getElementById('contenido').innerHTML = '<p class="loading" style="color:#ff4444">Error al cargar precios.</p>';
+        });
+    }
+
+    function mostrarEdit(svc, campo, val) {
+        document.getElementById(`edit-${svc}-${campo}`).style.display = 'flex';
+        document.getElementById(`inp-${svc}-${campo}`).focus();
+    }
+
+    function cancelarEdit(svc, campo) {
+        document.getElementById(`edit-${svc}-${campo}`).style.display = 'none';
+        document.getElementById(`msg-${svc}-${campo}`).innerText = '';
+    }
+
+    function guardar(svc, campo) {
+        const val = parseFloat(document.getElementById(`inp-${svc}-${campo}`).value);
+        if (isNaN(val)) return;
+        const msg = document.getElementById(`msg-${svc}-${campo}`);
+        msg.className = 'msg'; msg.innerText = 'Guardando...';
+        fetch('/api/precios/update', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({servicio: svc, campo: campo, valor: val})
+        }).then(r => r.json()).then(d => {
+            if (d.ok) {
+                document.getElementById(`val-${svc}-${campo}`).innerText = `$${val}`;
+                cancelarEdit(svc, campo);
+            } else {
+                msg.className = 'msg err';
+                msg.innerText = d.error || 'Error al guardar';
+            }
+        }).catch(() => {
+            msg.className = 'msg err';
+            msg.innerText = 'Sin conexión';
+        });
+    }
+
+    cargar();
+    </script>
+</body>
+</html>

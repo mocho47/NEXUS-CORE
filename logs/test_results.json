@@ -1,0 +1,171 @@
+{
+  "fecha": "2026-02-24T04:15:17.135809",
+  "score_pct": 45.0,
+  "ok": 9,
+  "fallos": 11,
+  "total": 20,
+  "entorno": "Windows-11-10.0.26200-SP0",
+  "python": "3.12.10 (tags/v3.12.10:0cc8128, Apr  8 2025, 12:21:36) [MSC v.1943 64 bit (AMD64)]",
+  "resultados": [
+    {
+      "categoria": "API",
+      "nombre": "Servidor online",
+      "ok": true,
+      "detalle": "http://localhost:8000",
+      "duracion_ms": 0,
+      "timestamp": "2026-02-24T04:14:36.066725"
+    },
+    {
+      "categoria": "API",
+      "nombre": "GET /",
+      "ok": true,
+      "detalle": "HTTP 200",
+      "duracion_ms": 2573,
+      "timestamp": "2026-02-24T04:14:38.643909"
+    },
+    {
+      "categoria": "API",
+      "nombre": "GET /dashboard",
+      "ok": true,
+      "detalle": "HTTP 200",
+      "duracion_ms": 2579,
+      "timestamp": "2026-02-24T04:14:41.226539"
+    },
+    {
+      "categoria": "API",
+      "nombre": "GET /clientes",
+      "ok": true,
+      "detalle": "HTTP 200",
+      "duracion_ms": 2202,
+      "timestamp": "2026-02-24T04:14:43.432579"
+    },
+    {
+      "categoria": "API",
+      "nombre": "GET /stock",
+      "ok": true,
+      "detalle": "HTTP 200",
+      "duracion_ms": 2311,
+      "timestamp": "2026-02-24T04:14:45.746773"
+    },
+    {
+      "categoria": "API",
+      "nombre": "GET /api/nexus_status",
+      "ok": true,
+      "detalle": "HTTP 200",
+      "duracion_ms": 2064,
+      "timestamp": "2026-02-24T04:14:47.814044"
+    },
+    {
+      "categoria": "API",
+      "nombre": "GET /api/pedidos",
+      "ok": true,
+      "detalle": "HTTP 200",
+      "duracion_ms": 2172,
+      "timestamp": "2026-02-24T04:14:49.991125"
+    },
+    {
+      "categoria": "API",
+      "nombre": "GET /api/stock",
+      "ok": true,
+      "detalle": "HTTP 200",
+      "duracion_ms": 2169,
+      "timestamp": "2026-02-24T04:14:52.163885"
+    },
+    {
+      "categoria": "API",
+      "nombre": "GET /api/clientes",
+      "ok": true,
+      "detalle": "HTTP 200",
+      "duracion_ms": 2192,
+      "timestamp": "2026-02-24T04:14:54.358533"
+    },
+    {
+      "categoria": "API",
+      "nombre": "GET /galeria",
+      "ok": false,
+      "detalle": "HTTP 404",
+      "duracion_ms": 2058,
+      "timestamp": "2026-02-24T04:14:56.420469"
+    },
+    {
+      "categoria": "API",
+      "nombre": "GET /teens",
+      "ok": false,
+      "detalle": "HTTP 404",
+      "duracion_ms": 2067,
+      "timestamp": "2026-02-24T04:14:58.491042"
+    },
+    {
+      "categoria": "API",
+      "nombre": "GET /legal",
+      "ok": false,
+      "detalle": "HTTP 404",
+      "duracion_ms": 2058,
+      "timestamp": "2026-02-24T04:15:00.553259"
+    },
+    {
+      "categoria": "API",
+      "nombre": "GET /admin",
+      "ok": false,
+      "detalle": "HTTP 404",
+      "duracion_ms": 2067,
+      "timestamp": "2026-02-24T04:15:02.624289"
+    },
+    {
+      "categoria": "API",
+      "nombre": "GET /autoventas",
+      "ok": false,
+      "detalle": "HTTP 404",
+      "duracion_ms": 2063,
+      "timestamp": "2026-02-24T04:15:04.691074"
+    },
+    {
+      "categoria": "API",
+      "nombre": "GET /landing",
+      "ok": false,
+      "detalle": "HTTP 404",
+      "duracion_ms": 2077,
+      "timestamp": "2026-02-24T04:15:06.772640"
+    },
+    {
+      "categoria": "API",
+      "nombre": "GET /nexus-ear",
+      "ok": false,
+      "detalle": "HTTP 404",
+      "duracion_ms": 2057,
+      "timestamp": "2026-02-24T04:15:08.835212"
+    },
+    {
+      "categoria": "API",
+      "nombre": "GET /api/autoventas/pipeline",
+      "ok": false,
+      "detalle": "HTTP 404",
+      "duracion_ms": 2087,
+      "timestamp": "2026-02-24T04:15:10.927901"
+    },
+    {
+      "categoria": "API",
+      "nombre": "GET /api/autoventas/metricas",
+      "ok": false,
+      "detalle": "HTTP 404",
+      "duracion_ms": 2060,
+      "timestamp": "2026-02-24T04:15:12.992749"
+    },
+    {
+      "categoria": "API",
+      "nombre": "GET /api/autoventas/calendario",
+      "ok": false,
+      "detalle": "HTTP 404",
+      "duracion_ms": 2067,
+      "timestamp": "2026-02-24T04:15:15.064854"
+    },
+    {
+      "categoria": "API",
+      "nombre": "GET /api/admin/catalogo",
+      "ok": false,
+      "detalle": "HTTP 404",
+      "duracion_ms": 2060,
+      "timestamp": "2026-02-24T04:15:17.129120"
+    }
+  ]
+}

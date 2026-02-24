@@ -1,0 +1,27 @@
+{
+    "Taza Blanca": {
+        "qty": 36,
+        "min": 10,
+        "price": 80.0
+    },
+    "Taza Magica": {
+        "qty": 12,
+        "min": 5,
+        "price": 150.0
+    },
+    "Playera Algodon": {
+        "qty": 20,
+        "min": 10,
+        "price": 180.0
+    },
+    "MDF 3mm": {
+        "qty": 10,
+        "min": 3,
+        "price": 50.0
+    },
+    "Aozoom A3+": {
+        "qty": 2,
+        "min": 1,
+        "price": 2500
+    }
+}

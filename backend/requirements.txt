@@ -1,0 +1,19 @@
+# requirements.txt
+
+# Flask: A micro web framework for Python
+Flask==2.2.2
+
+# SQLAlchemy: The Python SQL toolkit and Object-Relational Mapping (ORM) system
+SQLAlchemy==1.4.37
+
+# requests: For making HTTP requests
+requests==2.27.1
+
+# pandas: A data manipulation and analysis library
+pandas==1.4.0
+
+# numpy: A library for numerical computations
+numpy==1.22.3
+
+# pytest: A testing framework for Python
+pytest==7.1.2

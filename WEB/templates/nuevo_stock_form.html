@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nuevo Item - NEXUS</title>
+    <style>
+        * { box-sizing: border-box; }
+        body { background: #0a0a0a; color: #e0e0e0; font-family: 'Segoe UI', sans-serif; padding: 20px; max-width: 520px; margin: 0 auto; }
+        h2 { color: #00ff88; margin-bottom: 24px; }
+        .nav a { color: #888; text-decoration: none; font-size: 0.9em; }
+        .form-card { background: #141414; border: 1px solid #222; border-radius: 10px; padding: 24px; }
+        .field { margin-bottom: 16px; }
+        label { display: block; color: #888; font-size: 0.8em; text-transform: uppercase; margin-bottom: 6px; letter-spacing: 0.05em; }
+        input, select {
+            width: 100%; background: #1a1a1a; border: 1px solid #333; color: #fff;
+            padding: 10px 14px; border-radius: 6px; font-size: 0.95em; font-family: inherit;
+        }
+        input:focus, select:focus { outline: none; border-color: #00ff88; }
+        select option { background: #1a1a1a; }
+        .btn-submit {
+            width: 100%; background: #00ff8822; border: 1px solid #00ff88; color: #00ff88;
+            padding: 11px; border-radius: 6px; cursor: pointer; font-size: 1em; margin-top: 8px;
+        }
+        .btn-submit:hover { background: #00ff8844; }
+        .toast { display: none; position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%);
+            background: #00ff8820; border: 1px solid #00ff88; color: #00ff88;
+            padding: 10px 24px; border-radius: 8px; font-size: 0.9em; }
+        .toast.show { display: block; }
+    </style>
+</head>
+<body>
+    <div class="nav" style="margin-bottom:20px;"><a href="/stock">← Inventario</a></div>
+    <h2>📦 Nuevo Item de Stock</h2>
+
+    <div class="form-card">
+        <form method="post" action="/nuevo_item_stock" onsubmit="showToast()">
+            <div class="field">
+                <label>Nombre del material *</label>
+                <input name="nombre" placeholder="Ej. Vinyl Negro 30cm" required autofocus>
+            </div>
+            <div class="field">
+                <label>Cantidad *</label>
+                <input name="cantidad" type="number" placeholder="0" min="0" required>
+            </div>
+            <div class="field">
+                <label>Precio unitario ($) *</label>
+                <input name="precio" type="number" step="0.01" placeholder="0.00" min="0" required>
+            </div>
+            <div class="field">
+                <label>Categoría</label>
+                <select name="categoria">
+                    <option value="GENERAL">General</option>
+                    <option value="LASER">Laser</option>
+                    <option value="SUBLIMACION">Sublimación</option>
+                    <option value="RETROFIT">Retrofit</option>
+                    <option value="DTF">DTF</option>
+                    <option value="NEON">Neón</option>
+                </select>
+            </div>
+            <button class="btn-submit" type="submit">✓ Guardar Item</button>
+        </form>
+    </div>
+
+    <div class="toast" id="toast">✓ Item guardado</div>
+
+    <script>
+    function showToast() {
+        document.getElementById('toast').classList.add('show');
+    }
+    if (window.location.search.includes('ok=1')) {
+        const t = document.getElementById('toast');
+        t.classList.add('show');
+        setTimeout(() => t.classList.remove('show'), 2500);
+    }
+    </script>
+</body>
+</html>

@@ -1,0 +1,58 @@
+================================================================================
+                    NEXUS V3.0 - COMANDOS MAESTROS
+================================================================================
+
+NOTA (2026): Esta lista es histórica. La lista actual y completa vive en:
+- NEXUS_COMMANDS.md
+
+ACTIVACIÓN: Di "Nexus" fuerte y claro. Espera el "Mande".
+
+--- 💻 MODO PROGRAMADOR (NUEVO / UNLEASHED) ---
+1. "Nexus... Crea un programa"
+   -> Te preguntará qué quieres. Dile lo que sea (ej: "Una calculadora", "Un virus de prueba").
+   -> Genera el código Python y lo ejecuta AL INSTANTE.
+   -> ¡CUIDADO! No hay frenos.
+
+--- 📢 MARKETING Y VENTAS (NUEVO) ---
+2. "Nexus... Campaña Viral"
+   -> Te pregunta producto. Crea carpeta con guion y audio para TikTok.
+3. "Nexus... Catálogo"
+   -> Genera y abre el catálogo industrial (PDF/Web) para clientes.
+4. "Nexus... Cotiza [número] minutos"
+   -> Calcula precio de venta láser (ej: "Cotiza 15 minutos").
+
+--- 🛠️ CONTROL DE TALLER ---
+5. "Nexus... Abre [programa]"
+   -> Ej: Corel, Photoshop, Aspire, Spotify, YouTube.
+6. "Nexus... Caja"
+   -> Te pide medidas (Largo, Ancho, Alto) y genera el archivo de corte.
+7. "Nexus... Temporizador de [minutos]"
+   -> Pone una alarma (ej: "Temporizador de 20 minutos").
+
+--- 🗣️ COMUNICACIÓN ---
+8. "Nexus... Habla en oficina [mensaje]"
+   -> Envía tu voz a la bocina de la oficina (ej: "Habla en oficina ya está la comida").
+9. "Nexus... Anuncio general [mensaje]"
+   -> Lo dice en TODAS las bocinas de la casa/taller.
+
+--- ⚙️ SISTEMA ---
+10. "Nexus... Sistema"
+    -> Te dice uso de RAM y CPU.
+11. "Nexus... Descansa"
+    -> Apaga el sistema.
+
+--- ✅ NUEVOS (2026) / RECOMENDADOS ---
+- "Diagnostico" -> chequeo local + reporte nube (Supabase URL/DNS/TCP/keepalive si aplica).
+- "Autorreparar" -> propone instalar dependencias faltantes (bajo confirmación).
+- "Autolimpieza estado" / "autolimpieza activar" / "autolimpieza ahora".
+- "Supabase vivo estado" / "supabase vivo ahora" (anti-pausa por inactividad).
+- "Autoriza nube" / "bloquea nube".
+- "Autoriza acciones 10" / "bloquea acciones" (ventana temporal para acciones sensibles).
+- "Ayuda" / "Comandos" -> imprime la lista actual.
+
+================================================================================
+TIPS PRO:
+- Si no te entiende, habla más cerca del micrófono.
+- Si se queda hablando mucho, ignóralo, ya no se escucha a sí mismo.
+- Para cancelar algo, di "Cancelar" cuando te pregunte.
+================================================================================

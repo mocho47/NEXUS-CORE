@@ -1,0 +1,44 @@
+=========================================
+NEXUS V9.2 - SISTEMA HÍBRIDO (VOSK + GOOGLE + IOT)
+=========================================
+ESTADO: ACTIVO
+VOZ: ALVARO NEURAL (MASCULINA) - ARCHIVOS DINÁMICOS
+OÍDO: HÍBRIDO (OFFLINE SIEMPRE + ONLINE AL ACTIVAR)
+
+LISTA ACTUAL (2026): ver NEXUS_COMMANDS.md (fuente de verdad).
+
+COMANDOS DE VOZ NUEVOS:
+-----------------------
+1. "NEXUS" -> Activa el sistema (Responde "Mande").
+2. "ESTATUS" o "SISTEMA" -> Reporta uso de RAM y CPU.
+   - Ejemplo: "Sistemas estables. RAM al 45%."
+3. "SE TRABA" / "ESTÁ LENTO" / "SE CONGELA" -> Toma diagnóstico rápido y lo guarda en `C:\NEXUS\logs`.
+   - Tip: también puedes decir "reporte rendimiento".
+4. "DIAGNOSTICO" -> chequeo completo (dependencias/recursos + Supabase URL/DNS/TCP/keepalive si aplica).
+5. "AYUDA" o "COMANDOS" -> imprime la lista actual (NEXUS_COMMANDS.md).
+4. "DETECTA ACTIVIDAD PARANORMAL" -> Módulo de escáner con sonido.
+   - (Emite beeps de radar y da un reporte aleatorio).
+5. "CUÉNTAME UN CHISTE" -> Cuenta chistes variados.
+6. "BUSCA [TEMA]" -> Busca en Wikipedia/Web.
+   - Ejemplo: "Busca quién fue Nikola Tesla".
+7. "CÁLLATE" / "SILENCIO" -> Detiene a Nexus mientras habla.
+
+COMANDOS DE APPS (EJEMPLOS):
+----------------------------
+- "Abre YouTube"
+- "Abre Word"
+- "Abre Calculadora"
+- "Cierra [App]"
+
+NOTAS TÉCNICAS:
+---------------
+- El sistema ahora usa archivos temporales únicos (voice_xxxx.mp3) para evitar que la voz se bloquee.
+- Si escuchas voces raras o texto sin sentido en la consola, es VOSK interpretando ruido. Ignóralo.
+- Para reiniciar completamente: Decir "Descansa" o cerrar la terminal y relanzar.
+
+NUBE / SUPABASE (ANTI-PAUSA):
+- "autoriza nube" / "bloquea nube"
+- "supabase vivo estado" / "supabase vivo ahora"
+
+AUTOLIMPIEZA:
+- "autolimpieza estado" / "autolimpieza activar" / "autolimpieza ahora"

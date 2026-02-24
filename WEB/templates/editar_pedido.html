@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Editar Pedido - NEXUS</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { background: #0a0a0a; color: #e0e0e0; font-family: 'Segoe UI', sans-serif; padding: 16px; }
+        .nav { margin-bottom: 14px; }
+        .nav a { color: #888; text-decoration: none; font-size: 0.9em; }
+        h2 { color: #00ff88; margin-bottom: 20px; font-size: 1.1em; }
+        .card { background: #111; border: 1px solid #1e1e1e; border-radius: 10px; padding: 20px; max-width: 500px; }
+        .field { margin-bottom: 16px; }
+        label { display: block; font-size: 0.78em; color: #555; text-transform: uppercase;
+                letter-spacing: 1px; margin-bottom: 6px; }
+        input, select {
+            width: 100%; background: #0a0a0a; border: 1px solid #2a2a2a;
+            border-radius: 6px; color: #e0e0e0; padding: 10px 12px; font-size: 0.9em; outline: none;
+        }
+        input:focus, select:focus { border-color: #00ff8844; }
+        select option { background: #111; }
+        .actions { display: flex; gap: 10px; margin-top: 20px; }
+        .btn-save {
+            flex: 1; background: #00ff8822; border: 1px solid #00ff8844;
+            color: #00ff88; border-radius: 8px; padding: 12px; font-size: 0.9em;
+            font-weight: bold; cursor: pointer;
+        }
+        .btn-cancel {
+            flex: 1; background: #111; border: 1px solid #1e1e1e;
+            color: #888; border-radius: 8px; padding: 12px; font-size: 0.9em;
+            text-decoration: none; text-align: center;
+        }
+        .btn-delete {
+            background: #ff444411; border: 1px solid #ff444433;
+            color: #ff4444; border-radius: 8px; padding: 12px 20px;
+            font-size: 0.9em; cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <div class="nav"><a href="/pedidos">← Pedidos</a></div>
+    <h2>✏️ Editar Pedido #{{ pedido.id }}</h2>
+
+    <div class="card">
+        <form method="POST" action="/editar_pedido">
+            <input type="hidden" name="id" value="{{ pedido.id }}">
+
+            <div class="field">
+                <label>Cliente</label>
+                <input type="text" name="cliente" value="{{ pedido.cliente }}" required>
+            </div>
+
+            <div class="field">
+                <label>Producto / Servicio</label>
+                <input type="text" name="producto" value="{{ pedido.producto }}" required>
+            </div>
+
+            <div class="field">
+                <label>Fecha y hora de entrega</label>
+                <input type="datetime-local" name="deadline"
+                       value="{{ pedido.deadline[:16].replace(' ', 'T') if pedido.deadline else '' }}">
+            </div>
+
+            <div class="field">
+                <label>Estatus</label>
+                <select name="status">
+                    {% for s in ['PENDIENTE', 'LISTO', 'ENTREGADO', 'CANCELADO'] %}
+                    <option value="{{ s }}" {{ 'selected' if pedido.status == s else '' }}>{{ s }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="field">
+                <label>Área</label>
+                <select name="area">
+                    {% for a in ['GENERAL', 'LASER', 'SUBLIMACION', 'DTF', 'NEON', 'RETROFIT'] %}
+                    <option value="{{ a }}" {{ 'selected' if pedido.area == a else '' }}>{{ a }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="actions">
+                <button type="submit" class="btn-save">Guardar cambios</button>
+                <a href="/pedidos" class="btn-cancel">Cancelar</a>
+            </div>
+        </form>
+
+        <form method="POST" action="/eliminar_pedido" style="margin-top: 12px;"
+              onsubmit="return confirm('¿Eliminar este pedido? No se puede deshacer.')">
+            <input type="hidden" name="id" value="{{ pedido.id }}">
+            <button type="submit" class="btn-delete" style="width:100%">Eliminar pedido</button>
+        </form>
+    </div>
+</body>
+</html>

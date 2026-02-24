@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CanbusFix | La Red de Instaladores #1</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        gold: '#d4af37',
+                        dark: '#0a0a0a',
+                        darker: '#050505',
+                        accent: '#ffbf00'
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;700;900&display=swap');
+        body { font-family: 'Montserrat', sans-serif; }
+        .hero-bg {
+            background-image: linear-gradient(rgba(0,0,0,0.8), rgba(0,0,0,0.9)), url('https://images.unsplash.com/photo-1492144534655-ae79c964c9d7?ixlib=rb-1.2.1&auto=format&fit=crop&w=1950&q=80');
+            background-size: cover;
+            background-position: center;
+        }
+        .glow { text-shadow: 0 0 20px rgba(212, 175, 55, 0.5); }
+    </style>
+</head>
+<body class="bg-darker text-white">
+
+    <!-- NAVBAR -->
+    <nav class="flex justify-between items-center p-6 bg-black border-b border-gold/20">
+        <div class="text-2xl font-bold tracking-widest text-gold glow">CANBUSFIX</div>
+        <a href="#registro" class="bg-gold text-black px-6 py-2 font-bold hover:bg-white transition">ACCESO SOCIOS</a>
+    </nav>
+
+    <!-- HERO SECTION -->
+    <header class="hero-bg h-screen flex flex-col justify-center items-center text-center px-4">
+        <h2 class="text-gold tracking-widest text-sm mb-4 uppercase">Plataforma Oficial de Instaladores Certificados</h2>
+        <h1 class="text-5xl md:text-7xl font-black mb-6 leading-tight">LLEVA TU TALLER <br><span class="text-transparent bg-clip-text bg-gradient-to-r from-gold to-yellow-200">AL SIGUIENTE NIVEL</span></h1>
+        <p class="text-gray-300 max-w-2xl text-lg mb-10">
+            Accede a precios directos de fábrica (Aozoom / Illuma), capacitación técnica exclusiva y forma parte de la comunidad de Retrofit más grande de México.
+        </p>
+        <div class="flex gap-4">
+            <a href="#registro" class="bg-gold text-black px-8 py-4 font-bold text-xl rounded hover:scale-105 transition shadow-[0_0_30px_rgba(212,175,55,0.4)]">
+                REGISTRAR MI TALLER
+            </a>
+            <a href="#beneficios" class="border border-white/30 px-8 py-4 font-bold text-xl rounded hover:bg-white/10 transition">
+                VER BENEFICIOS
+            </a>
+        </div>
+    </header>
+
+    <!-- BENEFICIOS -->
+    <section id="beneficios" class="py-20 bg-dark px-4">
+        <div class="max-w-6xl mx-auto grid md:grid-cols-3 gap-8">
+            <!-- Card 1 -->
+            <div class="bg-white/5 p-8 rounded border border-white/10 hover:border-gold/50 transition group">
+                <div class="text-4xl mb-4 text-gold group-hover:scale-110 transition">💎</div>
+                <h3 class="text-2xl font-bold mb-2">Precios Mayoristas</h3>
+                <p class="text-gray-400">Olvídate de intermediarios. Compra equipos Aozoom, Illuma y accesorios al precio que te permite ganar dinero real en cada instalación.</p>
+            </div>
+            <!-- Card 2 -->
+            <div class="bg-white/5 p-8 rounded border border-white/10 hover:border-gold/50 transition group">
+                <div class="text-4xl mb-4 text-gold group-hover:scale-110 transition">🎓</div>
+                <h3 class="text-2xl font-bold mb-2">Academia Canbus</h3>
+                <p class="text-gray-400">Acceso a manuales, diagramas y trucos de instalación. Aprende a resolver los autos más complicados con nuestra base de conocimiento.</p>
+            </div>
+            <!-- Card 3 -->
+            <div class="bg-white/5 p-8 rounded border border-white/10 hover:border-gold/50 transition group">
+                <div class="text-4xl mb-4 text-gold group-hover:scale-110 transition">🚀</div>
+                <h3 class="text-2xl font-bold mb-2">Visibilidad</h3>
+                <p class="text-gray-400">Tu trabajo en nuestra plataforma. Te enviamos clientes en tu zona. Deja que nuestra publicidad trabaje para tu taller.</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- REGISTRO (WHATSAPP HOOK) -->
+    <section id="registro" class="py-20 bg-gradient-to-b from-dark to-black px-4 text-center">
+        <h2 class="text-4xl font-bold mb-2">ÚNETE A LA ELITE</h2>
+        <p class="text-gray-400 mb-10">El registro es gratuito por tiempo limitado.</p>
+        
+        <div class="max-w-md mx-auto bg-white/5 p-8 rounded-xl border border-gold/30">
+            <form onsubmit="sendToWhatsapp(event)" class="flex flex-col gap-4 text-left">
+                <div>
+                    <label class="text-xs text-gold uppercase font-bold">Tu Nombre</label>
+                    <input type="text" id="nombre" required class="w-full bg-black/50 border border-white/20 p-3 rounded text-white focus:border-gold outline-none transition" placeholder="Ej: Juan Pérez">
+                </div>
+                <div>
+                    <label class="text-xs text-gold uppercase font-bold">Nombre del Taller</label>
+                    <input type="text" id="taller" required class="w-full bg-black/50 border border-white/20 p-3 rounded text-white focus:border-gold outline-none transition" placeholder="Ej: JP Retrofit">
+                </div>
+                <div>
+                    <label class="text-xs text-gold uppercase font-bold">Ciudad</label>
+                    <input type="text" id="ciudad" required class="w-full bg-black/50 border border-white/20 p-3 rounded text-white focus:border-gold outline-none transition" placeholder="Ej: Guadalajara, Jal">
+                </div>
+                
+                <button type="submit" class="bg-green-600 text-white font-bold py-4 rounded hover:bg-green-500 transition mt-4 flex justify-center items-center gap-2">
+                    <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24"><path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.893 11.892-1.99-.001-3.951-.5-5.688-1.448l-6.305 1.654zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.884-.001 2.225.651 3.891 1.746 5.634l-.999 3.648 3.742-.981zm11.387-5.464c-.074-.124-.272-.198-.57-.347-.297-.149-1.758-8.683-2.031-.967-.272-.297-.471-.446-.718-.149-.248.248-1.04 1.335-1.287 1.631-.247.297-.496.347-.793.198-.297-.149-1.257-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.297-.347.446-.52.151-.174.2-.298.3-.496.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.008-.57-.008-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413z"/></svg>
+                    SOLICITAR REGISTRO POR WHATSAPP
+                </button>
+            </form>
+            <p class="text-xs text-gray-500 mt-4">Al registrarte aceptas compartir tus datos con la red CanbusFix.</p>
+        </div>
+    </section>
+
+    <!-- FOOTER -->
+    <footer class="bg-black py-8 text-center text-gray-500 text-sm border-t border-white/10">
+        <p>&copy; 2026 CANBUSFIX. Todos los derechos reservados.</p>
+        <p>Powered by Nexus AI</p>
+    </footer>
+
+    <script>
+        function sendToWhatsapp(e) {
+            e.preventDefault();
+            const nombre = document.getElementById('nombre').value;
+            const taller = document.getElementById('taller').value;
+            const ciudad = document.getElementById('ciudad').value;
+            
+            // Mensaje formateado para que Nexus lo entienda
+            const mensaje = `Hola, quiero registrar mi taller en CanbusFix.%0A%0A` +
+                            `👤 *Nombre:* ${nombre}%0A` +
+                            `🔧 *Taller:* ${taller}%0A` +
+                            `📍 *Ciudad:* ${ciudad}%0A%0A` +
+                            `Solicito acceso a la lista de precios de instalador.`;
+            
+            // Número de CanbusFix
+            const telefono = "5213323530146";
+            
+            window.open(`https://wa.me/${telefono}?text=${mensaje}`, '_blank');
+        }
+    </script>
+</body>
+</html>

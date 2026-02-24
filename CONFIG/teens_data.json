@@ -1,0 +1,58 @@
+{
+  "usuarios": {
+    "test_runner_001": {
+      "nombre": "TestUser",
+      "edad": 16,
+      "tokens": 0,
+      "xp_total": 0,
+      "racha": 0,
+      "ultimo_dia": null,
+      "nivel_global": 1,
+      "aptitudes": {
+        "creatividad": {
+          "xp": 0,
+          "nivel": 0
+        },
+        "comunicacion": {
+          "xp": 0,
+          "nivel": 0
+        },
+        "liderazgo": {
+          "xp": 0,
+          "nivel": 0
+        },
+        "tecnologia": {
+          "xp": 0,
+          "nivel": 0
+        },
+        "emprendimiento": {
+          "xp": 0,
+          "nivel": 0
+        },
+        "arte": {
+          "xp": 0,
+          "nivel": 0
+        },
+        "bienestar": {
+          "xp": 0,
+          "nivel": 0
+        }
+      },
+      "misiones_completadas": [],
+      "badges": [],
+      "ideas_generadas": 0,
+      "clientes_conseguidos": 0,
+      "control_parental": {
+        "activo": false,
+        "modulos_bloq": [],
+        "horario_inicio": "07:00",
+        "horario_fin": "22:00",
+        "padre_pin": "0000"
+      },
+      "creado": "2026-02-24T04:10:22.972990"
+    }
+  },
+  "leaderboard": [],
+  "semana_actual": "2026-W09",
+  "total_misiones_completadas": 0
+}

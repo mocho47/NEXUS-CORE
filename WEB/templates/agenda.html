@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Agenda - NEXUS</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { background: #0a0a0a; color: #e0e0e0; font-family: 'Segoe UI', sans-serif; padding: 16px; }
+        .nav { margin-bottom: 14px; }
+        .nav a { color: #888; text-decoration: none; font-size: 0.9em; }
+        h2 { color: #00ff88; margin-bottom: 16px; }
+        .day-block { background: #111; border: 1px solid #1e1e1e; border-radius: 10px; padding: 14px; margin-bottom: 12px; }
+        .day-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+        .day-name { font-weight: bold; font-size: 0.95em; color: #e0e0e0; }
+        .day-name.hoy { color: #00ff88; }
+        .day-date { font-size: 0.8em; color: #555; }
+        .day-count { font-size: 0.78em; background: #1a1a1a; color: #555;
+                     padding: 2px 8px; border-radius: 10px; }
+        .day-count.con-pedidos { background: #ffaa0011; color: #ffaa00; }
+        .pedido-row { display: flex; justify-content: space-between; align-items: center;
+                      padding: 7px 0; border-bottom: 1px solid #0f0f0f; font-size: 0.86em; }
+        .pedido-row:last-child { border-bottom: none; }
+        .ped-hora { color: #00ff88; font-weight: bold; min-width: 42px; font-size: 0.9em; }
+        .ped-info { flex: 1; margin: 0 10px; }
+        .ped-cliente { font-weight: bold; }
+        .ped-prod { color: #888; font-size: 0.85em; }
+        .ped-area { font-size: 0.74em; color: #444; background: #181818;
+                    padding: 2px 6px; border-radius: 4px; }
+        .empty-day { color: #333; font-size: 0.82em; padding: 4px 0; }
+    </style>
+</head>
+<body>
+    <div class="nav"><a href="/dashboard">← Dashboard</a></div>
+    <h2>📅 Agenda — Próximos 7 días</h2>
+
+    {% for dia in agenda %}
+    <div class="day-block">
+        <div class="day-header">
+            <div>
+                <span class="day-name {{ 'hoy' if dia.es_hoy else '' }}">
+                    {{ '📍 HOY' if dia.es_hoy else dia.nombre }}
+                </span>
+                <span class="day-date" style="margin-left:8px">{{ dia.fecha }}</span>
+            </div>
+            <span class="day-count {{ 'con-pedidos' if dia.pedidos else '' }}">
+                {{ dia.pedidos | length }} pedido{{ 's' if dia.pedidos | length != 1 else '' }}
+            </span>
+        </div>
+
+        {% if dia.pedidos %}
+            {% for p in dia.pedidos %}
+            <div class="pedido-row">
+                <span class="ped-hora">{{ p.deadline[11:16] if p.deadline and p.deadline|length > 10 else '—' }}</span>
+                <div class="ped-info">
+                    <div class="ped-cliente">{{ p.cliente }}</div>
+                    <div class="ped-prod">{{ p.producto[:35] }}{% if p.producto|length > 35 %}…{% endif %}</div>
+                </div>
+                <span class="ped-area">{{ p.area or 'GENERAL' }}</span>
+            </div>
+            {% endfor %}
+        {% else %}
+            <div class="empty-day">Sin entregas programadas</div>
+        {% endif %}
+    </div>
+    {% endfor %}
+</body>
+</html>

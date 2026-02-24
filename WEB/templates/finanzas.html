@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Finanzas — NEXUS</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { background: #080808; color: #e0e0e0; font-family: 'Segoe UI', sans-serif; padding: 0; }
+
+        .topbar {
+            display: flex; align-items: center; gap: 10px; padding: 10px 20px;
+            background: #0a0a0a; border-bottom: 1px solid #111;
+            position: sticky; top: 0; z-index: 10;
+        }
+        .topbar a { color: #333; text-decoration: none; font-size: 0.9em; }
+        .topbar h1 { color: #00ff88; font-size: 0.9em; font-weight: 700; letter-spacing: 2px; flex: 1; }
+        .topbar .upd { font-size: 0.72em; color: #252525; }
+        .dot { width: 6px; height: 6px; border-radius: 50%; background: #00ff88; box-shadow: 0 0 4px #00ff88; }
+
+        .page { max-width: 960px; margin: 0 auto; padding: 20px 16px 40px; }
+
+        /* KPI CARDS */
+        .kpi-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 20px; }
+        .kpi {
+            background: #0d0d0d; border: 1px solid #141414; border-radius: 12px; padding: 16px;
+        }
+        .kpi .label { font-size: 0.7em; color: #333; text-transform: uppercase; letter-spacing: 1.2px; margin-bottom: 6px; }
+        .kpi .value { font-size: 1.6em; font-weight: 700; color: #e0e0e0; line-height: 1; }
+        .kpi .sub   { font-size: 0.75em; color: #444; margin-top: 5px; }
+        .kpi.green  { border-color: #00ff8818; }
+        .kpi.green .value { color: #00ff88; }
+        .kpi.warn   { border-color: #ffaa0018; }
+        .kpi.warn .value { color: #ffaa00; }
+        .kpi.red    { border-color: #ff505018; }
+        .kpi.red .value { color: #ff5050; }
+
+        .var-pos { color: #00ff88; font-size: 0.8em; }
+        .var-neg { color: #ff5050; font-size: 0.8em; }
+        .var-nt  { color: #555;    font-size: 0.8em; }
+
+        /* SECTION */
+        .row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 14px; }
+        .card {
+            background: #0d0d0d; border: 1px solid #141414; border-radius: 12px; padding: 18px;
+        }
+        .card h3 { font-size: 0.72em; color: #333; text-transform: uppercase; letter-spacing: 1.2px; margin-bottom: 14px; }
+
+        /* CHART — barras CSS */
+        .bar-chart { display: flex; align-items: flex-end; gap: 6px; height: 90px; }
+        .bar-wrap { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 4px; }
+        .bar {
+            width: 100%; background: #00ff8822; border: 1px solid #00ff8830;
+            border-radius: 4px 4px 0 0; transition: height 0.6s ease; min-height: 2px;
+        }
+        .bar.act { background: #00ff8866; border-color: #00ff88; }
+        .bar-label { font-size: 0.62em; color: #333; }
+        .bar-val   { font-size: 0.62em; color: #555; }
+
+        /* TOP CLIENTES */
+        .cli-row {
+            display: flex; align-items: center; gap: 10px; padding: 8px 0;
+            border-bottom: 1px solid #0e0e0e;
+        }
+        .cli-row:last-child { border: none; }
+        .cli-rank { font-size: 0.8em; color: #252525; min-width: 18px; text-align: right; }
+        .cli-name { flex: 1; font-size: 0.84em; color: #aaa; }
+        .cli-val  { font-size: 0.84em; color: #00ff88; font-weight: 600; }
+        .cli-cnt  { font-size: 0.72em; color: #333; margin-left: 6px; }
+        .cli-wa   { font-size: 0.8em; color: #1a6b3c; cursor: pointer; margin-left: 6px; text-decoration: none; }
+
+        /* SERVICIOS */
+        .svc-row { margin-bottom: 8px; }
+        .svc-lbl { display: flex; justify-content: space-between; margin-bottom: 4px; }
+        .svc-name { font-size: 0.8em; color: #888; }
+        .svc-pct  { font-size: 0.78em; color: #555; }
+        .svc-bar-track { background: #111; border-radius: 3px; height: 5px; overflow: hidden; }
+        .svc-bar-fill  { height: 100%; background: #00ff8840; border-radius: 3px; transition: width 0.7s; }
+
+        /* DORMIDOS */
+        .dorm-row {
+            display: flex; align-items: center; gap: 8px; padding: 8px 0;
+            border-bottom: 1px solid #0e0e0e;
+        }
+        .dorm-row:last-child { border: none; }
+        .dorm-name { flex: 1; font-size: 0.82em; color: #888; }
+        .dorm-dias { font-size: 0.72em; color: #ff8844; }
+        .dorm-val  { font-size: 0.78em; color: #555; }
+        .btn-reactiva {
+            font-size: 0.72em; background: #0d1a10; border: 1px solid #1a3020;
+            color: #1a8040; border-radius: 5px; padding: 3px 8px; cursor: pointer;
+        }
+        .btn-reactiva:hover { color: #00ff88; }
+
+        /* ALERTAS */
+        .alert {
+            display: flex; align-items: flex-start; gap: 10px;
+            background: #0d0d0d; border: 1px solid #1a1a1a; border-radius: 8px;
+            padding: 10px 14px; margin-bottom: 8px;
+        }
+        .alert.CRITICA { border-left: 3px solid #ff5050; }
+        .alert.ALTA    { border-left: 3px solid #ffaa00; }
+        .alert.MEDIA   { border-left: 3px solid #00aaff; }
+        .alert.INFO    { border-left: 3px solid #00ff88; }
+        .alert-dot { width: 6px; height: 6px; border-radius: 50%; margin-top: 5px; flex-shrink: 0; }
+        .alert.CRITICA .alert-dot { background: #ff5050; }
+        .alert.ALTA    .alert-dot { background: #ffaa00; }
+        .alert.MEDIA   .alert-dot { background: #00aaff; }
+        .alert.INFO    .alert-dot { background: #00ff88; }
+        .alert-msg  { font-size: 0.84em; color: #aaa; }
+        .alert-accion { font-size: 0.72em; color: #333; margin-top: 2px; }
+
+        /* PROYECCION */
+        .proy-bar-track { background: #111; border-radius: 4px; height: 8px; overflow: hidden; margin-top: 6px; }
+        .proy-bar-fill  { height: 100%; background: linear-gradient(90deg, #00ff8830, #00ff88); border-radius: 4px; transition: width 0.8s; }
+
+        /* REFRESH */
+        .btn-refresh {
+            background: #111; border: 1px solid #1a1a1a; color: #444;
+            border-radius: 7px; padding: 6px 14px; font-size: 0.78em; cursor: pointer;
+        }
+        .btn-refresh:hover { color: #00ff88; border-color: #00ff8825; }
+
+        /* empty */
+        .empty { font-size: 0.78em; color: #252525; text-align: center; padding: 16px; }
+
+        ::-webkit-scrollbar { width: 3px; }
+        ::-webkit-scrollbar-thumb { background: #1a1a1a; }
+
+        @media (max-width: 640px) {
+            .kpi-grid { grid-template-columns: repeat(2, 1fr); }
+            .row2 { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="topbar">
+    <a href="/dashboard">&#8592;</a>
+    <h1>FINANZAS</h1>
+    <div class="dot"></div>
+    <span class="upd" id="upd-time">Cargando...</span>
+    <button class="btn-refresh" onclick="cargar()">Actualizar</button>
+    <div id="topbar-right" style="display:flex;align-items:center;gap:8px;margin-left:6px"></div>
+</div>
+
+<div class="page">
+
+    <!-- KPI CARDS -->
+    <div class="kpi-grid" id="kpi-grid">
+        <div class="kpi green"><div class="label">Mes actual</div><div class="value" id="k-mes">--</div><div class="sub" id="k-var">vs mes anterior</div></div>
+        <div class="kpi"><div class="label">Proyecci&oacute;n mes</div><div class="value" id="k-proy">--</div><div class="sub" id="k-dias">0 d&iacute;as</div></div>
+        <div class="kpi"><div class="label">Esta semana</div><div class="value" id="k-sem">--</div><div class="sub">Hoy: <span id="k-hoy">--</span></div></div>
+        <div class="kpi"><div class="label">Ticket promedio</div><div class="value" id="k-ticket">--</div><div class="sub" id="k-pedidos">0 pedidos</div></div>
+    </div>
+
+    <!-- ALERTAS -->
+    <div id="alertas-wrap" style="margin-bottom:16px"></div>
+
+    <!-- HISTORIAL + SERVICIOS -->
+    <div class="row2">
+        <div class="card">
+            <h3>Ingresos &uacute;ltimos 6 meses</h3>
+            <div class="bar-chart" id="bar-chart"></div>
+        </div>
+        <div class="card">
+            <h3>Demanda por servicio</h3>
+            <div id="svc-wrap"><div class="empty">Sin datos</div></div>
+        </div>
+    </div>
+
+    <!-- TOP CLIENTES + DORMIDOS -->
+    <div class="row2">
+        <div class="card">
+            <h3>Top clientes</h3>
+            <div id="top-cli"><div class="empty">Sin datos</div></div>
+        </div>
+        <div class="card">
+            <h3>Clientes a reactivar</h3>
+            <p style="font-size:0.72em;color:#252525;margin-bottom:10px">30+ d&iacute;as sin pedir &mdash; mayor ROI por mensaje enviado</p>
+            <div id="dormidos"><div class="empty">Todos activos</div></div>
+        </div>
+    </div>
+
+    <!-- PROYECCION VISUAL -->
+    <div class="card" style="margin-top:0">
+        <h3>Avance del mes</h3>
+        <div style="display:flex;justify-content:space-between;margin-bottom:4px">
+            <span id="proy-lbl" style="font-size:0.82em;color:#555">$0 de $0</span>
+            <span id="proy-pct" style="font-size:0.82em;color:#00ff88">0%</span>
+        </div>
+        <div class="proy-bar-track"><div class="proy-bar-fill" id="proy-fill" style="width:0%"></div></div>
+        <div style="margin-top:8px;font-size:0.72em;color:#252525" id="proy-sub">Proyecci&oacute;n calculada en base al ritmo actual del mes</div>
+    </div>
+
+</div>
+
+<script>
+function fmt(n){ return '$' + (n||0).toLocaleString('es-MX',{minimumFractionDigits:0,maximumFractionDigits:0}); }
+function varTxt(pct){ if(pct>0) return `<span class="var-pos">&#9650; +${pct}%</span>`; if(pct<0) return `<span class="var-neg">&#9660; ${pct}%</span>`; return `<span class="var-nt">sin cambio</span>`; }
+
+async function cargar(){
+    try{
+        const r = await fetch('/api/finanzas/dashboard');
+        const d = await r.json();
+        if(!d.ok) return;
+
+        // KPIs
+        document.getElementById('k-mes').textContent    = fmt(d.ingresos.mes);
+        document.getElementById('k-var').innerHTML      = varTxt(d.ingresos.variacion_pct) + ' mes anterior';
+        document.getElementById('k-proy').textContent   = fmt(d.ingresos.proyeccion_mes);
+        document.getElementById('k-dias').textContent   = `${d.periodo.dias_transcurridos}/${d.periodo.dias_en_mes} días`;
+        document.getElementById('k-sem').textContent    = fmt(d.ingresos.semana);
+        document.getElementById('k-hoy').textContent    = fmt(d.ingresos.hoy);
+        document.getElementById('k-ticket').textContent = fmt(d.pedidos.ticket_promedio);
+        document.getElementById('k-pedidos').textContent= `${d.pedidos.completados} completados este mes`;
+        document.getElementById('upd-time').textContent = 'Actualizado ' + new Date().toLocaleTimeString('es-MX');
+
+        // Alertas
+        const aw = document.getElementById('alertas-wrap');
+        aw.innerHTML = (d.alertas||[]).map(a=>`
+            <div class="alert ${a.nivel}">
+                <div class="alert-dot"></div>
+                <div><div class="alert-msg">${a.mensaje}</div><div class="alert-accion">${a.accion}</div></div>
+            </div>`).join('') || '';
+
+        // Historial barras
+        const hist = d.historial || [];
+        const maxVal = Math.max(...hist.map(h=>h.valor), 1);
+        const mesAct = d.periodo.mes_actual.split(' ')[0];
+        document.getElementById('bar-chart').innerHTML = hist.map(h=>`
+            <div class="bar-wrap">
+                <div class="bar-val" style="font-size:0.58em;color:#333">${fmt(h.valor).replace('$','')}</div>
+                <div class="bar ${h.mes===mesAct?'act':''}" style="height:${Math.max(h.valor/maxVal*80,2)}px"></div>
+                <div class="bar-label">${h.mes}</div>
+            </div>`).join('');
+
+        // Servicios
+        const svc = d.servicios || {};
+        const svcKeys = Object.keys(svc);
+        document.getElementById('svc-wrap').innerHTML = svcKeys.length
+            ? svcKeys.map(k=>`
+                <div class="svc-row">
+                    <div class="svc-lbl"><span class="svc-name">${k}</span><span class="svc-pct">${svc[k].cantidad} pedidos (${svc[k].pct}%)</span></div>
+                    <div class="svc-bar-track"><div class="svc-bar-fill" style="width:${svc[k].pct}%"></div></div>
+                </div>`).join('')
+            : '<div class="empty">Sin pedidos completados</div>';
+
+        // Top clientes
+        document.getElementById('top-cli').innerHTML = (d.clientes.top||[]).length
+            ? d.clientes.top.map((c,i)=>`
+                <div class="cli-row">
+                    <span class="cli-rank">${i+1}</span>
+                    <span class="cli-name">${c.nombre}</span>
+                    <span class="cli-val">${fmt(c.gastado)}</span>
+                    <span class="cli-cnt">${c.pedidos} ped.</span>
+                    ${c.telefono ? `<a class="cli-wa" href="https://wa.me/52${c.telefono}" target="_blank">WA</a>` : ''}
+                </div>`).join('')
+            : '<div class="empty">Sin datos</div>';
+
+        // Dormidos
+        document.getElementById('dormidos').innerHTML = (d.clientes.dormidos||[]).length
+            ? d.clientes.dormidos.map(c=>`
+                <div class="dorm-row">
+                    <span class="dorm-name">${c.nombre}</span>
+                    <span class="dorm-dias">${c.dias_inactivo}d</span>
+                    <span class="dorm-val">${fmt(c.gastado)}</span>
+                    ${c.telefono ? `<button class="btn-reactiva" onclick="reactivar('${c.nombre}','${c.telefono}')">Reactivar</button>` : ''}
+                </div>`).join('')
+            : '<div class="empty">Todos los clientes activos</div>';
+
+        // Proyeccion barra
+        const pct = Math.min(d.ingresos.mes / Math.max(d.ingresos.proyeccion_mes,1) * 100, 100);
+        document.getElementById('proy-fill').style.width = pct + '%';
+        document.getElementById('proy-lbl').textContent  = `${fmt(d.ingresos.mes)} de ${fmt(d.ingresos.proyeccion_mes)} proyectado`;
+        document.getElementById('proy-pct').textContent  = pct.toFixed(0) + '%';
+        document.getElementById('proy-sub').textContent  = `Ritmo actual: ${fmt(d.ingresos.mes/Math.max(d.periodo.dias_transcurridos,1))}/día · ${d.periodo.dias_en_mes - d.periodo.dias_transcurridos} días restantes`;
+
+    } catch(e){
+        console.error(e);
+    }
+}
+
+function reactivar(nombre, tel){
+    const msg = encodeURIComponent(`Hola ${nombre}! Te escribimos de nuestro taller. Tenemos novedades y ofertas especiales para ti. ¿En qué te podemos ayudar hoy?`);
+    window.open(`https://wa.me/52${tel}?text=${msg}`, '_blank');
+}
+
+cargar();
+setInterval(cargar, 60000);
+</script>
+<script src="/static/nexus_ambient.js"></script>
+</body>
+</html>

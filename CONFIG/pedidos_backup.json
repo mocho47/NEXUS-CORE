@@ -1,0 +1,15 @@
+[
+  {
+    "id": 1770030114,
+    "cliente": "Anuar GAP61",
+    "producto": "Checar conecciones y luces en general",
+    "deadline": "2026-02-02T07:00:00+00:00",
+    "status": "LISTO",
+    "area": "GENERAL",
+    "notified_1h": false,
+    "notified_15m": false,
+    "insistent_level": 0,
+    "last_nag_time": 0,
+    "created_at": "2026-02-02T11:01:51.831172+00:00"
+  }
+]

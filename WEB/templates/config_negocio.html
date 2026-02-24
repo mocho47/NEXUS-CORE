@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Configuración - NEXUS</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { background: #0a0a0a; color: #e0e0e0; font-family: 'Segoe UI', sans-serif; padding: 16px; }
+        .nav { margin-bottom: 14px; }
+        .nav a { color: #888; text-decoration: none; font-size: 0.9em; }
+        h2 { color: #00ff88; margin-bottom: 4px; }
+        .sub { color: #555; font-size: 0.8em; margin-bottom: 20px; }
+        .card { background: #111; border: 1px solid #1e1e1e; border-radius: 10px; padding: 20px; max-width: 520px; margin-bottom: 14px; }
+        .card h3 { font-size: 0.82em; color: #00ff88; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 14px; }
+        .field { margin-bottom: 13px; }
+        label { display: block; font-size: 0.76em; color: #555; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 5px; }
+        input {
+            width: 100%; background: #0a0a0a; border: 1px solid #2a2a2a; border-radius: 6px;
+            color: #e0e0e0; padding: 9px 12px; font-size: 0.9em; outline: none;
+        }
+        input:focus { border-color: #00ff8844; }
+        .hint { font-size: 0.74em; color: #444; margin-top: 3px; }
+        .btn-save {
+            background: #00ff8822; border: 1px solid #00ff8844; color: #00ff88;
+            border-radius: 8px; padding: 12px 28px; font-size: 0.9em; font-weight: bold;
+            cursor: pointer;
+        }
+        .toast {
+            position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%);
+            background: #00ff8822; border: 1px solid #00ff8844; color: #00ff88;
+            padding: 9px 22px; border-radius: 8px; font-size: 0.85em;
+            display: none; z-index: 999;
+        }
+        .toast.error { background: #ff444422; border-color: #ff444444; color: #ff4444; }
+    </style>
+</head>
+<body>
+    <div class="nav"><a href="/dashboard">← Dashboard</a></div>
+    <h2>⚙️ Configuración del Negocio</h2>
+    <p class="sub">Estos datos aparecen en el catálogo, cotizaciones y mensajes de WhatsApp</p>
+
+    <div class="card">
+        <h3>Datos del taller</h3>
+        <div class="field">
+            <label>Nombre del negocio</label>
+            <input type="text" id="nombre" placeholder="Ej: Nexus Taller">
+        </div>
+        <div class="field">
+            <label>Teléfono WhatsApp</label>
+            <input type="tel" id="telefono" placeholder="3312345678">
+            <div class="hint">Solo números, 10 dígitos. Se usa para todos los links de WhatsApp.</div>
+        </div>
+        <div class="field">
+            <label>Ciudad</label>
+            <input type="text" id="ciudad" placeholder="Guadalajara, Jalisco">
+        </div>
+        <div class="field">
+            <label>Horario de atención</label>
+            <input type="text" id="horario" placeholder="Lun-Vie 9:00-19:00 | Sáb 9:00-14:00">
+        </div>
+        <div class="field">
+            <label>Slogan</label>
+            <input type="text" id="slogan" placeholder="Precisión, calidad y entrega a tiempo.">
+        </div>
+    </div>
+
+    <div class="card">
+        <h3>Redes sociales</h3>
+        <div class="field">
+            <label>Instagram</label>
+            <input type="text" id="instagram" placeholder="@tunegocio">
+        </div>
+        <div class="field">
+            <label>TikTok</label>
+            <input type="text" id="tiktok" placeholder="@tunegocio">
+        </div>
+        <div class="field">
+            <label>Facebook</label>
+            <input type="text" id="facebook" placeholder="facebook.com/tunegocio">
+        </div>
+    </div>
+
+    <button class="btn-save" onclick="guardar()">Guardar cambios</button>
+
+    <div class="toast" id="toast"></div>
+
+    <script>
+    function toast(msg, err) {
+        const t = document.getElementById('toast');
+        t.innerText = msg;
+        t.className = 'toast' + (err ? ' error' : '');
+        t.style.display = 'block';
+        setTimeout(() => t.style.display = 'none', 2500);
+    }
+
+    async function cargar() {
+        try {
+            const r = await fetch('/api/config_negocio');
+            const d = await r.json();
+            document.getElementById('nombre').value    = d.nombre    || '';
+            document.getElementById('telefono').value  = d.telefono  || '';
+            document.getElementById('ciudad').value    = d.ciudad    || '';
+            document.getElementById('horario').value   = d.horario   || '';
+            document.getElementById('slogan').value    = d.slogan    || '';
+            document.getElementById('instagram').value = d.redes?.instagram || '';
+            document.getElementById('tiktok').value    = d.redes?.tiktok    || '';
+            document.getElementById('facebook').value  = d.redes?.facebook  || '';
+        } catch(e) { toast('Error al cargar', true); }
+    }
+
+    async function guardar() {
+        const body = {
+            nombre:   document.getElementById('nombre').value.trim(),
+            telefono: document.getElementById('telefono').value.trim().replace(/\D/g,'').slice(-10),
+            ciudad:   document.getElementById('ciudad').value.trim(),
+            horario:  document.getElementById('horario').value.trim(),
+            slogan:   document.getElementById('slogan').value.trim(),
+            instagram: document.getElementById('instagram').value.trim().replace('@',''),
+            tiktok:    document.getElementById('tiktok').value.trim().replace('@',''),
+            facebook:  document.getElementById('facebook').value.trim(),
+        };
+        try {
+            const r = await fetch('/api/config_negocio', {
+                method: 'POST',
+                headers: {'Content-Type':'application/json'},
+                body: JSON.stringify(body)
+            });
+            const d = await r.json();
+            if (d.ok) toast('✓ Guardado correctamente');
+            else toast('Error: ' + (d.error || '?'), true);
+        } catch(e) { toast('Sin conexión', true); }
+    }
+
+    cargar();
+    </script>
+</body>
+</html>

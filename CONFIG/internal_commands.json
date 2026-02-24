@@ -1,0 +1,29 @@
+# DOCUMENTACIÓN INTERNA - LISTA DE COMANDOS
+# ESTE ARCHIVO ES LEÍDO POR NEXUS PARA SABER QUÉ PUEDE HACER
+
+[
+  {
+    "comando": "caja [L] [A] [H]",
+    "funcion": "generate_box",
+    "descripcion": "Genera SVG de caja con medidas especificadas.",
+    "modulo": "TALLER"
+  },
+  {
+    "comando": "busca [QUERY]",
+    "funcion": "web_search",
+    "descripcion": "Realiza búsqueda en DuckDuckGo/Wikipedia.",
+    "modulo": "WEB"
+  },
+  {
+    "comando": "facebook / tiktok / whatsapp",
+    "funcion": "social_orchestrator",
+    "descripcion": "Abre navegador en URL específica y gestiona portapapeles.",
+    "modulo": "MARKETING"
+  },
+  {
+    "comando": "descansa / apágate",
+    "funcion": "os._exit",
+    "descripcion": "Termina ejecución del script.",
+    "modulo": "SISTEMA"
+  }
+]

@@ -1,0 +1,615 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Marketing HUB — NEXUS</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            background: #080808; color: #e0e0e0;
+            font-family: 'Segoe UI', sans-serif;
+            height: 100vh; display: flex; flex-direction: column; overflow: hidden;
+        }
+
+        /* ── TOP BAR ────────────────────────────────────────── */
+        .topbar {
+            display: flex; align-items: center; gap: 10px;
+            padding: 9px 16px; background: #0a0a0a;
+            border-bottom: 1px solid #151515; flex-shrink: 0;
+        }
+        .topbar a { color: #383838; text-decoration: none; font-size: 0.9em; }
+        .topbar a:hover { color: #666; }
+        .topbar h1 { color: #00ff88; font-size: 0.9em; font-weight: 700; letter-spacing: 2px; flex: 1; }
+        .dot { width: 7px; height: 7px; border-radius: 50%; background: #00ff88; box-shadow: 0 0 5px #00ff88; }
+        .badge { font-size: 0.68em; color: #333; letter-spacing: 1px; }
+
+        /* ── MAIN LAYOUT ─────────────────────────────────────── */
+        .main {
+            display: grid; grid-template-columns: 1fr 320px;
+            flex: 1; overflow: hidden;
+        }
+
+        /* ── LEFT: CHAT PANEL ────────────────────────────────── */
+        .chat-panel { display: flex; flex-direction: column; border-right: 1px solid #111; }
+
+        .chat-header {
+            padding: 10px 16px; border-bottom: 1px solid #111;
+            display: flex; align-items: center; gap: 10px; flex-shrink: 0;
+        }
+        .avatar {
+            width: 30px; height: 30px; border-radius: 50%;
+            background: linear-gradient(135deg, #00ff88, #0088ff);
+            display: flex; align-items: center; justify-content: center;
+            font-weight: 900; font-size: 0.8em; color: #000; flex-shrink: 0;
+        }
+        .chat-header .inf h3 { font-size: 0.88em; color: #ddd; }
+        .chat-header .inf p  { font-size: 0.72em; color: #444; }
+
+        .chat-messages {
+            flex: 1; overflow-y: auto; padding: 14px 16px;
+            display: flex; flex-direction: column; gap: 10px;
+        }
+
+        .msg { max-width: 88%; padding: 10px 14px; border-radius: 12px; font-size: 0.86em; line-height: 1.55; }
+        .msg.bot {
+            background: #0f0f0f; border: 1px solid #1a1a1a;
+            border-radius: 12px 12px 12px 2px; align-self: flex-start;
+        }
+        .msg.usr {
+            background: #00ff8810; border: 1px solid #00ff8820;
+            border-radius: 12px 12px 2px 12px; align-self: flex-end; color: #bbb;
+        }
+        .msg .sender { color: #00ff88; font-weight: 700; font-size: 0.88em; margin-bottom: 4px; }
+        .msg .result-box {
+            margin-top: 10px; background: #080808; border: 1px solid #1a1a1a;
+            border-radius: 8px; padding: 10px 12px; font-size: 0.85em;
+            white-space: pre-wrap; color: #999; max-height: 220px; overflow-y: auto;
+        }
+        .msg .act-row { display: flex; gap: 6px; margin-top: 8px; flex-wrap: wrap; }
+        .msg .act-row button {
+            background: #111; border: 1px solid #1e1e1e; color: #666;
+            border-radius: 6px; padding: 5px 12px; font-size: 0.78em; cursor: pointer;
+        }
+        .msg .act-row button:hover { color: #00ff88; border-color: #00ff8830; }
+        .msg .prog { height: 2px; background: #151515; border-radius: 1px; margin-top: 8px; overflow: hidden; }
+        .msg .prog-fill { height: 100%; background: #00ff88; transition: width 0.6s; }
+
+        .typing-dot { display: inline-block; animation: blink 1.2s infinite; }
+        @keyframes blink { 0%,100%{opacity:0.2} 50%{opacity:1} }
+
+        /* ── QUICK ACTIONS ──────────────────────────────────── */
+        .quick-wrap {
+            padding: 8px 16px; border-top: 1px solid #111;
+            display: flex; gap: 6px; overflow-x: auto; flex-shrink: 0;
+        }
+        .qa {
+            background: #111; border: 1px solid #1a1a1a; color: #555;
+            border-radius: 20px; padding: 5px 12px; font-size: 0.76em;
+            cursor: pointer; white-space: nowrap; flex-shrink: 0;
+        }
+        .qa:hover { color: #00ff88; border-color: #00ff8825; }
+
+        /* ── CHAT INPUT ─────────────────────────────────────── */
+        .input-wrap {
+            padding: 10px 14px; border-top: 1px solid #111;
+            display: flex; gap: 8px; align-items: flex-end; flex-shrink: 0;
+        }
+        .inp-box {
+            flex: 1; background: #111; border: 1px solid #1e1e1e; border-radius: 12px;
+            padding: 9px 12px; display: flex; align-items: center; gap: 8px;
+        }
+        .inp-box:focus-within { border-color: #00ff8830; }
+        #chat-in {
+            flex: 1; background: none; border: none; outline: none;
+            color: #e0e0e0; font-size: 0.86em; font-family: inherit;
+            resize: none; max-height: 80px;
+        }
+        #btn-mic {
+            background: none; border: none; color: #333; cursor: pointer;
+            padding: 3px; font-size: 1em; transition: color 0.2s;
+        }
+        #btn-mic.active { color: #ff5050; }
+        .btn-send {
+            background: #00ff8818; border: 1px solid #00ff8830; color: #00ff88;
+            border-radius: 10px; padding: 9px 16px; font-size: 0.86em;
+            font-weight: bold; cursor: pointer;
+        }
+        .btn-send:hover { background: #00ff8828; }
+
+        /* ── RIGHT PANEL ─────────────────────────────────────── */
+        .right { display: flex; flex-direction: column; overflow-y: auto; }
+
+        .section { border-bottom: 1px solid #0e0e0e; padding: 13px 15px; }
+        .section h3 {
+            font-size: 0.7em; color: #383838; text-transform: uppercase;
+            letter-spacing: 1.5px; margin-bottom: 11px;
+        }
+
+        /* drop zone */
+        .drop-z {
+            border: 2px dashed #1e1e1e; border-radius: 10px;
+            padding: 18px; text-align: center; cursor: pointer; transition: all 0.2s;
+        }
+        .drop-z:hover, .drop-z.over { border-color: #00ff8840; background: #00ff8808; }
+        .drop-z .di { font-size: 1.6em; margin-bottom: 5px; color: #2a2a2a; }
+        .drop-z .dt { font-size: 0.78em; color: #383838; }
+        .drop-z .ds { font-size: 0.7em; color: #2a2a2a; margin-top: 2px; }
+        select.svc {
+            width: 100%; background: #0a0a0a; border: 1px solid #1a1a1a;
+            border-radius: 6px; color: #777; padding: 7px 10px;
+            font-size: 0.8em; margin-top: 9px; outline: none;
+        }
+        .btn-proc {
+            width: 100%; margin-top: 7px; background: #00ff8810;
+            border: 1px solid #00ff8820; color: #00ff88;
+            border-radius: 8px; padding: 8px; font-size: 0.82em;
+            font-weight: bold; cursor: pointer;
+        }
+        .btn-proc:hover { background: #00ff8820; }
+        .proc-result {
+            display: none; margin-top: 9px; background: #080808;
+            border: 1px solid #151515; border-radius: 8px;
+            padding: 9px 11px; font-size: 0.76em; color: #555; line-height: 1.6;
+        }
+        .tag { display: inline-block; background: #00ff8810; border: 1px solid #00ff8820; color: #00ff88; border-radius: 4px; padding: 2px 7px; font-size: 0.85em; margin-bottom: 5px; }
+
+        /* toggles */
+        .tog-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 9px; }
+        .tog-lbl { font-size: 0.8em; color: #777; }
+        .tog-sub { font-size: 0.7em; color: #333; margin-top: 1px; }
+        .tog { position: relative; width: 34px; height: 18px; flex-shrink: 0; }
+        .tog input { display: none; }
+        .tog-t { position: absolute; inset: 0; background: #1a1a1a; border-radius: 9px; cursor: pointer; transition: background 0.2s; }
+        .tog input:checked + .tog-t { background: #00ff8840; }
+        .tog-k { position: absolute; top: 3px; left: 3px; width: 12px; height: 12px; background: #333; border-radius: 50%; transition: all 0.2s; }
+        .tog input:checked ~ .tog-k { left: 19px; background: #00ff88; }
+
+        /* subliminal */
+        .pista-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 5px; }
+        .pista-c {
+            background: #0d0d0d; border: 1px solid #161616; border-radius: 8px;
+            padding: 8px 5px; cursor: pointer; text-align: center; transition: all 0.15s;
+        }
+        .pista-c:hover, .pista-c.on { border-color: #00ff8828; background: #00ff8808; }
+        .pista-c .pi { font-size: 1.1em; margin-bottom: 3px; }
+        .pista-c .pn { font-size: 0.68em; color: #555; }
+        .pista-c.on .pn { color: #00ff88; }
+
+        .btn-sub {
+            width: 100%; margin-top: 9px; background: #0f0f0f;
+            border: 1px solid #1a1a1a; color: #555; border-radius: 8px;
+            padding: 8px; font-size: 0.8em; cursor: pointer;
+        }
+        .btn-sub:hover { color: #00ff88; border-color: #00ff8825; }
+        .sub-out {
+            display: none; margin-top: 9px; background: #080808;
+            border: 1px solid #151515; border-radius: 8px; padding: 10px;
+            font-size: 0.74em; color: #555; line-height: 1.65; max-height: 220px; overflow-y: auto;
+        }
+        .msg-item { padding: 3px 0; border-bottom: 1px solid #0e0e0e; }
+        .msg-item:last-child { border: none; }
+        .btn-wav { margin-top: 8px; background: #111; border: 1px solid #1e1e1e; color: #444; border-radius: 6px; padding: 5px 10px; font-size: 0.76em; cursor: pointer; }
+        .btn-wav:hover { color: #00aaff; border-color: #00aaff40; }
+
+        /* calendar suggestion */
+        .cal-item { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
+        .cal-date { font-size: 0.72em; color: #444; min-width: 55px; }
+        .cal-ev { font-size: 0.8em; color: #777; flex: 1; }
+        .cal-btn { font-size: 0.72em; color: #00ff88; cursor: pointer; background: none; border: none; }
+        .cal-btn:hover { opacity: 0.7; }
+
+        /* scrollbar */
+        ::-webkit-scrollbar { width: 3px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #1a1a1a; border-radius: 2px; }
+
+        #file-inp { display: none; }
+
+        @media (max-width: 700px) {
+            .main { grid-template-columns: 1fr; }
+            .right { display: none; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="topbar">
+    <a href="/dashboard">&#8592;</a>
+    <h1>NEXUS MARKETING HUB</h1>
+    <div class="dot"></div>
+    <span class="badge">IA ACTIVA</span>
+    <div id="topbar-right" style="display:flex;align-items:center;gap:8px;margin-left:6px"></div>
+</div>
+
+<div class="main">
+
+    <!-- ── CHAT ──────────────────────────────────────────────── -->
+    <div class="chat-panel">
+        <div class="chat-header">
+            <div class="avatar">N</div>
+            <div class="inf">
+                <h3>NEXUS Assistant</h3>
+                <p>Marketing &middot; Contenido &middot; Automatizaci&oacute;n &middot; Imagen</p>
+            </div>
+        </div>
+
+        <div class="chat-messages" id="msgs">
+            <div class="msg bot">
+                <div class="sender">NEXUS</div>
+                Hola. Soy tu agente de marketing. Cu&eacute;ntame qu&eacute; quieres publicar, crear o automatizar y yo me encargo del resto.<br><br>
+                <span style="color:#333;font-size:0.9em">
+                Ejemplos: &ldquo;publica una taza personalizada&rdquo; &middot; &ldquo;oferta de sublimaci&oacute;n esta semana&rdquo; &middot; &ldquo;genera copy para Instagram del servicio laser&rdquo; &middot; &ldquo;script para TikTok de retrofit&rdquo;
+                </span>
+            </div>
+        </div>
+
+        <div class="quick-wrap">
+            <button class="qa" onclick="q('publica una oferta de esta semana')">Oferta semana</button>
+            <button class="qa" onclick="q('crea post para instagram')">Post Instagram</button>
+            <button class="qa" onclick="q('copy para whatsapp')">Copy WhatsApp</button>
+            <button class="qa" onclick="q('script para tiktok o reels')">Script TikTok</button>
+            <button class="qa" onclick="q('genera hashtags para mi negocio')">Hashtags</button>
+            <button class="qa" onclick="q('recordatorio de pedidos proximos a vencer')">Pedidos urgentes</button>
+            <button class="qa" onclick="q('que debo publicar esta semana segun la temporada')">Calendario</button>
+        </div>
+
+        <div class="input-wrap">
+            <div class="inp-box">
+                <textarea id="chat-in" rows="1" placeholder="D&iacute;le algo a NEXUS..."
+                    onkeydown="onEnter(event)" oninput="grow(this)"></textarea>
+                <button id="btn-mic" onclick="voz()" title="Hablar">&#127908;</button>
+            </div>
+            <button class="btn-send" onclick="send()">Enviar</button>
+        </div>
+    </div>
+
+    <!-- ── PANEL DERECHO ──────────────────────────────────────── -->
+    <div class="right">
+
+        <!-- PROCESADOR DE IMAGENES -->
+        <div class="section">
+            <h3>Procesador de Archivos</h3>
+            <div class="drop-z" id="dz"
+                onclick="document.getElementById('file-inp').click()"
+                ondragover="dOver(event)" ondragleave="dLeave()" ondrop="dDrop(event)">
+                <div class="di">&#128444;</div>
+                <p class="dt">Arrastra tu imagen aqu&iacute;</p>
+                <p class="ds">JPG &middot; PNG &middot; BMP &middot; WEBP</p>
+            </div>
+            <input type="file" id="file-inp" accept="image/*" onchange="fSel(event)">
+            <select class="svc" id="svc">
+                <option value="LASER">LASER &mdash; Grabado / Corte</option>
+                <option value="SUBLIMACION">SUBLIMACION &mdash; Transfer t&eacute;rmico</option>
+                <option value="DTF">DTF &mdash; Textiles, fondo transparente</option>
+                <option value="LONA">LONA &mdash; Gran formato / Banner</option>
+                <option value="NEON">NEON &mdash; Extrae contornos</option>
+                <option value="GENERAL">GENERAL &mdash; Optimizaci&oacute;n b&aacute;sica</option>
+            </select>
+            <button class="btn-proc" id="btn-proc" onclick="procImg()">Procesar imagen</button>
+            <div class="proc-result" id="proc-r"></div>
+        </div>
+
+        <!-- PILOTO AUTOMATICO -->
+        <div class="section">
+            <h3>Piloto Autom&aacute;tico</h3>
+            <div class="tog-row">
+                <div>
+                    <div class="tog-lbl">Post diario Instagram</div>
+                    <div class="tog-sub">Genera recordatorio cada ma&ntilde;ana</div>
+                </div>
+                <label class="tog">
+                    <input type="checkbox" id="tog-ig" onchange="autopilot('instagram',this.checked)">
+                    <div class="tog-t"></div><div class="tog-k"></div>
+                </label>
+            </div>
+            <div class="tog-row">
+                <div>
+                    <div class="tog-lbl">Resumen semanal WhatsApp</div>
+                    <div class="tog-sub">Lunes 9am: ofertas + pedidos del d&iacute;a</div>
+                </div>
+                <label class="tog">
+                    <input type="checkbox" id="tog-wa" onchange="autopilot('whatsapp',this.checked)">
+                    <div class="tog-t"></div><div class="tog-k"></div>
+                </label>
+            </div>
+            <div class="tog-row">
+                <div>
+                    <div class="tog-lbl">Recordatorio pedidos</div>
+                    <div class="tog-sub">Notifica 2h antes del deadline</div>
+                </div>
+                <label class="tog">
+                    <input type="checkbox" id="tog-rec" onchange="autopilot('recordatorio',this.checked)" checked>
+                    <div class="tog-t"></div><div class="tog-k"></div>
+                </label>
+            </div>
+            <div class="tog-row">
+                <div>
+                    <div class="tog-lbl">Seguimiento clientes inactivos</div>
+                    <div class="tog-sub">30+ d&iacute;as sin pedir = mensaje autom&aacute;tico</div>
+                </div>
+                <label class="tog">
+                    <input type="checkbox" id="tog-crm" onchange="autopilot('clientes_inactivos',this.checked)">
+                    <div class="tog-t"></div><div class="tog-k"></div>
+                </label>
+            </div>
+        </div>
+
+        <!-- CALENDARIO DE CONTENIDO -->
+        <div class="section">
+            <h3>Calendario de Contenido</h3>
+            <div id="cal-list"></div>
+        </div>
+
+        <!-- PISTAS SUBLIMINALES -->
+        <div class="section">
+            <h3>Pistas Subliminales &Eacute;ticas</h3>
+            <p style="font-size:0.72em;color:#2e2e2e;margin-bottom:9px">Mensajes persuasivos + tonos binaurales para integrar en publicidad</p>
+            <div class="pista-grid" id="pista-grid">
+                <div class="pista-c on" data-cat="deseo" onclick="selPista(this)">
+                    <div class="pi">&#10024;</div><div class="pn">Deseo</div>
+                </div>
+                <div class="pista-c" data-cat="confianza" onclick="selPista(this)">
+                    <div class="pi">&#128737;</div><div class="pn">Confianza</div>
+                </div>
+                <div class="pista-c" data-cat="urgencia" onclick="selPista(this)">
+                    <div class="pi">&#9889;</div><div class="pn">Urgencia</div>
+                </div>
+                <div class="pista-c" data-cat="abundancia" onclick="selPista(this)">
+                    <div class="pi">&#128142;</div><div class="pn">Abundancia</div>
+                </div>
+                <div class="pista-c" data-cat="comunidad" onclick="selPista(this)">
+                    <div class="pi">&#128101;</div><div class="pn">Comunidad</div>
+                </div>
+                <div class="pista-c" data-cat="transformacion" onclick="selPista(this)">
+                    <div class="pi">&#128293;</div><div class="pn">Transf.</div>
+                </div>
+                <div class="pista-c" data-cat="nexus_promo" onclick="selPista(this)" style="grid-column:span 3;border-color:#00ff8815">
+                    <div class="pi">&#9733;</div><div class="pn" style="color:#00ff8860">NEXUS Promo</div>
+                </div>
+            </div>
+            <button class="btn-sub" onclick="genPista()">Generar mensajes + frecuencia</button>
+            <button class="btn-wav" id="btn-wav" onclick="genWav()" style="display:none">Generar tono binaural .WAV</button>
+            <div class="sub-out" id="sub-out"></div>
+        </div>
+
+    </div><!-- /right -->
+</div>
+
+<script>
+/* ── STATE ─────────────────────────────────────────────────── */
+let SID = 'mk_' + Math.random().toString(36).substr(2,8);
+let mic = null, listening = false;
+let selFile = null;
+let pistaAct = 'deseo';
+
+/* ── VOICE ─────────────────────────────────────────────────── */
+(function initMic(){
+    const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (!SR) { document.getElementById('btn-mic').style.display='none'; return; }
+    mic = new SR();
+    mic.lang = 'es-MX';
+    mic.continuous = false;
+    mic.interimResults = false;
+    mic.onresult = e => {
+        document.getElementById('chat-in').value = e.results[0][0].transcript;
+        stopListening();
+        send();
+    };
+    mic.onerror = stopListening;
+})();
+function voz(){
+    if (!mic) return;
+    if (listening) { mic.stop(); stopListening(); }
+    else { mic.start(); listening=true; document.getElementById('btn-mic').classList.add('active'); }
+}
+function stopListening(){ listening=false; document.getElementById('btn-mic').classList.remove('active'); }
+
+/* ── CHAT HELPERS ──────────────────────────────────────────── */
+function grow(el){ el.style.height='auto'; el.style.height=Math.min(el.scrollHeight,80)+'px'; }
+function onEnter(e){ if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();send();} }
+function q(txt){ document.getElementById('chat-in').value=txt; send(); }
+
+function addMsg(role, html, extras){
+    const wrap = document.getElementById('msgs');
+    const d = document.createElement('div');
+    d.className = 'msg ' + (role==='bot'?'bot':'usr');
+    let inner = '';
+    if(role==='bot') inner += '<div class="sender">NEXUS</div>';
+    inner += html.replace(/\n/g,'<br>');
+    if(extras && extras.resultado){
+        inner += `<div class="result-box">${extras.resultado}</div>`;
+        inner += `<div class="act-row">
+            <button onclick="cp(this)">Copiar</button>
+            <button onclick="wa(this)">WhatsApp</button>
+            <button onclick="ig(this)">Instagram</button>
+        </div>`;
+    }
+    if(extras && extras.progreso!==undefined){
+        inner += `<div class="prog"><div class="prog-fill" style="width:${extras.progreso}%"></div></div>`;
+    }
+    d.innerHTML = inner;
+    wrap.appendChild(d);
+    wrap.scrollTop = wrap.scrollHeight;
+    return d;
+}
+function addTyping(){
+    const wrap=document.getElementById('msgs');
+    const d=document.createElement('div');
+    d.className='msg bot'; d.id='typing';
+    d.innerHTML='<div class="sender">NEXUS</div><span class="typing-dot">.</span><span class="typing-dot" style="animation-delay:0.2s">.</span><span class="typing-dot" style="animation-delay:0.4s">.</span>';
+    wrap.appendChild(d); wrap.scrollTop=wrap.scrollHeight;
+}
+function rmTyping(){ const t=document.getElementById('typing'); if(t)t.remove(); }
+
+async function send(){
+    const inp = document.getElementById('chat-in');
+    const txt = inp.value.trim();
+    if(!txt) return;
+    inp.value=''; inp.style.height='auto';
+    addMsg('usr', txt);
+    addTyping();
+    try{
+        const r = await fetch('/api/agent/mensaje',{
+            method:'POST',
+            headers:{'Content-Type':'application/json'},
+            body: JSON.stringify({session_id:SID, mensaje:txt})
+        });
+        const d = await r.json();
+        rmTyping();
+        const ex = {};
+        if(d.resultado) ex.resultado = d.resultado;
+        if(d.progreso!==undefined) ex.progreso = d.progreso;
+        addMsg('bot', d.respuesta||'Listo.', ex);
+        if(d.voz_url){ new Audio(d.voz_url).play().catch(()=>{}); }
+    } catch(e){
+        rmTyping();
+        addMsg('bot','Error de conexi&oacute;n con el servidor. Reinicia NEXUS.');
+    }
+}
+
+function cp(btn){ const box=btn.closest('.msg').querySelector('.result-box'); if(!box)return; navigator.clipboard.writeText(box.innerText).then(()=>{btn.textContent='Copiado';setTimeout(()=>btn.textContent='Copiar',2000);}); }
+function wa(btn){ const box=btn.closest('.msg').querySelector('.result-box'); if(!box)return; window.open('https://wa.me/?text='+encodeURIComponent(box.innerText),'_blank'); }
+function ig(btn){ const box=btn.closest('.msg').querySelector('.result-box'); if(!box)return; navigator.clipboard.writeText(box.innerText).then(()=>{btn.textContent='Copiado para IG'; setTimeout(()=>btn.textContent='Instagram',2000);}); }
+
+/* ── IMAGE PROCESSOR ───────────────────────────────────────── */
+function dOver(e){ e.preventDefault(); document.getElementById('dz').classList.add('over'); }
+function dLeave(){ document.getElementById('dz').classList.remove('over'); }
+function dDrop(e){
+    e.preventDefault(); dLeave();
+    const f=e.dataTransfer.files[0];
+    if(f && f.type.startsWith('image/')) setFile(f);
+}
+function fSel(e){ const f=e.target.files[0]; if(f) setFile(f); }
+function setFile(f){
+    selFile=f;
+    const dz=document.getElementById('dz');
+    dz.innerHTML=`<div class="di" style="color:#00ff8880">&#10003;</div><p class="dt" style="color:#00ff88">${f.name}</p><p class="ds">${(f.size/1024).toFixed(0)} KB</p>`;
+}
+async function procImg(){
+    if(!selFile){alert('Selecciona una imagen primero');return;}
+    const svc=document.getElementById('svc').value;
+    const btn=document.getElementById('btn-proc');
+    btn.textContent='Procesando...'; btn.disabled=true;
+    const fd=new FormData();
+    fd.append('archivo',selFile); fd.append('servicio',svc);
+    try{
+        const r=await fetch('/api/imagen/procesar',{method:'POST',body:fd});
+        const d=await r.json();
+        const out=document.getElementById('proc-r');
+        out.style.display='block';
+        if(d.ok){
+            const nom=d.salida?(d.salida.split('\\').pop().split('/').pop()):'archivo';
+            out.innerHTML=`<span class="tag">${d.servicio}</span><br>
+<strong style="color:#ccc">${nom}</strong><br>
+<span style="color:#444">${(d.detalles||[]).join(' &middot; ')}</span>
+${(d.recomendaciones||[]).map(x=>`<div style="color:#2e2e2e;margin-top:3px">&rarr; ${x}</div>`).join('')}`;
+            addMsg('bot',`Imagen procesada para ${d.servicio}. Archivo listo: ${nom}`);
+        } else {
+            out.innerHTML=`<span style="color:#ff5050">Error: ${d.error}</span>`;
+        }
+    } catch(e){
+        document.getElementById('proc-r').innerHTML='<span style="color:#ff5050">Error al procesar</span>';
+        document.getElementById('proc-r').style.display='block';
+    }
+    btn.textContent='Procesar imagen'; btn.disabled=false;
+}
+
+/* ── AUTOPILOT ─────────────────────────────────────────────── */
+async function autopilot(tipo,activo){
+    try{ await fetch('/api/agent/autopilot',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({tipo,activo})}); } catch(e){}
+}
+
+/* ── CALENDAR ──────────────────────────────────────────────── */
+(function loadCal(){
+    const now=new Date();
+    const mes=now.getMonth();
+    const eventos=[
+        {m:0,d:6,ev:'Reyes Magos — sorteo o promo especial'},
+        {m:1,d:14,ev:'San Valent\u00edn — personalizados de amor'},
+        {m:2,d:8,ev:'D\u00eda de la Mujer — edici\u00f3n especial'},
+        {m:2,d:21,ev:'Primavera — renovaci\u00f3n y colores vivos'},
+        {m:3,d:10,ev:'Semana Santa — producci\u00f3n m\u00ednima'},
+        {m:4,d:10,ev:'D\u00eda de la Madre — mayor demanda del a\u00f1o'},
+        {m:5,d:16,ev:'D\u00eda del Padre — regalos personalizados'},
+        {m:8,d:16,ev:'Fiestas Patrias — tricolor y escudos'},
+        {m:9,d:31,ev:'Halloween — calabazas, terror, grabado laser'},
+        {m:10,d:2,ev:'D\u00eda de Muertos — dise\u00f1os tradicionales'},
+        {m:10,d:25,ev:'Viernes Negro — tus mejores ofertas'},
+        {m:11,d:10,ev:'Guadalupe-Reyes — mayor ventas del a\u00f1o'},
+        {m:11,d:25,ev:'Navidad — pedidos y entregas m\u00e1s grandes'},
+    ];
+    const prox=eventos.filter(e=>e.m>=mes).slice(0,4);
+    const meses=['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
+    const wrap=document.getElementById('cal-list');
+    if(!prox.length){wrap.innerHTML='<div style="font-size:0.75em;color:#2e2e2e">Sin eventos pr\u00f3ximos</div>';return;}
+    wrap.innerHTML=prox.map(e=>`
+    <div class="cal-item">
+        <span class="cal-date">${meses[e.m]} ${e.d}</span>
+        <span class="cal-ev">${e.ev}</span>
+        <button class="cal-btn" onclick="q('crea contenido para ${e.ev.split(' ')[0].toLowerCase()} ${meses[e.m]}')">+</button>
+    </div>`).join('');
+})();
+
+/* ── SUBLIMINAL ─────────────────────────────────────────────── */
+function selPista(el){
+    document.querySelectorAll('.pista-c').forEach(c=>c.classList.remove('on'));
+    el.classList.add('on');
+    pistaAct=el.dataset.cat;
+}
+async function genPista(){
+    const btn=document.querySelector('.btn-sub');
+    btn.textContent='Generando...';
+    try{
+        const r=await fetch('/api/subliminal/generar',{
+            method:'POST',
+            headers:{'Content-Type':'application/json'},
+            body:JSON.stringify({categoria:pistaAct})
+        });
+        const d=await r.json();
+        const out=document.getElementById('sub-out');
+        out.style.display='block';
+        if(d.ok){
+            out.innerHTML=`<div style="color:#00ff8870;margin-bottom:6px;font-size:0.9em">${d.categoria.toUpperCase()} &mdash; beat ${d.beat_hz}Hz</div>
+<div style="color:#2a2a2a;margin-bottom:8px">${d.descripcion}</div>
+${d.mensajes.map((m,i)=>`<div class="msg-item">${i+1}. ${m}</div>`).join('')}
+<div style="margin-top:8px;color:#252525;font-size:0.9em">${d.nota}</div>
+<button onclick="cpSub()" style="margin-top:7px;background:#0d0d0d;border:1px solid #1a1a1a;color:#444;border-radius:5px;padding:4px 10px;font-size:0.78em;cursor:pointer">Copiar todo</button>`;
+            document.getElementById('btn-wav').style.display='';
+        } else {
+            out.innerHTML=`<span style="color:#ff5050">Error: ${d.error}</span>`;
+        }
+    } catch(e){
+        document.getElementById('sub-out').innerHTML='<span style="color:#ff5050">Error al conectar</span>';
+        document.getElementById('sub-out').style.display='block';
+    }
+    btn.textContent='Generar mensajes + frecuencia';
+}
+async function genWav(){
+    const btn=document.getElementById('btn-wav');
+    btn.textContent='Generando .WAV...'; btn.disabled=true;
+    try{
+        const r=await fetch('/api/subliminal/wav',{
+            method:'POST',
+            headers:{'Content-Type':'application/json'},
+            body:JSON.stringify({categoria:pistaAct,duracion_seg:60})
+        });
+        const d=await r.json();
+        if(d.ok){
+            btn.textContent='WAV generado en TALLER/SUBLIMINAL/';
+            btn.style.color='#00ff88';
+            addMsg('bot',`Tono binaural generado: ${d.categoria.toUpperCase()} ${d.beat_hz}Hz &mdash; ${d.duracion}\nGuardado en TALLER/SUBLIMINAL/`);
+        } else {
+            btn.textContent='Error al generar WAV';
+        }
+    } catch(e){ btn.textContent='Error de conexi\u00f3n'; }
+    setTimeout(()=>{btn.textContent='Generar tono binaural .WAV';btn.disabled=false;btn.style.color='';},3000);
+}
+function cpSub(){
+    const out=document.getElementById('sub-out');
+    navigator.clipboard.writeText(out.innerText).then(()=>alert('Mensajes copiados al portapapeles'));
+}
+</script>
+<script src="/static/nexus_ambient.js"></script>
+</body>
+</html>

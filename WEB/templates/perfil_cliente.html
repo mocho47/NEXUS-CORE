@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ cliente.nombre }} - NEXUS</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { background: #0a0a0a; color: #e0e0e0; font-family: 'Segoe UI', sans-serif; padding: 16px; }
+        .nav { margin-bottom: 14px; }
+        .nav a { color: #888; text-decoration: none; font-size: 0.9em; }
+        .perfil-header { background: #111; border: 1px solid #1e1e1e; border-radius: 12px; padding: 20px; margin-bottom: 16px; display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 14px; }
+        .nombre { font-size: 1.3em; font-weight: bold; color: #fff; }
+        .datos { margin-top: 6px; display: flex; flex-direction: column; gap: 4px; }
+        .dato { font-size: 0.85em; color: #888; display: flex; align-items: center; gap: 6px; }
+        .acciones { display: flex; gap: 8px; flex-wrap: wrap; }
+        .btn { padding: 8px 16px; border-radius: 8px; font-size: 0.85em; font-weight: bold; text-decoration: none; cursor: pointer; border: none; }
+        .btn-wa   { background: #128C7E22; color: #25D366; border: 1px solid #128C7E44; }
+        .btn-new  { background: #00ff8822; color: #00ff88; border: 1px solid #00ff8844; }
+        .section { background: #111; border: 1px solid #1e1e1e; border-radius: 10px; padding: 14px; margin-bottom: 14px; }
+        .section h3 { font-size: 0.82em; color: #00ff88; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 12px; }
+        .stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 14px; }
+        .stat { background: #111; border: 1px solid #1e1e1e; border-radius: 8px; padding: 12px; text-align: center; }
+        .stat .num { font-size: 1.8em; font-weight: bold; color: #00ff88; }
+        .stat .lbl { font-size: 0.72em; color: #555; text-transform: uppercase; margin-top: 2px; }
+        .row { display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-bottom: 1px solid #0f0f0f; font-size: 0.86em; }
+        .row:last-child { border-bottom: none; }
+        .badge { padding: 2px 8px; border-radius: 4px; font-size: 0.74em; font-weight: bold; }
+        .badge-PENDIENTE { background: #ffaa0022; color: #ffaa00; }
+        .badge-LISTO     { background: #00ff8822; color: #00ff88; }
+        .badge-ENTREGADO { background: #33333322; color: #555; }
+        .empty { color: #333; font-size: 0.85em; padding: 8px 0; }
+    </style>
+</head>
+<body>
+    <div class="nav"><a href="/clientes">← Clientes</a></div>
+
+    <div class="perfil-header">
+        <div>
+            <div class="nombre">{{ cliente.nombre }}</div>
+            <div class="datos">
+                {% if cliente.telefono %}
+                <div class="dato">📲 {{ cliente.telefono }}</div>
+                {% endif %}
+                {% if cliente.email %}
+                <div class="dato">✉️ {{ cliente.email }}</div>
+                {% endif %}
+            </div>
+        </div>
+        <div class="acciones">
+            {% if cliente.telefono %}
+            {% set tel_clean = cliente.telefono.replace('+','').replace(' ','').replace('-','') %}
+            <a class="btn btn-wa" href="https://wa.me/{{ tel_clean }}" target="_blank">💬 WhatsApp</a>
+            {% endif %}
+            <a class="btn btn-new" href="/nuevo_pedido_form?cliente={{ cliente.nombre|urlencode }}">➕ Nuevo pedido</a>
+        </div>
+    </div>
+
+    <!-- Stats -->
+    <div class="stats">
+        <div class="stat">
+            <div class="num">{{ pedidos | length }}</div>
+            <div class="lbl">Total pedidos</div>
+        </div>
+        <div class="stat">
+            <div class="num">{{ pedidos | selectattr("status","eq","PENDIENTE") | list | length }}</div>
+            <div class="lbl">Pendientes</div>
+        </div>
+        <div class="stat">
+            <div class="num">{{ pedidos | selectattr("status","eq","ENTREGADO") | list | length }}</div>
+            <div class="lbl">Entregados</div>
+        </div>
+    </div>
+
+    <!-- Historial de pedidos -->
+    <div class="section">
+        <h3>📋 Historial de pedidos</h3>
+        {% if pedidos %}
+            {% for p in pedidos | sort(attribute='deadline', reverse=True) %}
+            <div class="row">
+                <div>
+                    <div style="font-weight:bold;font-size:0.9em">{{ p.producto }}</div>
+                    <div style="color:#555;font-size:0.78em">{{ p.deadline[:10] if p.deadline else '—' }} · {{ p.area or 'GENERAL' }}</div>
+                </div>
+                <span class="badge badge-{{ p.status }}">{{ p.status }}</span>
+            </div>
+            {% endfor %}
+        {% else %}
+            <div class="empty">Sin pedidos registrados.</div>
+        {% endif %}
+    </div>
+</body>
+</html>

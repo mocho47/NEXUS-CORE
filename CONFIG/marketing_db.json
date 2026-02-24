@@ -1,0 +1,53 @@
+{
+    "hooks": {
+        "curiosidad": [
+            "¿Sabías que puedes personalizar esto en menos de 5 minutos?",
+            "El secreto que las tiendas de regalos no quieren que sepas...",
+            "Deja de regalar lo mismo de siempre.",
+            "3 razones por las que necesitas esto en tu vida.",
+            "Acompáñame a fabricar este pedido imposible."
+        ],
+        "dolor": [
+            "¿Cansado de que tus regalos terminen en la basura?",
+            "Tu auto se ve aburrido y lo sabes.",
+            "No dejes que tu marca pase desapercibida.",
+            "El error número 1 al comprar letreros neón.",
+            "¿Tu oficina se ve anticuada? Esto lo cambia todo."
+        ],
+        "oferta": [
+            "Solo por 24 horas: Personalizado GRATIS.",
+            "Liquidación de inventario: Precios de taller.",
+            "¿Quieres uno así? Te digo cómo conseguirlo.",
+            "Paquete PYME: Señalética + Gafetes con 20% OFF."
+        ],
+        "b2b": [
+            "Mejora la seguridad de tu planta con señalética duradera.",
+            "Reconocimientos que tus empleados SÍ querrán conservar.",
+            "Organización industrial con corte láser de precisión.",
+            "Gafetes y sellos urgentes para tu empresa."
+        ]
+    },
+    "ctas": [
+        "Manda mensaje para cotizar el tuyo.",
+        "Comenta 'YO' si quieres uno.",
+        "Link en mi perfil para pedir.",
+        "Etiqueta a la persona que te debe este regalo.",
+        "Solicita factura y catálogo empresarial hoy."
+    ],
+    "hashtags": {
+        "laser": "#cortelaser #mdf #diseño #taller #hechoenmexico #emprendedor",
+        "neon": "#neonflex #letrerosneon #decoracion #iluminacion #led",
+        "auto": "#tuning #retrofit #autos #ledautomotriz #modificaciones",
+        "subli": "#sublimacion #regalos #personalizados #tazas #playeras",
+        "industrial": "#seguridadindustrial #señaletica #oficina #godin #recursoshumanos #compras"
+    },
+    "productos_industriales": [
+        {"nombre": "Señalética de Seguridad (Acrílico/Trovicel)", "desc": "Cumple normas STPS con estilo."},
+        {"nombre": "Gafetes Magnéticos Premium", "desc": "Identidad corporativa que destaca."},
+        {"nombre": "Reconocimientos Acrílico/Madera", "desc": "Premia el talento de tu equipo."},
+        {"nombre": "Organizadores de Escritorio MDF", "desc": "Orden y marca en cada lugar."},
+        {"nombre": "Sellos de Goma Alto Tráfico", "desc": "Durabilidad para almacén y recepción."},
+        {"nombre": "Llaveros Promocionales Mayoreo", "desc": "Tu marca en el bolsillo del cliente."},
+        {"nombre": "Placas de Maquinaria (Grabado Metal)", "desc": "Identificación técnica indeleble."}
+    ]
+}

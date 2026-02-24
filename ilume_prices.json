@@ -1,0 +1,50 @@
+{
+    "X1": {
+        "descripcion": "Bi-LED Aozoom X1 3.0 Pulgadas (55W)",
+        "precio_lista": 2300,
+        "precio_publico": 3500,
+        "min_stock": 2
+    },
+    "X2": {
+        "descripcion": "Bi-LED Aozoom X2 3.0 Pulgadas (60W)",
+        "precio_lista": 2800,
+        "precio_publico": 4200,
+        "min_stock": 2
+    },
+    "X3": {
+        "descripcion": "Bi-LED Aozoom X3 3.0 Pulgadas (65W Laser)",
+        "precio_lista": 3200,
+        "precio_publico": 4800,
+        "min_stock": 1
+    },
+    "X4": {
+        "descripcion": "Bi-LED Aozoom X4 3.0 Pulgadas (70W)",
+        "precio_lista": 3800,
+        "precio_publico": 5500,
+        "min_stock": 1
+    },
+    "X5": {
+        "descripcion": "Bi-LED Aozoom X5 2.5 Pulgadas (Compacta)",
+        "precio_lista": 2600,
+        "precio_publico": 3900,
+        "min_stock": 2
+    },
+    "X6": {
+        "descripcion": "Bi-LED Aozoom X6 3.0 Pulgadas (Alta Potencia)",
+        "precio_lista": 4500,
+        "precio_publico": 6500,
+        "min_stock": 1
+    },
+    "X7_NIEBLA": {
+        "descripcion": "Proyector Niebla Aozoom X7 (Universal)",
+        "precio_lista": 2900,
+        "precio_publico": 4500,
+        "min_stock": 2
+    },
+    "X7_TRICOLOR": {
+        "descripcion": "Proyector Niebla Aozoom X7 Tricolor (3000K/4300K/6000K)",
+        "precio_lista": 3100,
+        "precio_publico": 4800,
+        "min_stock": 2
+    }
+}

@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NEXUS — Legal y Privacidad</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { background: #0a0a0a; color: #e0e0e0; font-family: 'Segoe UI', sans-serif; min-height: 100vh; }
+
+        .topbar { background: #111; border-bottom: 1px solid #1e1e1e; padding: 10px 16px;
+                  display: flex; align-items: center; gap: 12px; }
+        .topbar .logo { color: #00ff88; font-weight: bold; font-size: 1.1em; letter-spacing: 3px; }
+        .topbar a { color: #555; text-decoration: none; font-size: 0.82em; }
+        .topbar a:hover { color: #00ff88; }
+
+        .wrap { max-width: 860px; margin: 0 auto; padding: 24px 16px; }
+
+        h1 { font-size: 1.25em; color: #00ff88; letter-spacing: 2px; text-transform: uppercase;
+             border-bottom: 1px solid #1a1a1a; padding-bottom: 12px; margin-bottom: 20px; }
+        h2 { font-size: 0.92em; color: #00ff88; letter-spacing: 1px; text-transform: uppercase;
+             margin: 28px 0 12px; }
+        h3 { font-size: 0.84em; color: #888; margin: 16px 0 8px; }
+        p, li { font-size: 0.88em; color: #aaa; line-height: 1.7; margin-bottom: 8px; }
+        ol, ul { padding-left: 20px; margin-bottom: 10px; }
+        strong { color: #ddd; }
+
+        .section { background: #111; border: 1px solid #1a1a1a; border-radius: 10px;
+                   padding: 20px 24px; margin-bottom: 18px; }
+        .section-warn { border-color: #ff440033; }
+        .section-info { border-color: #00ff8820; }
+
+        .warn-box { background: #ff440010; border: 1px solid #ff440044; border-radius: 8px;
+                    padding: 14px 18px; margin: 12px 0; }
+        .warn-box p { color: #ff9966; font-size: 0.86em; }
+        .warn-box .icon { font-size: 1.4em; display: block; margin-bottom: 6px; }
+
+        .ok-box { background: #00ff8810; border: 1px solid #00ff8833; border-radius: 8px;
+                  padding: 14px 18px; margin: 12px 0; }
+        .ok-box p { color: #00ff88; font-size: 0.86em; }
+
+        .badge { display: inline-block; padding: 2px 10px; border-radius: 20px;
+                 font-size: 0.74em; font-weight: bold; margin: 2px; }
+        .b-law  { background: #0033aa22; color: #6699ff; border: 1px solid #6699ff44; }
+        .b-mx   { background: #00660022; color: #00cc66; border: 1px solid #00cc6644; }
+
+        .accept-block { text-align: center; padding: 24px; }
+        .btn-accept { background: #00ff88; color: #000; border: none; padding: 14px 36px;
+                      border-radius: 8px; cursor: pointer; font-size: 1em; font-weight: bold;
+                      letter-spacing: 1px; transition: background 0.2s; }
+        .btn-accept:hover { background: #00cc70; }
+        .btn-accept:disabled { background: #00ff8840; color: #00ff8888; cursor: default; }
+        .accepted-msg { color: #00ff88; font-size: 0.88em; margin-top: 10px; display: none; }
+
+        .version { color: #2a2a2a; font-size: 0.74em; margin-top: 24px; text-align: center; }
+
+        .toc { background: #0d0d0d; border: 1px solid #1a1a1a; border-radius: 8px;
+               padding: 14px 18px; margin-bottom: 20px; }
+        .toc a { color: #555; text-decoration: none; font-size: 0.84em; display: block;
+                 padding: 4px 0; border-bottom: 1px solid #111; }
+        .toc a:hover { color: #00ff88; }
+        .toc a:last-child { border-bottom: none; }
+
+        @media (max-width: 600px) {
+            .wrap { padding: 14px 10px; }
+            .section { padding: 14px 14px; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="topbar">
+    <span class="logo">⚡ NEXUS</span>
+    <a href="/dashboard">← Volver al Panel</a>
+</div>
+
+<div class="wrap">
+
+    <h1>⚖️ Legal, Privacidad y Términos de Uso</h1>
+
+    <p style="color:#555;font-size:0.84em;margin-bottom:20px">
+        <span class="badge b-mx">LFPDPPP México</span>
+        <span class="badge b-law">NOM-151-SCFI</span>
+        <span class="badge b-law">Versión 2026-02-24</span>
+    </p>
+
+    <!-- ÍNDICE -->
+    <div class="toc">
+        <a href="#privacidad">1. Aviso de Privacidad</a>
+        <a href="#datos">2. Datos que se recaban y cómo se usan</a>
+        <a href="#acceso-pc">3. Acceso al equipo del usuario</a>
+        <a href="#audio">4. Tonos binaurales y experiencias de audio</a>
+        <a href="#visual">5. Experiencias visuales ambientales</a>
+        <a href="#deslinde">6. Deslinde de responsabilidad</a>
+        <a href="#terminos">7. Términos y condiciones completos</a>
+        <a href="#arco">8. Derechos ARCO</a>
+        <a href="#aceptar">✓ Aceptar</a>
+    </div>
+
+    <!-- 1. AVISO DE PRIVACIDAD -->
+    <div class="section section-info" id="privacidad">
+        <h2>1. Aviso de Privacidad Simplificado</h2>
+        <p>
+            <strong>Responsable:</strong> El propietario o licenciatario de esta instalación de
+            NEXUS Business Suite, quien actúa como responsable del tratamiento de los datos
+            personales conforme a la
+            <strong>Ley Federal de Protección de Datos Personales en Posesión de los Particulares
+            (LFPDPPP)</strong>, publicada en el DOF el 5 de julio de 2010 y sus reformas vigentes.
+        </p>
+        <p>
+            NEXUS es un sistema de gestión <strong>completamente local</strong>. Tus datos viven
+            en tu computadora, no en servidores externos. El desarrollador del software
+            <strong>no tiene acceso</strong> a tu información operativa.
+        </p>
+    </div>
+
+    <!-- 2. DATOS -->
+    <div class="section" id="datos">
+        <h2>2. Datos que se recaban y cómo se usan</h2>
+        <ul>
+            <li><strong>Datos de clientes:</strong> Nombre, teléfono, correo, notas — para gestión de pedidos y CRM.</li>
+            <li><strong>Datos operativos:</strong> Pedidos, inventario, precios — para gestión del negocio.</li>
+            <li><strong>Datos de configuración:</strong> Nombre del negocio, redes sociales — para personalización.</li>
+            <li><strong>Datos de uso del software:</strong> Qué módulos se activan, cuándo — para mejorar la experiencia local.</li>
+        </ul>
+        <div class="ok-box">
+            <p>✔ Los datos NO se venden, NO se transfieren a terceros sin consentimiento explícito,
+            y NO se usan para publicidad de terceros.</p>
+        </div>
+        <p>
+            La sincronización opcional con servicios externos (Supabase, Telegram, WhatsApp API)
+            se activa únicamente por acción directa del usuario y se rige por los términos de
+            privacidad del proveedor respectivo.
+        </p>
+    </div>
+
+    <!-- 3. ACCESO AL EQUIPO -->
+    <div class="section section-warn" id="acceso-pc">
+        <h2>3. Acceso al equipo del usuario</h2>
+        <div class="warn-box">
+            <span class="icon">🖥️</span>
+            <p>
+                NEXUS opera localmente y puede interactuar con archivos, cámara, micrófono y
+                dispositivos conectados <strong>únicamente cuando el usuario activa dichas
+                funciones de forma explícita</strong>.
+            </p>
+        </div>
+        <p>
+            Al habilitar cualquier función que requiera acceso al sistema (voz, cámara, archivos,
+            IoT, impresoras, red local), el usuario otorga dicho permiso de forma <strong>voluntaria,
+            informada y revocable</strong> en cualquier momento desde la configuración del sistema.
+        </p>
+        <p>
+            <strong>El desarrollador de NEXUS queda expresamente deslindado</strong> de cualquier
+            responsabilidad derivada del acceso que el usuario conceda al software sobre su equipo,
+            red local o dispositivos. El usuario es el único responsable de los permisos que otorgue.
+        </p>
+    </div>
+
+    <!-- 4. AUDIO BINAURAL -->
+    <div class="section section-warn" id="audio">
+        <h2>4. Tonos Binaurales y Experiencias de Audio</h2>
+        <p>
+            NEXUS incluye una galería de contenidos de audio generados con frecuencias binaurales,
+            tonos isocrónicos y mensajes motivacionales. Estas experiencias son <strong>completamente
+            opcionales</strong> y tienen fines ambientales, de productividad y bienestar general.
+        </p>
+
+        <div class="warn-box">
+            <span class="icon">⚠️</span>
+            <p><strong>DESLINDE DE RESPONSABILIDAD — USO DE AUDIO</strong></p>
+            <p>Al activar cualquier contenido de audio de la Galería NEXUS, el usuario declara
+            haber leído y aceptado que:</p>
+        </div>
+
+        <ul>
+            <li>Los tonos binaurales son una técnica de estimulación auditiva. Su uso
+                <strong>no garantiza resultados</strong> médicos, psicológicos ni de rendimiento específicos.</li>
+            <li>Se recomienda <strong>NO usar con audífonos a volumen elevado</strong>, especialmente
+                con frecuencias de baja gama (&lt;30 Hz de beat).</li>
+            <li>Las personas con <strong>epilepsia, trastornos auditivos, marcapasos, embarazo,
+                o condiciones neurológicas</strong> deben consultar a su médico antes de usar
+                cualquier contenido binaural.</li>
+            <li><strong>NO utilizar mientras conduce</strong> vehículos, opera maquinaria pesada
+                o realiza actividades que requieran atención plena.</li>
+            <li>El uso es <strong>responsabilidad exclusiva del usuario final</strong>.</li>
+            <li>El desarrollador de NEXUS, sus colaboradores, distribuidores y licenciatarios
+                <strong>quedan expresamente deslindados</strong> de cualquier efecto, daño,
+                perjuicio o consecuencia derivada del uso de estos contenidos.</li>
+        </ul>
+
+        <div class="ok-box">
+            <p>✔ Los mensajes motivacionales son positivos, éticos y no contienen sugestiones
+            ilegales, engañosas, ni contrarias a la dignidad humana. Cumplen con los principios
+            éticos de la comunicación persuasiva.</p>
+        </div>
+    </div>
+
+    <!-- 5. VISUAL -->
+    <div class="section" id="visual">
+        <h2>5. Experiencias Visuales Ambientales</h2>
+        <p>
+            Las experiencias visuales de NEXUS (efectos Canvas, geometría sagrada, partículas)
+            se muestran con <strong>opacidad reducida (4–8%)</strong> como fondo decorativo
+            no intrusivo. Son desactivables en cualquier momento desde la Galería.
+        </p>
+        <p>
+            Si experimentas molestias visuales (fotosensibilidad, migraña), desactiva estas
+            experiencias inmediatamente. El desarrollador no se responsabiliza por molestias
+            derivadas del uso prolongado.
+        </p>
+    </div>
+
+    <!-- 6. DESLINDE GENERAL -->
+    <div class="section section-warn" id="deslinde">
+        <h2>6. Deslinde General de Responsabilidad</h2>
+        <p>NEXUS se provee <strong>"tal como es" (as-is)</strong>. El desarrollador no garantiza:</p>
+        <ul>
+            <li>Funcionamiento ininterrumpido o libre de errores.</li>
+            <li>Compatibilidad con todo hardware o software de terceros.</li>
+            <li>Resultados específicos de negocio, marketing o productividad.</li>
+        </ul>
+        <p>
+            El desarrollador <strong>no será responsable</strong> por daños directos, indirectos,
+            incidentales, especiales o consecuentes, incluyendo pérdida de datos o interrupción
+            del negocio, derivados del uso o imposibilidad de uso del software, aun cuando hubiera
+            sido informado de la posibilidad de tales daños.
+        </p>
+        <p style="font-size:0.82em;color:#555;margin-top:12px">
+            Fundamento: Art. 27 LFPDPPP (analogía), Código Civil Federal arts. 1910-1934,
+            NOM-151-SCFI (digitalización y conservación de datos).
+        </p>
+    </div>
+
+    <!-- 7. TÉRMINOS COMPLETOS -->
+    <div class="section" id="terminos">
+        <h2>7. Términos y Condiciones</h2>
+        <h3>7.1 Aceptación</h3>
+        <p>Al instalar, activar o utilizar NEXUS, el usuario acepta íntegramente estos términos.</p>
+
+        <h3>7.2 Licencia de uso</h3>
+        <p>NEXUS se licencia, no se vende. La licencia es personal, intransferible y vinculada
+        al hardware del equipo (fingerprint único). Está prohibida la copia, distribución o
+        modificación sin autorización expresa por escrito.</p>
+
+        <h3>7.3 Tipos de licencia y galería</h3>
+        <ul>
+            <li><strong>DEMO (30 días):</strong> Vista del catálogo, sin activaciones de galería.</li>
+            <li><strong>LITE (1 año):</strong> 5 activaciones de audio y 3 visuales por mes.</li>
+            <li><strong>PRO (3 años):</strong> 15 activaciones de audio y 8 visuales por mes.</li>
+            <li><strong>FULL (10 años):</strong> Galería completa, activaciones ilimitadas.</li>
+        </ul>
+        <p>Las activaciones extra tienen un costo de <strong>$100 MXN por ítem</strong>,
+        gestionado por el administrador de la licencia.</p>
+
+        <h3>7.4 Ley aplicable y jurisdicción</h3>
+        <p>Estos términos se rigen por las leyes de los <strong>Estados Unidos Mexicanos</strong>.
+        Cualquier controversia se somete a los tribunales competentes de la
+        <strong>Ciudad de México</strong>, con renuncia expresa a cualquier otro fuero que
+        pudiera corresponder por razón del domicilio presente o futuro de las partes.</p>
+
+        <h3>7.5 Modificaciones</h3>
+        <p>El desarrollador puede actualizar estos términos. La versión vigente estará
+        disponible en <code>/legal</code>. El uso continuado del software implica aceptación
+        de la versión actualizada.</p>
+    </div>
+
+    <!-- 8. ARCO -->
+    <div class="section section-info" id="arco">
+        <h2>8. Derechos ARCO (LFPDPPP Art. 22-29)</h2>
+        <p>Como titular de datos personales, tienes derecho a:</p>
+        <ul>
+            <li><strong>Acceso:</strong> Conocer qué datos tuyos se almacenan en NEXUS.</li>
+            <li><strong>Rectificación:</strong> Corregir datos inexactos o incompletos.</li>
+            <li><strong>Cancelación:</strong> Solicitar la eliminación de tus datos.</li>
+            <li><strong>Oposición:</strong> Oponerte al tratamiento de tus datos para fines específicos.</li>
+        </ul>
+        <p>
+            Puedes ejercer estos derechos directamente en el panel de administración de NEXUS
+            (eliminando o editando registros) o contactando al responsable del tratamiento
+            (titular de la licencia en tu organización).
+        </p>
+        <p>
+            Plazo de respuesta: 20 días hábiles conforme al Art. 24 LFPDPPP.
+        </p>
+    </div>
+
+    <!-- BOTÓN DE ACEPTACIÓN -->
+    <div class="section accept-block" id="aceptar">
+        <p style="color:#888;font-size:0.88em;margin-bottom:16px">
+            Al presionar el botón confirmas que has leído y aceptas el Aviso de Privacidad,
+            el Deslinde de Responsabilidad sobre el uso de audio binaural y los Términos y
+            Condiciones de uso de NEXUS Business Suite.
+        </p>
+        <button class="btn-accept" id="btnAceptar" onclick="aceptarTerminos()">
+            ✓ He leído y acepto los términos
+        </button>
+        <p class="accepted-msg" id="msgOk">
+            ✔ Aceptación registrada correctamente. Gracias.
+        </p>
+    </div>
+
+    <p class="version">NEXUS Business Suite · Aviso de Privacidad v2026-02-24 · LFPDPPP México</p>
+</div>
+
+<script>
+    // Verificar si ya aceptó
+    fetch('/api/legal/estado')
+        .then(r => r.json())
+        .then(d => {
+            if (d.aceptado) {
+                document.getElementById('btnAceptar').disabled = true;
+                document.getElementById('btnAceptar').textContent = '✔ Términos aceptados el ' +
+                    (d.fecha || '').slice(0, 10);
+                document.getElementById('msgOk').style.display = 'block';
+            }
+        }).catch(() => {});
+
+    function aceptarTerminos() {
+        const btn = document.getElementById('btnAceptar');
+        btn.disabled = true;
+        btn.textContent = 'Registrando...';
+        fetch('/api/legal/acepto')
+            .then(r => r.json())
+            .then(d => {
+                if (d.ok) {
+                    btn.textContent = '✔ Aceptado';
+                    document.getElementById('msgOk').style.display = 'block';
+                } else {
+                    btn.textContent = 'Error — intenta de nuevo';
+                    btn.disabled = false;
+                }
+            }).catch(() => {
+                btn.textContent = 'Error de conexión';
+                btn.disabled = false;
+            });
+    }
+</script>
+</body>
+</html>

@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NEXUS MOBILE</title>
+    <style>
+        body { background-color: #121212; color: #00ff00; font-family: 'Courier New', monospace; text-align: center; padding: 20px; }
+        h1 { border-bottom: 2px solid #00ff00; padding-bottom: 10px; }
+        button {
+            background: #000; border: 1px solid #00ff00; color: #00ff00;
+            padding: 15px 30px; margin: 10px; font-size: 18px; width: 80%; cursor: pointer;
+        }
+        button:active { background: #00ff00; color: #000; }
+        input {
+            background: #222; border: 1px solid #00ff00; color: #fff;
+            padding: 10px; width: 70%; font-size: 16px; margin-top: 20px;
+        }
+        .log-box {
+            background: #000; border: 1px solid #333; color: #ccc;
+            text-align: left; padding: 10px; margin-top: 20px; height: 200px; overflow-y: scroll; font-size: 12px;
+        }
+    </style>
+</head>
+<body>
+    <h1>NEXUS COMMANDER</h1>
+    
+    <input type="text" id="cmdInput" placeholder="Escribe un comando...">
+    <button onclick="sendCommand()">ENVIAR</button>
+    
+    <hr>
+    
+    <button onclick="sendQuick('Nexus, vende este Jetta')">🚗 VENDER JETTA</button>
+    <button onclick="sendQuick('Nexus, agendar cita para placas en Jalisco')">📅 CITA PLACAS</button>
+    <button onclick="sendQuick('Nexus, prueba de audio')">🔊 PRUEBA AUDIO</button>
+    <button onclick="sendQuick('Nexus, escanea red')">📡 ESCANEAR IOT</button>
+
+    <div class="log-box" id="logs">
+        Cargando bitácora...
+    </div>
+
+    <script>
+        function sendCommand() {
+            let cmd = document.getElementById('cmdInput').value;
+            fetch('/command', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({command: cmd})
+            }).then(r => r.json()).then(d => {
+                document.getElementById('cmdInput').value = '';
+                alert("Comando enviado: " + d.status);
+            });
+        }
+
+        function sendQuick(cmd) {
+            fetch('/command', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({command: cmd})
+            }).then(r => r.json()).then(d => {
+                // Feedback visual sutil
+                console.log(d);
+            });
+        }
+
+        function updateLogs() {
+            fetch('/logs').then(r => r.text()).then(t => {
+                document.getElementById('logs').innerText = t;
+            });
+        }
+
+        setInterval(updateLogs, 3000);
+        updateLogs();
+    </script>
+</body>
+</html>

@@ -1,0 +1,695 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>NEXUS — Panel de Comandos</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:#0a0a0a;color:#e0e0e0;font-family:'Segoe UI',system-ui,sans-serif;min-height:100vh}
+body::before{content:'';position:fixed;inset:0;background:repeating-linear-gradient(
+  0deg,transparent,transparent 2px,rgba(0,255,136,0.015) 2px,rgba(0,255,136,0.015) 4px);
+  pointer-events:none;z-index:9999}
+
+/* HEADER */
+header{background:#111;border-bottom:1px solid #1a1a1a;padding:16px 24px;
+  display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100}
+.logo{font-size:1.2rem;font-weight:800;color:#00ff88;letter-spacing:.15em}
+.logo span{color:#555;font-weight:400;font-size:.75rem}
+.header-nav{display:flex;gap:12px}
+.header-nav a{color:#666;text-decoration:none;font-size:.8rem;padding:6px 12px;border-radius:6px;transition:.2s}
+.header-nav a:hover{background:#1a1a1a;color:#00ff88}
+
+/* STATS BAR */
+#statsBar{background:#111;border-bottom:1px solid #1a1a1a;padding:10px 24px;
+  display:flex;gap:24px;font-size:.78rem;color:#666;overflow-x:auto}
+.stat-item{display:flex;align-items:center;gap:8px;white-space:nowrap}
+.stat-dot{width:7px;height:7px;border-radius:50%;background:#00ff88;animation:pulse 2s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+
+/* LAYOUT */
+.main{display:grid;grid-template-columns:300px 1fr;min-height:calc(100vh - 57px - 41px)}
+
+/* SIDEBAR — lista de módulos */
+#sidebar{background:#0d0d0d;border-right:1px solid #1a1a1a;overflow-y:auto;
+  max-height:calc(100vh - 98px);position:sticky;top:98px}
+.mod-group{border-bottom:1px solid #111}
+.mod-group-title{padding:10px 16px;font-size:.7rem;color:#444;letter-spacing:.15em;text-transform:uppercase;
+  display:flex;align-items:center;gap:8px}
+.mod-item{padding:10px 16px;cursor:pointer;transition:.15s;display:flex;align-items:center;gap:10px;
+  border-left:3px solid transparent;font-size:.85rem}
+.mod-item:hover{background:#161616;color:#00ff88}
+.mod-item.active{background:#0d1f14;border-color:#00ff88;color:#00ff88}
+.mod-icon{font-size:1rem;flex-shrink:0}
+.cmd-count{margin-left:auto;background:#1a1a1a;border-radius:10px;padding:1px 8px;
+  font-size:.7rem;color:#555}
+
+/* CONTENT */
+#content{overflow-y:auto;max-height:calc(100vh - 98px);padding:24px}
+
+.panel-header{margin-bottom:20px}
+.panel-header h2{font-size:1.3rem;font-weight:700;color:#00ff88;margin-bottom:4px}
+.panel-header p{color:#555;font-size:.85rem}
+
+/* COMANDOS GRID */
+.cmds-grid{display:grid;gap:12px;grid-template-columns:repeat(auto-fill,minmax(280px,1fr))}
+
+/* TARJETA COMANDO */
+.cmd-card{background:#111;border:1px solid #1a1a1a;border-radius:10px;padding:16px;
+  transition:.2s;cursor:pointer;position:relative;overflow:hidden}
+.cmd-card:hover{border-color:#00ff8833;background:#111}
+.cmd-card.running{border-color:#00ff88;background:#0d1f14;animation:cardPulse .6s ease}
+.cmd-card.done{border-color:#00ff8855}
+.cmd-card.error{border-color:#ff4444}
+@keyframes cardPulse{0%{box-shadow:0 0 0 0 #00ff8844}100%{box-shadow:0 0 0 10px transparent}}
+
+.cmd-title{font-size:.88rem;font-weight:600;color:#e0e0e0;margin-bottom:4px;
+  display:flex;align-items:center;gap:8px}
+.cmd-title .tag{font-size:.65rem;padding:2px 8px;border-radius:10px;font-weight:400}
+.tag-voz{background:#00ff8811;color:#00ff88;border:1px solid #00ff8833}
+.tag-web{background:#64b5f611;color:#64b5f6;border:1px solid #64b5f633}
+.tag-cli{background:#ffcc0211;color:#ffcc02;border:1px solid #ffcc0233}
+.cmd-desc{font-size:.78rem;color:#555;margin-bottom:12px;line-height:1.5}
+.cmd-trigger{font-family:'Courier New',monospace;font-size:.78rem;background:#0a0a0a;
+  border:1px solid #1e1e1e;border-radius:6px;padding:8px 10px;color:#00ff8899;
+  margin-bottom:12px;word-break:break-all}
+
+.btn-ejecutar{background:#00ff8811;border:1px solid #00ff8844;color:#00ff88;
+  padding:8px 14px;border-radius:7px;font-size:.78rem;cursor:pointer;width:100%;
+  transition:.2s;font-family:inherit;display:flex;align-items:center;justify-content:center;gap:6px}
+.btn-ejecutar:hover{background:#00ff8822;border-color:#00ff88}
+.btn-ejecutar:disabled{opacity:.4;cursor:not-allowed}
+
+.cmd-result{margin-top:10px;background:#050505;border:1px solid #1a1a1a;border-radius:7px;
+  padding:10px;font-size:.78rem;color:#aaa;display:none;line-height:1.5;max-height:120px;overflow-y:auto}
+.cmd-result.show{display:block}
+.cmd-result.ok{border-color:#00ff8833;color:#b0ffda}
+.cmd-result.err{border-color:#ff4444;color:#ff8888}
+
+/* RESULTADO GLOBAL */
+#globalResult{background:#0d1f14;border:1px solid #00ff8833;border-radius:10px;
+  padding:16px;margin-top:20px;display:none;font-size:.85rem;line-height:1.7;color:#b0ffda}
+
+/* BUSCADOR */
+.search-wrap{margin-bottom:16px}
+.search-wrap input{width:100%;background:#111;border:1px solid #1a1a1a;border-radius:8px;
+  padding:10px 14px;color:#e0e0e0;font-size:.88rem;outline:none;transition:.2s}
+.search-wrap input:focus{border-color:#00ff8844}
+
+/* STT BANNER */
+#sttBanner{background:#0d1a0d;border:1px solid #00ff8833;border-radius:10px;
+  padding:12px 16px;margin-bottom:20px;display:flex;align-items:center;gap:12px;font-size:.85rem}
+#sttDot{width:10px;height:10px;border-radius:50%;background:#444;flex-shrink:0;transition:.3s}
+#sttDot.listening{background:#00ff88;animation:pulse 1s infinite}
+#sttDot.processing{background:#ffcc02}
+#sttStatus{color:#666}
+#sttTranscript{color:#00ff88;font-style:italic;flex:1;text-align:right;font-size:.8rem}
+
+/* RESPONSIVE */
+@media(max-width:700px){.main{grid-template-columns:1fr}
+  #sidebar{max-height:220px;position:static}}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">NEXUS <span>| Panel de Comandos</span></div>
+  <nav class="header-nav">
+    <a href="/dashboard">Dashboard</a>
+    <a href="/nexus-ear">NEXUS Ear</a>
+    <a href="/paranormal">Paranormal</a>
+    <a href="/admin">Admin</a>
+  </nav>
+</header>
+
+<div id="statsBar">
+  <div class="stat-item"><div class="stat-dot"></div><span id="statCmds">0 comandos</span></div>
+  <div class="stat-item"><span id="statEjecutados">Ejecutados: 0</span></div>
+  <div class="stat-item"><span id="statOK">OK: 0</span></div>
+  <div class="stat-item"><span id="statERR">Errores: 0</span></div>
+  <div class="stat-item"><span>Servidor: localhost:8000</span></div>
+</div>
+
+<div class="main">
+  <!-- SIDEBAR -->
+  <div id="sidebar">
+    <div class="mod-group">
+      <div class="mod-group-title">&#127898; Módulos</div>
+      <!-- generado por JS -->
+    </div>
+  </div>
+
+  <!-- CONTENT -->
+  <div id="content">
+    <div id="sttBanner">
+      <div id="sttDot"></div>
+      <span id="sttStatus">Micrófono inactivo</span>
+      <span id="sttTranscript"></span>
+    </div>
+
+    <div class="search-wrap">
+      <input type="text" id="buscar" placeholder="Buscar comando..." oninput="filtrarComandos()">
+    </div>
+
+    <div class="panel-header">
+      <h2 id="panelTitle">Todos los módulos</h2>
+      <p id="panelDesc">Haz click en "Ejecutar" en cualquier comando para probarlo.</p>
+    </div>
+
+    <div class="cmds-grid" id="cmdsGrid"></div>
+    <div id="globalResult"></div>
+  </div>
+</div>
+
+<script>
+// ═══════════════════════════════════════════════════════════════════════
+// CATÁLOGO COMPLETO DE COMANDOS
+// ═══════════════════════════════════════════════════════════════════════
+const MODULOS = [
+  {
+    id:"asistente", icon:"🤖", nombre:"Asistente IA", color:"#00ff88",
+    desc:"Comandos de voz e IA conversacional",
+    cmds:[
+      {titulo:"¿Cuántos pedidos tengo hoy?", tipo:"voz",
+       desc:"Consulta pedidos del día actual.",
+       trigger:"nexus, ¿cuántos pedidos tengo hoy?",
+       api:"/api/asistente", body:{texto:"cuántos pedidos tengo hoy",session_id:"test"}},
+      {titulo:"¿Cómo está el stock?", tipo:"voz",
+       desc:"Resumen de inventario y alertas.",
+       trigger:"nexus, ¿cómo está el stock?",
+       api:"/api/asistente", body:{texto:"cómo está el stock",session_id:"test"}},
+      {titulo:"¿Cuántos clientes tenemos?", tipo:"voz",
+       desc:"Total de clientes en CRM.",
+       trigger:"nexus, ¿cuántos clientes tenemos?",
+       api:"/api/asistente", body:{texto:"cuántos clientes tenemos",session_id:"test"}},
+      {titulo:"¿Cuáles son mis ventas de hoy?", tipo:"voz",
+       desc:"Ingresos y pedidos completados hoy.",
+       trigger:"nexus, ¿cuáles son mis ventas de hoy?",
+       api:"/api/asistente", body:{texto:"cuáles son mis ventas de hoy",session_id:"test"}},
+      {titulo:"Sistema / RAM / CPU", tipo:"voz",
+       desc:"Estado del sistema en tiempo real.",
+       trigger:"nexus, sistema",
+       api:"/api/asistente", body:{texto:"sistema",session_id:"test"}},
+      {titulo:"Hora y fecha", tipo:"voz",
+       desc:"Fecha y hora actual.",
+       trigger:"nexus, ¿qué hora es?",
+       api:"/api/asistente", body:{texto:"qué hora es hoy",session_id:"test"}},
+      {titulo:"Genera un post para Instagram", tipo:"voz",
+       desc:"Hook viral generado por IA.",
+       trigger:"nexus, genera un post para instagram",
+       api:"/api/asistente", body:{texto:"genera un post para instagram",session_id:"test"}},
+      {titulo:"Ayuda / comandos", tipo:"voz",
+       desc:"Lista de capacidades del asistente.",
+       trigger:"nexus, ayuda",
+       api:"/api/asistente", body:{texto:"ayuda",session_id:"test"}},
+    ]
+  },
+  {
+    id:"pedidos", icon:"📦", nombre:"Pedidos", color:"#64b5f6",
+    desc:"Gestión de órdenes y pedidos",
+    cmds:[
+      {titulo:"Ver todos los pedidos", tipo:"web",
+       desc:"Lista completa de pedidos.",
+       trigger:"Abrir /pedidos",
+       url:"/pedidos"},
+      {titulo:"Nuevo pedido", tipo:"web",
+       desc:"Formulario de nuevo pedido.",
+       trigger:"Abrir /nuevo_pedido",
+       url:"/nuevo_pedido"},
+      {titulo:"API: Listar pedidos", tipo:"api",
+       desc:"JSON con todos los pedidos.",
+       trigger:"GET /api/pedidos",
+       api:"/api/pedidos", method:"GET"},
+    ]
+  },
+  {
+    id:"stock", icon:"📊", nombre:"Stock / Inventario", color:"#ffcc02",
+    desc:"Control de materiales e inventario",
+    cmds:[
+      {titulo:"Ver inventario web", tipo:"web",
+       desc:"Panel completo de stock.",
+       trigger:"Abrir /stock",
+       url:"/stock"},
+      {titulo:"API: Stock completo", tipo:"api",
+       desc:"JSON con todo el inventario.",
+       trigger:"GET /api/stock",
+       api:"/api/stock", method:"GET"},
+      {titulo:"API: Items bajo stock", tipo:"api",
+       desc:"Artículos con stock crítico.",
+       trigger:"GET /api/stock/bajo",
+       api:"/api/stock/bajo", method:"GET"},
+      {titulo:"Nuevo item de stock", tipo:"web",
+       desc:"Agregar artículo al inventario.",
+       trigger:"Abrir /nuevo_stock_form",
+       url:"/nuevo_stock_form"},
+    ]
+  },
+  {
+    id:"clientes", icon:"👥", nombre:"Clientes / CRM", color:"#ff80ab",
+    desc:"Gestión de clientes y relaciones",
+    cmds:[
+      {titulo:"Ver clientes web", tipo:"web",
+       desc:"Lista de clientes en el CRM.",
+       trigger:"Abrir /clientes",
+       url:"/clientes"},
+      {titulo:"Nuevo cliente", tipo:"web",
+       desc:"Formulario de nuevo cliente.",
+       trigger:"Abrir /nuevo_cliente_form",
+       url:"/nuevo_cliente_form"},
+      {titulo:"API: Listar clientes", tipo:"api",
+       desc:"JSON con todos los clientes.",
+       trigger:"GET /api/clientes",
+       api:"/api/clientes", method:"GET"},
+    ]
+  },
+  {
+    id:"marketing", icon:"📣", nombre:"Marketing IA", color:"#f48fb1",
+    desc:"Generación de contenido y campañas",
+    cmds:[
+      {titulo:"Panel marketing web", tipo:"web",
+       desc:"Dashboard de marketing con IA.",
+       trigger:"Abrir /marketing",
+       url:"/marketing"},
+      {titulo:"Hooks virales TikTok", tipo:"api",
+       desc:"Hooks generados por NEXUS.",
+       trigger:"GET /api/autoventas/hooks/tiktok",
+       api:"/api/autoventas/hooks/tiktok", method:"GET"},
+      {titulo:"Hooks virales Instagram", tipo:"api",
+       desc:"Hooks para Instagram.",
+       trigger:"GET /api/autoventas/hooks/instagram",
+       api:"/api/autoventas/hooks/instagram", method:"GET"},
+      {titulo:"Calendario editorial semanal", tipo:"api",
+       desc:"Plan de contenido de la semana.",
+       trigger:"GET /api/autoventas/calendario",
+       api:"/api/autoventas/calendario", method:"GET"},
+      {titulo:"Métricas de auto-ventas", tipo:"api",
+       desc:"Estadísticas del pipeline de ventas.",
+       trigger:"GET /api/autoventas/metricas",
+       api:"/api/autoventas/metricas", method:"GET"},
+    ]
+  },
+  {
+    id:"autoventas", icon:"🚀", nombre:"Auto-Ventas", color:"#80cbc4",
+    desc:"Pipeline de prospectos y seguimiento",
+    cmds:[
+      {titulo:"Panel auto-ventas", tipo:"web",
+       desc:"Pipeline visual de prospectos.",
+       trigger:"Abrir /autoventas",
+       url:"/autoventas"},
+      {titulo:"Landing page pública", tipo:"web",
+       desc:"Captura de leads.",
+       trigger:"Abrir /landing",
+       url:"/landing"},
+      {titulo:"API: Ver pipeline", tipo:"api",
+       desc:"JSON con todos los prospectos.",
+       trigger:"GET /api/autoventas/pipeline",
+       api:"/api/autoventas/pipeline", method:"GET"},
+      {titulo:"API: Seguimientos pendientes", tipo:"api",
+       desc:"Prospectos que necesitan contacto hoy.",
+       trigger:"GET /api/autoventas/pendientes",
+       api:"/api/autoventas/pendientes", method:"GET"},
+    ]
+  },
+  {
+    id:"paranormal", icon:"🔮", nombre:"Paranormal Mode", color:"#b39ddb",
+    desc:"Teatro de terror interactivo",
+    cmds:[
+      {titulo:"Abrir modo paranormal", tipo:"web",
+       desc:"Panel de terror teatral.",
+       trigger:"Abrir /paranormal",
+       url:"/paranormal"},
+      {titulo:"API: Estado paranormal", tipo:"api",
+       desc:"Estado actual de la máquina de estados.",
+       trigger:"GET /api/paranormal/estado",
+       api:"/api/paranormal/estado", method:"GET"},
+      {titulo:"Activar paranormal (API)", tipo:"api",
+       desc:"Dispara la secuencia completa.",
+       trigger:"POST /api/paranormal/activar",
+       api:"/api/paranormal/activar", method:"POST",
+       body:{victima:"Invitado"}},
+      {titulo:"Spirit Box (API)", tipo:"api",
+       desc:"Solo modo spirit box.",
+       trigger:"POST /api/paranormal/spirit",
+       api:"/api/paranormal/spirit", method:"POST",
+       body:{victima:null}},
+      {titulo:"Reset forzado", tipo:"api",
+       desc:"Fuerza vuelta al estado inactivo.",
+       trigger:"POST /api/paranormal/reset",
+       api:"/api/paranormal/reset", method:"POST"},
+    ]
+  },
+  {
+    id:"admin", icon:"⚙️", nombre:"Admin / Control", color:"#ff7043",
+    desc:"Panel exclusivo del administrador",
+    cmds:[
+      {titulo:"Panel admin web", tipo:"web",
+       desc:"Control NEXUS exclusivo (requiere PIN).",
+       trigger:"Abrir /admin",
+       url:"/admin"},
+      {titulo:"Catálogo de módulos (API)", tipo:"api",
+       desc:"JSON con todos los módulos y precios.",
+       trigger:"GET /api/admin/catalogo",
+       api:"/api/admin/catalogo", method:"GET"},
+      {titulo:"Verificar setup", tipo:"api",
+       desc:"¿Ya fue configurado el admin?",
+       trigger:"GET /api/admin/setup_check",
+       api:"/api/admin/setup_check", method:"GET"},
+      {titulo:"Wizard de configuración", tipo:"web",
+       desc:"Configuración inicial guiada por NEXUS.",
+       trigger:"Abrir /setup",
+       url:"/setup"},
+    ]
+  },
+  {
+    id:"sistema", icon:"🖥️", nombre:"Sistema / Monitor", color:"#a5d6a7",
+    desc:"Rendimiento, logs y diagnóstico",
+    cmds:[
+      {titulo:"API: Estado del sistema", tipo:"api",
+       desc:"CPU, RAM y disco en tiempo real.",
+       trigger:"GET /api/sistema",
+       api:"/api/sistema", method:"GET"},
+      {titulo:"API: Diagnóstico completo", tipo:"api",
+       desc:"Módulos, procesos y conexiones.",
+       trigger:"GET /api/diagnostico",
+       api:"/api/diagnostico", method:"GET"},
+      {titulo:"API: Supabase ping", tipo:"api",
+       desc:"Verificar conexión a la nube.",
+       trigger:"GET /api/supabase/ping",
+       api:"/api/supabase/ping", method:"GET"},
+      {titulo:"NEXUS Ear (voz + texto)", tipo:"web",
+       desc:"Interfaz de voz e interacción con NEXUS.",
+       trigger:"Abrir /nexus-ear",
+       url:"/nexus-ear"},
+    ]
+  },
+  {
+    id:"finanzas", icon:"💰", nombre:"Finanzas", color:"#fff176",
+    desc:"Ingresos, gastos y reportes",
+    cmds:[
+      {titulo:"Dashboard financiero", tipo:"web",
+       desc:"Panel de ingresos y gastos.",
+       trigger:"Abrir /finanzas",
+       url:"/finanzas"},
+      {titulo:"Cotizador express", tipo:"web",
+       desc:"Genera cotización rápida.",
+       trigger:"Abrir /cotizar-rapido",
+       url:"/cotizar-rapido"},
+    ]
+  },
+];
+
+// ═══════════════════════════════════════════════════════════════════════
+// ESTADO
+// ═══════════════════════════════════════════════════════════════════════
+let moduloActivo = null;
+let totalEjecutados = 0, totalOK = 0, totalERR = 0;
+
+// ═══════════════════════════════════════════════════════════════════════
+// INIT
+// ═══════════════════════════════════════════════════════════════════════
+window.addEventListener('DOMContentLoaded', () => {
+  renderSidebar();
+  mostrarModulo(null);
+  iniciarSTT();
+  contarComandos();
+});
+
+function contarComandos(){
+  const total = MODULOS.reduce((a,m)=>a+m.cmds.length,0);
+  document.getElementById('statCmds').textContent=`${total} comandos`;
+}
+
+// ═══════════════════════════════════════════════════════════════════════
+// SIDEBAR
+// ═══════════════════════════════════════════════════════════════════════
+function renderSidebar(){
+  const sb = document.querySelector('#sidebar .mod-group');
+  let html = '<div class="mod-group-title">Módulos</div>';
+  html += `<div class="mod-item ${!moduloActivo?'active':''}" onclick="mostrarModulo(null)">
+    <span class="mod-icon">🔍</span> Todos los módulos
+    <span class="cmd-count">${MODULOS.reduce((a,m)=>a+m.cmds.length,0)}</span>
+  </div>`;
+  MODULOS.forEach(m=>{
+    html+=`<div class="mod-item" id="mi_${m.id}" onclick="mostrarModulo('${m.id}')">
+      <span class="mod-icon">${m.icon}</span>${m.nombre}
+      <span class="cmd-count">${m.cmds.length}</span>
+    </div>`;
+  });
+  sb.innerHTML=html;
+}
+
+function mostrarModulo(id){
+  moduloActivo=id;
+  document.querySelectorAll('.mod-item').forEach(el=>el.classList.remove('active'));
+  const target = id ? document.getElementById(`mi_${id}`) : document.querySelector('.mod-item');
+  if(target) target.classList.add('active');
+
+  const filtro = document.getElementById('buscar').value;
+  const mods = id ? MODULOS.filter(m=>m.id===id) : MODULOS;
+  const m = mods[0];
+
+  document.getElementById('panelTitle').textContent = id && m ? `${m.icon} ${m.nombre}` : 'Todos los módulos';
+  document.getElementById('panelDesc').textContent = id && m ? m.desc :
+    'Todos los comandos disponibles de todos los módulos.';
+
+  renderCmds(mods, filtro);
+}
+
+function filtrarComandos(){
+  const q = document.getElementById('buscar').value.toLowerCase();
+  const mods = moduloActivo ? MODULOS.filter(m=>m.id===moduloActivo) : MODULOS;
+  renderCmds(mods, q);
+}
+
+function renderCmds(mods, filtro=''){
+  const grid = document.getElementById('cmdsGrid');
+  let html = '';
+  let idx = 0;
+  mods.forEach(mod=>{
+    mod.cmds.forEach(cmd=>{
+      if(filtro && !cmd.titulo.toLowerCase().includes(filtro) &&
+         !cmd.desc.toLowerCase().includes(filtro) &&
+         !cmd.trigger.toLowerCase().includes(filtro)) return;
+      const tagClass = cmd.tipo==='voz'?'tag-voz':cmd.tipo==='web'?'tag-web':'tag-cli';
+      const tagLbl = cmd.tipo==='voz'?'VOZ':cmd.tipo==='web'?'WEB':'API';
+      html+=`<div class="cmd-card" id="cc_${idx}">
+        <div class="cmd-title">
+          ${mod.icon} ${cmd.titulo}
+          <span class="tag ${tagClass}">${tagLbl}</span>
+        </div>
+        <div class="cmd-desc">${cmd.desc}</div>
+        <div class="cmd-trigger">${cmd.trigger}</div>
+        <button class="btn-ejecutar" onclick="ejecutarCmd(${idx},'${mod.id}')">
+          ▶ Ejecutar
+        </button>
+        <div class="cmd-result" id="res_${idx}"></div>
+      </div>`;
+      idx++;
+    });
+  });
+  grid.innerHTML = html || '<div style="color:#444;padding:20px">Sin resultados.</div>';
+
+  // Guardar mapa idx→cmd
+  window._cmdsMap = [];
+  mods.forEach(mod=>mod.cmds.forEach(cmd=>{
+    if(!filtro||cmd.titulo.toLowerCase().includes(filtro)||
+       cmd.desc.toLowerCase().includes(filtro)||
+       cmd.trigger.toLowerCase().includes(filtro))
+      window._cmdsMap.push({mod,cmd});
+  }));
+}
+
+// ═══════════════════════════════════════════════════════════════════════
+// EJECUTAR COMANDO
+// ═══════════════════════════════════════════════════════════════════════
+async function ejecutarCmd(idx, modId){
+  const entry = window._cmdsMap[idx];
+  if(!entry) return;
+  const {cmd} = entry;
+  const card = document.getElementById(`cc_${idx}`);
+  const res  = document.getElementById(`res_${idx}`);
+  const btn  = card.querySelector('.btn-ejecutar');
+
+  card.classList.add('running');
+  btn.disabled=true;
+  btn.textContent='Ejecutando...';
+  res.className='cmd-result show';
+  res.textContent='Procesando...';
+
+  try{
+    if(cmd.url){
+      // Abrir en nueva pestaña
+      window.open(cmd.url,'_blank');
+      mostrarResultado(idx,`Abierto: ${cmd.url}`, true);
+      return;
+    }
+
+    const method = cmd.method || 'POST';
+    let respText = '';
+
+    if(method==='GET'){
+      const r = await fetch(cmd.api);
+      const data = await r.json();
+      respText = JSON.stringify(data, null, 2).substring(0,400);
+    } else {
+      const body = cmd.body || {};
+      const r = await fetch(cmd.api,{
+        method:'POST',
+        headers:{'Content-Type':'application/json'},
+        body:JSON.stringify(body)
+      });
+      const data = await r.json();
+      respText = data.respuesta || data.mensaje || JSON.stringify(data,null,2).substring(0,400);
+    }
+
+    mostrarResultado(idx, respText, true);
+
+    // TTS
+    if(respText && window.speechSynthesis && respText.length < 300){
+      const u=new SpeechSynthesisUtterance(respText.replace(/{|}|\[|\]/g,''));
+      u.lang='es-MX'; u.pitch=1.05; u.rate=0.92;
+      window.speechSynthesis.speak(u);
+    }
+  } catch(e){
+    mostrarResultado(idx, `Error: ${e.message}`, false);
+  }
+}
+
+function mostrarResultado(idx, texto, ok){
+  const card = document.getElementById(`cc_${idx}`);
+  const res  = document.getElementById(`res_${idx}`);
+  const btn  = card.querySelector('.btn-ejecutar');
+
+  totalEjecutados++;
+  if(ok) totalOK++; else totalERR++;
+  document.getElementById('statEjecutados').textContent=`Ejecutados: ${totalEjecutados}`;
+  document.getElementById('statOK').textContent=`OK: ${totalOK}`;
+  document.getElementById('statERR').textContent=`Errores: ${totalERR}`;
+
+  card.classList.remove('running');
+  card.classList.add(ok?'done':'error');
+  res.className=`cmd-result show ${ok?'ok':'err'}`;
+  res.textContent=texto;
+  btn.disabled=false;
+  btn.textContent='▶ Ejecutar';
+
+  setTimeout(()=>card.classList.remove('done','error'),3000);
+}
+
+// ═══════════════════════════════════════════════════════════════════════
+// STT — ESCUCHA CONTINUA CON WAKE WORD "NEXUS"
+// ═══════════════════════════════════════════════════════════════════════
+const NOMBRES_MASC=['sabino','raúl','raul','miguel','carlos','antonio','juan',
+                    'diego','pablo','jorge','andrés','andres','luis'];
+let _voz=null;
+function getVoz(){
+  if(_voz) return _voz;
+  const vs=window.speechSynthesis?window.speechSynthesis.getVoices():[];
+  _voz=vs.find(v=>v.lang==='es-MX'&&NOMBRES_MASC.some(n=>v.name.toLowerCase().includes(n)))
+     ||vs.find(v=>v.lang==='es-MX')
+     ||vs.find(v=>v.lang.startsWith('es'))
+     ||vs[0]||null;
+  return _voz;
+}
+if(window.speechSynthesis&&window.speechSynthesis.onvoiceschanged!==undefined)
+  window.speechSynthesis.onvoiceschanged=()=>{ _voz=null; };
+
+function nexusHabla(txt){
+  if(!window.speechSynthesis) return;
+  window.speechSynthesis.cancel();
+  const u=new SpeechSynthesisUtterance(txt);
+  const v=getVoz(); if(v) u.voice=v;
+  u.lang='es-MX'; u.pitch=1.05; u.rate=0.92;
+  window.speechSynthesis.speak(u);
+}
+
+let esperandoComando=false;
+let micVivo=false;
+
+function iniciarSTT(){
+  const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+  if(!SR){
+    document.getElementById('sttStatus').textContent='STT no disponible en este navegador';
+    return;
+  }
+  const mic=new SR();
+  mic.lang='es-MX';
+  mic.continuous=true;
+  mic.interimResults=true;
+
+  mic.onstart=()=>{
+    micVivo=true;
+    document.getElementById('sttDot').className='sttDot listening';
+    document.getElementById('sttStatus').textContent='Escuchando...';
+  };
+
+  mic.onresult=e=>{
+    let interim='';
+    let final='';
+    for(let i=e.resultIndex;i<e.results.length;i++){
+      if(e.results[i].isFinal) final+=e.results[i][0].transcript;
+      else interim+=e.results[i][0].transcript;
+    }
+    if(interim) document.getElementById('sttTranscript').textContent=interim;
+    if(!final) return;
+
+    document.getElementById('sttTranscript').textContent=final;
+    const t=final.toLowerCase().trim();
+
+    if(!esperandoComando){
+      // Escucha trigger "nexus"
+      if(t.includes('nexus')||t.includes('nexo')){
+        esperandoComando=true;
+        document.getElementById('sttStatus').textContent='Nexus activado — di el comando';
+        document.getElementById('sttDot').className='sttDot processing';
+        nexusHabla('Mande.');
+        setTimeout(()=>{ esperandoComando=false;
+          document.getElementById('sttDot').className='sttDot listening';
+          document.getElementById('sttStatus').textContent='Escuchando...';
+        }, 8000);
+      }
+    } else {
+      // Tenemos comando
+      esperandoComando=false;
+      document.getElementById('sttDot').className='sttDot listening';
+      document.getElementById('sttStatus').textContent='Procesando: '+final;
+      procesarComandoVoz(final);
+    }
+  };
+
+  mic.onerror=e=>{
+    micVivo=false;
+    document.getElementById('sttDot').className='sttDot';
+    document.getElementById('sttStatus').textContent='Reconectando micrófono...';
+    setTimeout(()=>{ try{mic.start();}catch(ex){} },1000);
+  };
+  mic.onend=()=>{
+    micVivo=false;
+    setTimeout(()=>{ try{mic.start();}catch(ex){} },500);
+  };
+
+  try{ mic.start(); }catch(e){}
+  setInterval(()=>{ if(!micVivo){ try{mic.start();}catch(e){} } },5000);
+}
+
+async function procesarComandoVoz(texto){
+  try{
+    document.getElementById('sttStatus').textContent='Consultando NEXUS...';
+    const r=await fetch('/api/asistente',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({texto,session_id:'comandos'})
+    }).then(x=>x.json());
+    const resp=r.respuesta||JSON.stringify(r);
+    document.getElementById('sttTranscript').textContent=resp;
+    document.getElementById('sttStatus').textContent='Escuchando...';
+    nexusHabla(resp.substring(0,200));
+  } catch(e){
+    document.getElementById('sttStatus').textContent='Error: '+e.message;
+  }
+}
+
+renderCmds(MODULOS);
+</script>
+</body>
+</html>

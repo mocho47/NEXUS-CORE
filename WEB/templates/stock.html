@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Inventario - NEXUS</title>
+    <style>
+        * { box-sizing: border-box; }
+        body { background: #0a0a0a; color: #e0e0e0; font-family: 'Segoe UI', sans-serif; padding: 20px; }
+        h2 { color: #00ff88; margin-bottom: 16px; }
+        .nav a { color: #888; text-decoration: none; font-size: 0.9em; }
+        .form-card { background: #141414; border: 1px solid #222; border-radius: 10px; padding: 16px; margin-bottom: 20px; }
+        .form-card h3 { color: #00ff88; font-size: 0.95em; margin-bottom: 12px; }
+        .form-row { display: flex; flex-wrap: wrap; gap: 10px; }
+        input, select {
+            background: #1a1a1a; border: 1px solid #333; color: #fff;
+            padding: 8px 12px; border-radius: 6px; font-size: 0.9em; flex: 1; min-width: 120px;
+        }
+        .btn-add {
+            background: #00ff8822; border: 1px solid #00ff88; color: #00ff88;
+            padding: 8px 20px; border-radius: 6px; cursor: pointer; font-size: 0.9em;
+        }
+        .btn-add:hover { background: #00ff8844; }
+        table { width: 100%; border-collapse: collapse; font-size: 0.9em; }
+        th { color: #555; text-align: left; padding: 8px; border-bottom: 1px solid #1a1a1a; font-size: 0.8em; text-transform: uppercase; }
+        td { padding: 10px 8px; border-bottom: 1px solid #111; }
+        .bajo { color: #ff4444; font-weight: bold; }
+        .cat { padding: 2px 8px; border-radius: 4px; font-size: 0.75em; background: #00ff8822; color: #00ff88; }
+        .empty { color: #444; padding: 20px 0; text-align: center; }
+    </style>
+</head>
+<body>
+    <div class="nav" style="margin-bottom:16px;"><a href="/dashboard">← Dashboard</a></div>
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
+        <h2 style="margin:0;">📦 Inventario</h2>
+        <a href="/nuevo_stock_form" style="background:#00ff8822;border:1px solid #00ff88;color:#00ff88;padding:7px 16px;border-radius:6px;text-decoration:none;font-size:0.9em;">+ Nuevo Item</a>
+    </div>
+
+    <div class="form-card">
+        <h3>+ Agregar / Actualizar Item</h3>
+        <form method="post" action="/nuevo_item_stock">
+            <div class="form-row">
+                <input name="nombre" placeholder="Nombre del material" required>
+                <input name="cantidad" type="number" placeholder="Cantidad" min="0" required>
+                <input name="precio" type="number" step="0.01" placeholder="Precio unitario $" min="0" required>
+                <select name="categoria">
+                    <option value="GENERAL">General</option>
+                    <option value="LASER">Laser</option>
+                    <option value="SUBLIMACION">Sublimación</option>
+                    <option value="RETROFIT">Retrofit</option>
+                    <option value="DTF">DTF</option>
+                    <option value="INSUMOS">Insumos</option>
+                </select>
+                <button class="btn-add" type="submit">Guardar</button>
+            </div>
+        </form>
+    </div>
+
+    {% if bajo_stock %}
+    <div style="background:#ff440011; border:1px solid #ff444433; border-radius:8px; padding:10px 14px; margin-bottom:16px; font-size:0.85em; color:#ff6644;">
+        ⚠️ <strong>{{ bajo_stock|length }} item(s) con stock bajo</strong>:
+        {% for i in bajo_stock %}{{ i.nombre }} ({{ i.cantidad }}){% if not loop.last %}, {% endif %}{% endfor %}
+    </div>
+    {% endif %}
+
+    {% if stock %}
+    <table>
+        <thead>
+            <tr>
+                <th>Material</th>
+                <th>Categoría</th>
+                <th>Cantidad</th>
+                <th>Precio Unit.</th>
+            </tr>
+        </thead>
+        <tbody>
+        {% for item in stock %}
+            <tr>
+                <td style="font-weight:bold;">{{ item.nombre }}</td>
+                <td><span class="cat">{{ item.categoria or 'GENERAL' }}</span></td>
+                <td class="{% if item.cantidad <= 3 %}bajo{% endif %}">{{ item.cantidad }}</td>
+                <td style="color:#00ff88;">${{ "%.2f"|format(item.precio|float) }}</td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+        <div class="empty">Sin items en inventario. Agrega el primero arriba.</div>
+    {% endif %}
+</body>
+</html>

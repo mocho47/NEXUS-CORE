@@ -1,0 +1,86 @@
+--------------------------------------------------------------------------------
+   MANUAL OPERATIVO NEXUS V9.4 - TALLER INTELIGENTE & CONECTADO
+   Ubicación Maestra: C:\NEXUS
+--------------------------------------------------------------------------------
+
+¡Hola! Si estás leyendo esto desde otro perfil de Trae, bienvenido.
+Todo el sistema ha sido centralizado en C:\NEXUS para evitar problemas de permisos.
+
+================================================================================
+   BITÁCORA DE MANTENIMIENTO (29/01/2026) - ACTUALIZACIÓN CRÍTICA
+================================================================================
+[HECHO] DXF / INKSCAPE: 
+   - Se configuró ruta robusta para Inkscape (busca .exe y .com).
+   - Se corrigió el botón de conversión en el panel TALLER.
+   - Se añadió reporte de errores detallado.
+
+[HECHO] INTERFAZ DE PEDIDOS:
+   - Se añadieron botones VISIBLES (Terminar, Editar, WhatsApp) en la parte superior.
+   - Se habilitó Menú Contextual (Clic Derecho) en la lista de pedidos.
+
+[HECHO] COMANDOS DE VOZ:
+   - Nueva capacidad para cambiar estados por voz:
+     * "Nexus, pedido de [Nombre] realizado"
+     * "Nexus, pedido de [Nombre] listo"
+     * "Nexus, pedido de [Nombre] entregado"
+
+[HECHO] SUPABASE (NUBE):
+   - Integración funcional en `nexus_orders.py`, `nexus_stock.py`, `nexus_crm.py`.
+   - Sistema híbrido: Funciona con JSON local si falla internet.
+
+================================================================================
+   BITÁCORA DE MANTENIMIENTO (30/01/2026) - ARQUITECTURA ORQUESTADOR
+================================================================================
+[DEFINICIÓN DE ARQUITECTURA]:
+   - NEXUS = ORQUESTADOR. Es el director de orquesta.
+   - MÓDULOS (Pedidos, Stock, CRM) = MOTORES. Son los músicos independientes.
+   - OBJETIVO: Sistema robusto pero no monolítico. Si un motor falla, el resto sigue.
+   - BLINDAJE: La política "Local-First" se mantiene para garantizar operatividad.
+
+[CRÍTICO] MIGRACIÓN Y ESTABILIDAD:
+   - NEXUS_DB.PY: Se reescribió la lógica para garantizar "Local-First". 
+     * SIEMPRE escribe en JSON primero (disco duro).
+     * Luego intenta sincronizar con Supabase (Nube).
+     * Si no hay luz/internet, los datos están seguros en local.
+   - MIGRATE_DATA.PY: Script corregido para subir todos los JSONs locales a Supabase.
+   - PROBE_SCHEMA.PY: Herramienta de diagnóstico creada para ver el estado real de la BD.
+   - ESQUEMA DB: Se mapearon campos faltantes (insistent_level, etc.) a columnas JSONB 'metadata' y 'data'.
+
+================================================================================
+   BITÁCORA (31/01/2026) - ESTRATEGIA TRIDENTE & NEXUS COMERCIAL
+================================================================================
+[ESTRATEGIA PRIMARIA]: EL TRIDENTE (OPERATIVO)
+   1. ACTUALIZA TUS FAROS (Rauna Nalim): "Cash Cow" & Fuente de Contenido (300+ videos).
+   2. CREACIONES MILENS (Anuar): "Startup". Foco técnico actual.
+   3. CANBUSFIX (Futuro): "El Retiro". Comunidad Viral.
+
+[ESTRATEGIA SECUNDARIA]: NEXUS SOFTWARE (COMERCIAL)
+   - VISIÓN: Empaquetar Nexus como producto SaaS para emprendedores.
+   - MODELO: Demo 1 mes -> Licencia 2-10 años.
+   - IMPLICACIÓN TÉCNICA: El código debe ser modular y configurable (no hardcoded) para adaptarse a otros negocios.
+
+[NUEVO MÓDULO]: NEXUS VIDEO AUTOMATION (DISEÑO UNIVERSAL)
+   - OBJETIVO: Procesar videos masivamente (ATF -> CanbusFix).
+   - ARQUITECTURA: Basada en "Perfiles de Edición" (configurables en JSON).
+     * Perfil A (ATF): Solo marca de agua.
+     * Perfil B (Viral): Intro + Outro + Efectos.
+   - ESTO PERMITE VENDERLO: "Nexus Video" servirá para CUALQUIER negocio, no solo faros.
+
+================================================================================
+   PRÓXIMOS PASOS
+================================================================================
+1. Crear estructura `nexus_video.py` con soporte de Perfiles (Product-Ready).
+2. Crear archivo de configuración `video_profiles.json`.
+3. Validar FFmpeg (Auto-detección).
+
+--------------------------------------------------------------------------------
+   INSTRUCCIONES DE RECUPERACIÓN
+--------------------------------------------------------------------------------
+Si perdiste el contexto del chat anterior:
+1. No te preocupes, el CÓDIGO en C:\NEXUS es la verdad absoluta.
+2. Ejecuta `INICIAR_NEXUS.lnk` (o el script python) y todo debería funcionar.
+3. Este archivo (`NOTAS_DE_ADMIN_NEXUS.txt`) contiene el historial clave.
+
+--------------------------------------------------------------------------------
+   "La tecnología es mejor cuando une a las personas (y a los perfiles)."
+--------------------------------------------------------------------------------

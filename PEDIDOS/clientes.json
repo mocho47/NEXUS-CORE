@@ -1,0 +1,63 @@
+{
+    "michelle ramos ": {
+        "id": 1,
+        "nombre": "michelle ramos ",
+        "telefono": "",
+        "cumple": null,
+        "gastado": 150.0,
+        "pedidos": 1,
+        "created_at": "2026-01-27T10:43:40.671351+00:00"
+    },
+    "gabriela ramires ": {
+        "id": 2,
+        "nombre": "gabriela ramires ",
+        "telefono": "",
+        "cumple": null,
+        "gastado": 160.0,
+        "pedidos": 1,
+        "created_at": "2026-01-27T10:43:40.957157+00:00"
+    },
+    "donas ": {
+        "id": 3,
+        "nombre": "donas ",
+        "telefono": "",
+        "cumple": null,
+        "gastado": 700.0,
+        "pedidos": 1,
+        "created_at": "2026-01-27T10:43:41.195382+00:00"
+    },
+    "maria elena ": {
+        "id": 4,
+        "nombre": "maria elena ",
+        "telefono": "",
+        "cumple": null,
+        "gastado": 60.0,
+        "pedidos": 1,
+        "created_at": "2026-01-27T10:43:41.409696+00:00"
+    },
+    "3329311117": {
+        "id": 5,
+        "nombre": "3329311117",
+        "telefono": "3329311117",
+        "cumple": null,
+        "gastado": 240.0,
+        "pedidos": 2,
+        "created_at": "2026-01-27T10:43:41.617828+00:00"
+    },
+    "3316961411": {
+        "id": 6,
+        "nombre": "3316961411",
+        "telefono": "3316961411",
+        "cumple": null,
+        "gastado": 240.0,
+        "pedidos": 2,
+        "created_at": "2026-01-27T10:43:42.0062+00:00"
+    },
+    "3313306990": {
+        "nombre": "3313306990",
+        "telefono": "3313306990",
+        "cumple": null,
+        "gastado": 80.0,
+        "pedidos": 1
+    }
+}

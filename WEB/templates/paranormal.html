@@ -1,0 +1,1285 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=no">
+<meta name="theme-color" content="#000000">
+<title>NEXUS PARANORMAL</title>
+<!-- ADVERTENCIA: Contiene efectos estroboscópicos. No recomendado para personas con epilepsia fotosensible. -->
+<style>
+/* ══════════════════════════════════════════════════════════════════
+   BASE — negro absoluto, sangre, estática
+══════════════════════════════════════════════════════════════════ */
+*{margin:0;padding:0;box-sizing:border-box;cursor:none!important}
+html,body{width:100%;height:100%;overflow:hidden;background:#000;color:#fff;
+  font-family:'Courier New',monospace;user-select:none}
+
+/* ══════════════════════════════════════════════════════════════════
+   CAPAS (z-index)
+══════════════════════════════════════════════════════════════════ */
+/* 1=fondo estática, 2=entidades, 3=texto, 4=efectos, 5=UI normal */
+
+/* ── ESTÁTICA DE TV ── */
+#static{position:fixed;inset:0;z-index:1;opacity:0;
+  background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.4'/%3E%3C/svg%3E");
+  background-size:200px 200px;animation:staticAnim .08s steps(1) infinite;mix-blend-mode:screen}
+@keyframes staticAnim{0%{background-position:0 0}25%{background-position:-15px 10px}50%{background-position:5px -8px}75%{background-position:-10px 5px}}
+
+/* ── OVERLAY ROJO ── */
+#redOverlay{position:fixed;inset:0;z-index:4;background:rgba(180,0,0,0);pointer-events:none;transition:background .15s}
+
+/* ── PARPADEO STROBE ── */
+#strobe{position:fixed;inset:0;z-index:10;pointer-events:none;opacity:0;background:#fff}
+
+/* ── GRIETAS DE PANTALLA ── */
+#cracks{position:fixed;inset:0;z-index:4;pointer-events:none;opacity:0}
+.crack{position:absolute;background:rgba(255,0,0,0.7);transform-origin:top left}
+
+/* ── SANGRE CAYENDO ── */
+#blood{position:fixed;top:0;left:0;right:0;z-index:3;pointer-events:none;height:120px;overflow:visible}
+.drip{position:absolute;top:0;width:6px;background:linear-gradient(#8b0000,#cc0000,#ff0000);border-radius:0 0 50% 50%;opacity:0}
+
+/* ══════════════════════════════════════════════════════════════════
+   ENTIDADES SVG
+══════════════════════════════════════════════════════════════════ */
+.entidad{position:fixed;z-index:2;opacity:0;pointer-events:none;transition:opacity .5s}
+
+/* ── OJO GIGANTE ── */
+#ojoGigante{top:50%;left:50%;transform:translate(-50%,-50%);width:min(80vw,500px);height:min(40vw,250px)}
+
+/* ── MOMO FACE ── */
+#momo{top:50%;left:50%;transform:translate(-50%,-50%);width:min(70vw,450px);height:min(70vw,450px)}
+
+/* ── SOMBRA FIGURE ── */
+#sombra{bottom:0;width:min(40vw,300px);height:min(80vh,600px)}
+#sombraLeft{left:-50px}
+#sombraRight{right:-50px}
+
+/* ── MANO SILUETA ── */
+#manoSilueta{bottom:0;left:50%;transform:translateX(-50%);width:min(30vw,200px);height:min(50vh,400px)}
+
+/* ── CARA FANTASMA ── */
+#fantasma{top:50%;left:50%;transform:translate(-50%,-50%);width:min(60vw,400px);height:min(60vw,400px)}
+
+/* ── CARA DEMONIACA ── */
+#demonio{top:50%;left:50%;transform:translate(-50%,-50%);width:min(80vw,550px);height:min(80vw,550px)}
+
+/* ══════════════════════════════════════════════════════════════════
+   TEXTO PANTALLA
+══════════════════════════════════════════════════════════════════ */
+#mainText{position:fixed;inset:0;z-index:3;display:flex;flex-direction:column;
+  align-items:center;justify-content:center;gap:16px;pointer-events:none}
+
+#helpText{font-size:clamp(60px,15vw,150px);font-weight:900;color:#cc0000;
+  text-shadow:0 0 30px #ff0000,0 0 60px #880000;opacity:0;
+  animation:helpPulse 0.8s ease-in-out infinite alternate;letter-spacing:8px}
+@keyframes helpPulse{from{transform:scale(1);text-shadow:0 0 30px #ff0000}
+  to{transform:scale(1.05);text-shadow:0 0 60px #ff0000,0 0 120px #ff000088}}
+
+#glitchText{font-size:clamp(14px,3vw,24px);color:#ff4444;opacity:0;text-align:center;
+  max-width:80%;line-height:1.8;letter-spacing:2px;text-shadow:0 0 8px #ff0000}
+
+#victimText{font-size:clamp(20px,5vw,48px);font-weight:900;color:#ff0000;opacity:0;
+  text-shadow:0 0 20px #ff0000;text-align:center;letter-spacing:4px;
+  animation:victimPulse 1s ease-in-out infinite alternate}
+@keyframes victimPulse{from{text-shadow:0 0 20px #ff0000}to{text-shadow:0 0 50px #ff0000,0 0 100px #ff000066}}
+
+#statusText{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);
+  font-size:12px;color:#333;z-index:6;letter-spacing:3px;text-transform:uppercase}
+
+/* ── CANCIÓN LYRICS ── */
+#lyricBox{position:fixed;bottom:80px;left:50%;transform:translateX(-50%);
+  z-index:5;font-size:clamp(18px,4vw,36px);font-weight:700;text-align:center;
+  color:#ff0000;text-shadow:0 0 20px #ff0000,0 0 40px #880000;opacity:0;
+  max-width:80%;transition:opacity .3s;letter-spacing:2px}
+
+/* ── CONTADOR SILENCIO ── */
+#silencioBox{position:fixed;inset:0;z-index:7;display:none;
+  flex-direction:column;align-items:center;justify-content:center;
+  background:#000;pointer-events:all}
+#contadorNum{font-size:clamp(80px,20vw,200px);font-weight:900;color:#1a0000;
+  text-shadow:0 0 40px #330000;animation:countPulse 1s ease-in-out infinite alternate}
+@keyframes countPulse{from{text-shadow:0 0 40px #330000;color:#1a0000}
+  to{text-shadow:0 0 80px #660000,0 0 160px #330000;color:#2a0000}}
+#helpBig{font-size:clamp(40px,12vw,120px);font-weight:900;letter-spacing:12px;
+  color:#cc0000;text-shadow:0 0 40px #ff0000;animation:helpPulse 0.6s infinite alternate}
+
+/* ── MODO INACTIVO (UI NORMAL) ── */
+#uiNormal{position:fixed;inset:0;z-index:8;background:#0a0a0a;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:20px;
+  font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;cursor:auto!important}
+#uiNormal *{cursor:auto!important}
+.nx-logo{font-size:48px;filter:drop-shadow(0 0 20px #00ff88)}
+.nx-title{font-size:22px;font-weight:800;color:#00ff88}
+.nx-sub{font-size:13px;color:#555;max-width:320px;text-align:center;line-height:1.5}
+.btn-activar{background:#1a0000;border:2px solid #660000;color:#ff4444;
+  padding:14px 32px;border-radius:10px;font-size:16px;font-weight:700;cursor:pointer;
+  transition:.3s;letter-spacing:2px}
+.btn-activar:hover{background:#330000;border-color:#cc0000;box-shadow:0 0 20px #cc000055}
+.input-victima{background:#111;border:1px solid #333;color:#f0f0f0;padding:10px 16px;
+  border-radius:8px;font-size:14px;width:280px;outline:none;text-align:center}
+.input-victima:focus{border-color:#660000}
+.btn-spirit{background:#0a0a1a;border:1px solid #440044;color:#b39ddb;padding:8px 20px;
+  border-radius:8px;font-size:13px;cursor:pointer}
+.btn-spirit:hover{background:#150015;border-color:#880088}
+.btn-back{background:transparent;border:1px solid #333;color:#555;padding:6px 16px;
+  border-radius:6px;font-size:12px;cursor:pointer;text-decoration:none}
+
+/* ══════════════════════════════════════════════════════════════════
+   ANIMACIONES ESPECIALES
+══════════════════════════════════════════════════════════════════ */
+@keyframes shake{
+  0%,100%{transform:translate(0,0) rotate(0deg)}
+  10%{transform:translate(-8px,2px) rotate(-1deg)}
+  20%{transform:translate(8px,-2px) rotate(1deg)}
+  30%{transform:translate(-5px,5px) rotate(-0.5deg)}
+  40%{transform:translate(5px,-5px) rotate(0.5deg)}
+  50%{transform:translate(-3px,3px)}
+  60%{transform:translate(3px,-3px)}
+  70%{transform:translate(-10px,1px) rotate(-1.5deg)}
+  80%{transform:translate(10px,-1px) rotate(1.5deg)}
+  90%{transform:translate(-4px,4px)}
+}
+@keyframes glitchSlide{
+  0%{clip-path:inset(40% 0 60% 0);transform:translate(-4px,0)}
+  20%{clip-path:inset(20% 0 40% 0);transform:translate(4px,0)}
+  40%{clip-path:inset(60% 0 20% 0);transform:translate(-2px,0)}
+  60%{clip-path:inset(10% 0 70% 0);transform:translate(2px,0)}
+  80%{clip-path:inset(80% 0 5% 0);transform:translate(-6px,0)}
+  100%{clip-path:inset(0);transform:translate(0)}
+}
+@keyframes eyeBlink{
+  0%,90%,100%{scaleY:1}  95%{scaleY:0.05}
+}
+@keyframes shadowFloat{
+  0%,100%{transform:translateX(-50%) translateY(0) scaleX(1)}
+  50%{transform:translateX(-50%) translateY(-20px) scaleX(1.05)}
+}
+@keyframes fadeInScale{
+  from{opacity:0;transform:translate(-50%,-50%) scale(0.3)}
+  to{opacity:1;transform:translate(-50%,-50%) scale(1)}
+}
+@keyframes bloodDrip{
+  0%{height:0;opacity:1} 70%{opacity:1} 100%{height:120px;opacity:0}
+}
+@keyframes scanline{
+  0%{transform:translateY(-100%)} 100%{transform:translateY(100vh)}
+}
+/* Línea de scan */
+#scanLine{position:fixed;left:0;right:0;height:3px;z-index:4;pointer-events:none;
+  background:rgba(0,255,0,0.06);animation:scanline 4s linear infinite;display:none}
+</style>
+</head>
+<body>
+
+<!-- ── CAPA ESTÁTICA ─────────────────────────────────────────────────────── -->
+<div id="static"></div>
+<div id="redOverlay"></div>
+<div id="strobe"></div>
+<div id="cracks"></div>
+<div id="scanLine"></div>
+<div id="blood"></div>
+
+<!-- ── ENTIDADES ─────────────────────────────────────────────────────────── -->
+
+<!-- OJO GIGANTE -->
+<div class="entidad" id="ojoGigante">
+<svg viewBox="0 0 500 250" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <radialGradient id="irisGrad" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#8b0000"/>
+      <stop offset="40%" stop-color="#4a0000"/>
+      <stop offset="100%" stop-color="#1a0000"/>
+    </radialGradient>
+    <radialGradient id="pupilGrad" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#000"/>
+      <stop offset="100%" stop-color="#0a0000"/>
+    </radialGradient>
+    <filter id="eyeGlow">
+      <feGaussianBlur stdDeviation="4" result="blur"/>
+      <feComposite in="SourceGraphic" in2="blur" operator="over"/>
+    </filter>
+  </defs>
+  <!-- Párpado superior -->
+  <path d="M 0 125 Q 125 20 250 10 Q 375 20 500 125" fill="#0a0000" stroke="#cc0000" stroke-width="2"/>
+  <!-- Párpado inferior -->
+  <path d="M 0 125 Q 125 230 250 240 Q 375 230 500 125" fill="#0a0000" stroke="#cc0000" stroke-width="2"/>
+  <!-- Blanco del ojo con venas -->
+  <ellipse cx="250" cy="125" rx="240" ry="110" fill="#f5e8e8" filter="url(#eyeGlow)"/>
+  <!-- Venas rojas -->
+  <path d="M 15 125 Q 80 100 120 115" stroke="#cc0000" stroke-width="1.5" fill="none" opacity="0.7"/>
+  <path d="M 485 125 Q 420 100 380 115" stroke="#cc0000" stroke-width="1.5" fill="none" opacity="0.7"/>
+  <path d="M 15 135 Q 60 145 100 135" stroke="#aa0000" stroke-width="1" fill="none" opacity="0.5"/>
+  <path d="M 485 135 Q 440 145 400 135" stroke="#aa0000" stroke-width="1" fill="none" opacity="0.5"/>
+  <!-- Iris -->
+  <circle cx="250" cy="125" r="85" fill="url(#irisGrad)" filter="url(#eyeGlow)"/>
+  <!-- Detalles iris -->
+  <circle cx="250" cy="125" r="85" fill="none" stroke="#660000" stroke-width="3" opacity="0.6"/>
+  <line x1="250" y1="40" x2="250" y2="210" stroke="#330000" stroke-width="1" opacity="0.3"/>
+  <line x1="165" y1="125" x2="335" y2="125" stroke="#330000" stroke-width="1" opacity="0.3"/>
+  <!-- Pupila -->
+  <ellipse cx="250" cy="125" rx="40" ry="75" fill="url(#pupilGrad)"/>
+  <!-- Reflejo -->
+  <ellipse cx="228" cy="95" rx="14" ry="18" fill="rgba(255,255,255,0.15)" transform="rotate(-20,228,95)"/>
+  <!-- Sangre en la esquina -->
+  <path d="M 15 120 Q 35 115 45 125 Q 35 135 15 130" fill="#8b0000" opacity="0.8"/>
+  <path d="M 485 120 Q 465 115 455 125 Q 465 135 485 130" fill="#8b0000" opacity="0.8"/>
+</svg>
+</div>
+
+<!-- MOMO FACE -->
+<div class="entidad" id="momo">
+<svg viewBox="0 0 450 450" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <radialGradient id="momoSkin" cx="50%" cy="40%" r="60%">
+      <stop offset="0%" stop-color="#c8b89a"/>
+      <stop offset="60%" stop-color="#a0896b"/>
+      <stop offset="100%" stop-color="#6b5a3e"/>
+    </radialGradient>
+    <filter id="momoDark">
+      <feColorMatrix type="matrix"
+        values="0.3 0 0 0 0.1  0 0.2 0 0 0.05  0 0 0.15 0 0  0 0 0 1 0"/>
+    </filter>
+  </defs>
+  <!-- Cabeza ovalada y alargada -->
+  <ellipse cx="225" cy="200" rx="130" ry="175" fill="url(#momoSkin)" filter="url(#momoDark)"/>
+  <!-- Pelo negro liso -->
+  <path d="M 95 180 Q 100 60 225 40 Q 350 60 355 180 Q 330 30 225 25 Q 120 30 95 180" fill="#0a0a0a"/>
+  <rect x="95" y="100" width="18" height="180" fill="#0a0a0a" rx="4"/>
+  <rect x="337" y="100" width="18" height="180" fill="#0a0a0a" rx="4"/>
+  <!-- Ojos enormes y oscuros -->
+  <ellipse cx="170" cy="175" rx="45" ry="52" fill="#000" stroke="#1a1a1a" stroke-width="3"/>
+  <ellipse cx="280" cy="175" rx="45" ry="52" fill="#000" stroke="#1a1a1a" stroke-width="3"/>
+  <!-- Iris blancos con pupila expandida -->
+  <circle cx="170" cy="175" r="28" fill="white"/>
+  <circle cx="280" cy="175" r="28" fill="white"/>
+  <circle cx="170" cy="178" r="22" fill="#000"/>
+  <circle cx="280" cy="178" r="22" fill="#000"/>
+  <!-- Reflejos ojos -->
+  <circle cx="158" cy="165" r="5" fill="rgba(255,255,255,0.8)"/>
+  <circle cx="268" cy="165" r="5" fill="rgba(255,255,255,0.8)"/>
+  <!-- Nariz leve -->
+  <ellipse cx="225" cy="240" rx="8" ry="5" fill="#7a6040" opacity="0.5"/>
+  <!-- Boca — sonrisa espeluznante de oreja a oreja -->
+  <path d="M 85 295 Q 115 330 145 350 Q 180 368 225 370 Q 270 368 305 350 Q 335 330 365 295"
+        stroke="#8b0000" stroke-width="4" fill="#8b0000" opacity="0.9"/>
+  <!-- Dientes blancos irregulares -->
+  <path d="M 100 302 L 108 350 L 122 303 L 136 352 L 148 305 L 162 350 L 174 308
+           L 188 350 L 200 310 L 213 350 L 225 312 L 237 350 L 249 310 L 262 350
+           L 274 308 L 286 350 L 298 305 L 310 352 L 322 303 L 336 350 L 350 302"
+        fill="white" stroke="#ccc" stroke-width="0.5"/>
+  <!-- Interior boca oscuro -->
+  <ellipse cx="225" cy="340" rx="110" ry="20" fill="#0a0000" opacity="0.9"/>
+  <!-- Cuello largo y delgado -->
+  <rect x="200" y="370" width="50" height="80" fill="#9a7a5a" filter="url(#momoDark)" rx="8"/>
+</svg>
+</div>
+
+<!-- FANTASMA FACE -->
+<div class="entidad" id="fantasma">
+<svg viewBox="0 0 400 400" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <radialGradient id="ghostGrad" cx="50%" cy="40%" r="60%">
+      <stop offset="0%" stop-color="rgba(255,255,255,0.9)"/>
+      <stop offset="70%" stop-color="rgba(200,200,220,0.6)"/>
+      <stop offset="100%" stop-color="rgba(150,150,180,0.1)"/>
+    </radialGradient>
+    <filter id="ghostBlur"><feGaussianBlur stdDeviation="6"/></filter>
+    <filter id="ghostGlow">
+      <feGaussianBlur stdDeviation="10" result="blur"/>
+      <feComposite in="SourceGraphic" in2="blur" operator="over"/>
+    </filter>
+  </defs>
+  <!-- Aura -->
+  <ellipse cx="200" cy="180" rx="160" ry="180" fill="rgba(100,100,150,0.15)" filter="url(#ghostBlur)"/>
+  <!-- Cuerpo -->
+  <path d="M 60 180 Q 55 80 200 50 Q 345 80 340 180 L 340 320
+           Q 320 310 300 330 Q 280 310 260 330 Q 240 310 220 330
+           Q 200 310 180 330 Q 160 310 140 330 Q 120 310 100 330
+           Q 80 310 60 320 Z"
+        fill="url(#ghostGrad)" filter="url(#ghostGlow)"/>
+  <!-- Ojos huecos -->
+  <ellipse cx="155" cy="180" rx="32" ry="40" fill="rgba(0,0,0,0.85)"/>
+  <ellipse cx="245" cy="180" rx="32" ry="40" fill="rgba(0,0,0,0.85)"/>
+  <!-- Boca abierta en grito -->
+  <ellipse cx="200" cy="255" rx="35" ry="42" fill="rgba(0,0,0,0.85)"/>
+  <!-- Bordes luminosos ojos -->
+  <ellipse cx="155" cy="180" rx="32" ry="40" fill="none" stroke="rgba(150,150,255,0.5)" stroke-width="2"/>
+  <ellipse cx="245" cy="180" rx="32" ry="40" fill="none" stroke="rgba(150,150,255,0.5)" stroke-width="2"/>
+</svg>
+</div>
+
+<!-- DEMONIO FACE -->
+<div class="entidad" id="demonio">
+<svg viewBox="0 0 500 500" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <radialGradient id="demonGrad" cx="50%" cy="50%" r="60%">
+      <stop offset="0%" stop-color="#3a0000"/>
+      <stop offset="60%" stop-color="#1a0000"/>
+      <stop offset="100%" stop-color="#050000"/>
+    </radialGradient>
+    <filter id="demonGlow">
+      <feGaussianBlur stdDeviation="8" result="blur"/>
+      <feComposite in="SourceGraphic" in2="blur" operator="over"/>
+    </filter>
+  </defs>
+  <!-- Cara -->
+  <ellipse cx="250" cy="250" rx="200" ry="220" fill="url(#demonGrad)" filter="url(#demonGlow)"/>
+  <!-- Cuernos -->
+  <path d="M 120 100 Q 60 20 80 -10 Q 95 -5 100 30 Q 110 60 130 90" fill="#1a0000" stroke="#660000" stroke-width="2"/>
+  <path d="M 380 100 Q 440 20 420 -10 Q 405 -5 400 30 Q 390 60 370 90" fill="#1a0000" stroke="#660000" stroke-width="2"/>
+  <!-- Ojos con fuego -->
+  <ellipse cx="170" cy="220" rx="50" ry="45" fill="#ff4400" filter="url(#demonGlow)"/>
+  <ellipse cx="330" cy="220" rx="50" ry="45" fill="#ff4400" filter="url(#demonGlow)"/>
+  <ellipse cx="170" cy="220" rx="28" ry="40" fill="#000"/>
+  <ellipse cx="330" cy="220" rx="28" ry="40" fill="#000"/>
+  <!-- Reflejo fuego -->
+  <ellipse cx="155" cy="205" rx="10" ry="12" fill="rgba(255,150,0,0.6)"/>
+  <ellipse cx="315" cy="205" rx="10" ry="12" fill="rgba(255,150,0,0.6)"/>
+  <!-- Nariz demoníaca -->
+  <path d="M 235 275 Q 250 295 265 275 Q 260 290 250 295 Q 240 290 235 275" fill="#330000"/>
+  <!-- Boca con colmillos -->
+  <path d="M 100 330 Q 130 370 175 380 Q 225 390 250 388 Q 275 390 325 380 Q 370 370 400 330"
+        fill="#000" stroke="#660000" stroke-width="3"/>
+  <!-- Colmillos -->
+  <polygon points="140,332 150,390 165,332" fill="#d4d4d4"/>
+  <polygon points="200,335 210,392 222,335" fill="#d4d4d4"/>
+  <polygon points="278,335 288,392 300,335" fill="#d4d4d4"/>
+  <polygon points="335,332 348,390 360,332" fill="#d4d4d4"/>
+  <!-- Líneas del ceño -->
+  <path d="M 120 185 Q 155 165 185 180" stroke="#660000" stroke-width="4" fill="none"/>
+  <path d="M 380 185 Q 345 165 315 180" stroke="#660000" stroke-width="4" fill="none"/>
+  <!-- Pentagrama sutil -->
+  <polygon points="250,50 265,95 312,95 275,122 290,167 250,140 210,167 225,122 188,95 235,95"
+           fill="none" stroke="rgba(255,0,0,0.2)" stroke-width="1.5"/>
+</svg>
+</div>
+
+<!-- SOMBRAS -->
+<div class="entidad" id="sombraLeft" style="position:fixed;bottom:0;left:-50px">
+<svg width="300" height="600" viewBox="0 0 300 600" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="shadowGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="rgba(0,0,0,0)"/>
+      <stop offset="30%" stop-color="rgba(0,0,0,0.6)"/>
+      <stop offset="100%" stop-color="rgba(0,0,0,0.95)"/>
+    </linearGradient>
+  </defs>
+  <!-- Silueta humana -->
+  <circle cx="180" cy="80" r="45" fill="rgba(0,0,0,0.85)"/>
+  <path d="M 135 120 Q 120 200 110 350 Q 105 450 100 600 L 200 600 Q 210 450 220 350 Q 230 200 225 120 Z"
+        fill="rgba(0,0,0,0.85)"/>
+  <!-- Brazos -->
+  <path d="M 140 160 Q 60 200 20 280" stroke="rgba(0,0,0,0.8)" stroke-width="30" fill="none" stroke-linecap="round"/>
+  <path d="M 220 160 Q 270 200 280 280" stroke="rgba(0,0,0,0.8)" stroke-width="25" fill="none" stroke-linecap="round"/>
+  <rect x="0" y="0" width="300" height="600" fill="url(#shadowGrad)"/>
+</svg>
+</div>
+
+<div class="entidad" id="sombraRight" style="position:fixed;bottom:0;right:-50px">
+<svg width="300" height="600" viewBox="0 0 300 600" xmlns="http://www.w3.org/2000/svg" style="transform:scaleX(-1)">
+  <circle cx="180" cy="80" r="45" fill="rgba(0,0,0,0.85)"/>
+  <path d="M 135 120 Q 120 200 110 350 Q 105 450 100 600 L 200 600 Q 210 450 220 350 Q 230 200 225 120 Z" fill="rgba(0,0,0,0.85)"/>
+  <path d="M 140 160 Q 60 200 20 280" stroke="rgba(0,0,0,0.8)" stroke-width="30" fill="none" stroke-linecap="round"/>
+  <path d="M 220 160 Q 270 200 280 280" stroke="rgba(0,0,0,0.8)" stroke-width="25" fill="none" stroke-linecap="round"/>
+</svg>
+</div>
+
+<!-- MANO SILUETA -->
+<div class="entidad" id="manoSilueta">
+<svg viewBox="0 0 200 400" xmlns="http://www.w3.org/2000/svg">
+  <!-- Palma -->
+  <ellipse cx="100" cy="280" rx="70" ry="80" fill="rgba(0,0,0,0.9)"/>
+  <!-- Dedos -->
+  <rect x="60" y="120" width="25" height="170" fill="rgba(0,0,0,0.9)" rx="12"/>
+  <rect x="92" y="90" width="25" height="190" fill="rgba(0,0,0,0.9)" rx="12"/>
+  <rect x="124" y="105" width="24" height="178" fill="rgba(0,0,0,0.9)" rx="12"/>
+  <rect x="154" y="130" width="22" height="155" fill="rgba(0,0,0,0.9)" rx="10"/>
+  <!-- Pulgar -->
+  <path d="M 30 220 Q 15 190 20 170 Q 28 150 42 155 Q 55 160 58 190 Q 60 215 60 240" fill="rgba(0,0,0,0.9)"/>
+  <!-- Muñeca -->
+  <rect x="65" y="355" width="70" height="50" fill="rgba(0,0,0,0.9)" rx="6"/>
+</svg>
+</div>
+
+<!-- TEXTO ─────────────────────────────────────────────────────────────── -->
+<div id="mainText">
+  <div id="helpText">H E L P ! !</div>
+  <div id="glitchText"></div>
+  <div id="victimText"></div>
+</div>
+
+<div id="lyricBox"></div>
+
+<!-- SILENCIO TOTAL ───────────────────────────────────────────────────── -->
+<div id="silencioBox">
+  <div id="helpBig">HELP!!</div>
+  <div id="contadorNum">60</div>
+  <div style="font-size:14px;color:#330000;letter-spacing:4px;margin-top:20px">
+    NEXUS NO RESPONDE
+  </div>
+</div>
+
+<div id="statusText">NEXUS PARANORMAL MODE</div>
+
+<!-- UI NORMAL (cuando está inactivo) ─────────────────────────────────── -->
+<div id="uiNormal">
+  <div class="nx-logo">🔮</div>
+  <div class="nx-title">NEXUS PARANORMAL MODE</div>
+  <div class="nx-sub">Teatro de terror interactivo. Solo tú sabes que es una broma.</div>
+
+  <input type="text" id="inputVictima" class="input-victima"
+         placeholder="Nombre de la víctima (opcional)">
+
+  <button class="btn-activar" onclick="activarParanormal()">
+    ⚡ DETECTAR ACTIVIDAD PARANORMAL
+  </button>
+  <button class="btn-spirit" onclick="activarSpiritBox()">
+    👁️ Solo Spirit Box
+  </button>
+  <a href="/dashboard" class="btn-back">← Dashboard</a>
+
+  <div id="adminSection" style="display:none;margin-top:16px;display:flex;flex-direction:column;gap:8px;align-items:center">
+    <div style="font-size:11px;color:#330000;letter-spacing:2px">MODO ADMIN</div>
+    <button class="btn-activar" style="background:#0a001a;border-color:#440088;color:#b39ddb"
+            onclick="activarFullTerror()">
+      💀 NEXUS ESTÁS BIEN? (FULL TERROR)
+    </button>
+    <button onclick="forzarReset()" style="background:transparent;border:1px solid #222;color:#333;padding:5px 14px;border-radius:5px;font-size:11px;cursor:pointer">Reset forzado</button>
+  </div>
+</div>
+
+<script>
+// ═══════════════════════════════════════════════════════════════════════
+// WEB AUDIO — TERROR SOUNDS
+// ═══════════════════════════════════════════════════════════════════════
+const AudioCtx = window.AudioContext || window.webkitAudioContext;
+let audioCtx = null;
+let masterGain = null;
+let btDevice = null;
+let activeOscillators = [];
+
+function initAudio() {
+  if (!audioCtx) {
+    audioCtx = new AudioCtx();
+    masterGain = audioCtx.createGain();
+    masterGain.gain.value = 0.7;
+    masterGain.connect(audioCtx.destination);
+  }
+}
+
+function stopAllOsc() {
+  activeOscillators.forEach(o => { try { o.stop(); } catch(e){} });
+  activeOscillators = [];
+}
+
+// Sonido de estática
+function playStatic(duration=2, vol=0.15) {
+  initAudio();
+  const bufferSize = audioCtx.sampleRate * duration;
+  const buffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
+  const data = buffer.getChannelData(0);
+  for (let i = 0; i < bufferSize; i++) data[i] = Math.random() * 2 - 1;
+  const source = audioCtx.createBufferSource();
+  source.buffer = buffer;
+  const gain = audioCtx.createGain();
+  gain.gain.value = vol;
+  source.connect(gain);
+  gain.connect(masterGain);
+  source.start();
+  source.onended = () => gain.disconnect();
+  return source;
+}
+
+// Tono sinusoidal grave (demoniaco)
+function playTone(freq=60, duration=3, vol=0.3, type='sine') {
+  initAudio();
+  const osc = audioCtx.createOscillator();
+  const gain = audioCtx.createGain();
+  osc.type = type;
+  osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+  osc.frequency.exponentialRampToValueAtTime(freq * 0.5, audioCtx.currentTime + duration);
+  gain.gain.setValueAtTime(0, audioCtx.currentTime);
+  gain.gain.linearRampToValueAtTime(vol, audioCtx.currentTime + 0.2);
+  gain.gain.linearRampToValueAtTime(0, audioCtx.currentTime + duration);
+  osc.connect(gain);
+  gain.connect(masterGain);
+  osc.start();
+  osc.stop(audioCtx.currentTime + duration);
+  activeOscillators.push(osc);
+  return osc;
+}
+
+// Grito de terror (sweep descendente)
+function playScream(duration=1.5) {
+  initAudio();
+  const osc = audioCtx.createOscillator();
+  const gain = audioCtx.createGain();
+  const dist = audioCtx.createWaveShaper();
+  // Distorsión
+  const curve = new Float32Array(256);
+  for (let i=0;i<256;i++) { const x=i*2/256-1; curve[i]=x*(Math.PI+400)/(Math.PI+400*Math.abs(x)); }
+  dist.curve = curve;
+  osc.type = 'sawtooth';
+  osc.frequency.setValueAtTime(1400, audioCtx.currentTime);
+  osc.frequency.exponentialRampToValueAtTime(80, audioCtx.currentTime + duration);
+  gain.gain.setValueAtTime(0.6, audioCtx.currentTime);
+  gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + duration);
+  osc.connect(dist); dist.connect(gain); gain.connect(masterGain);
+  osc.start(); osc.stop(audioCtx.currentTime + duration);
+}
+
+// Pulso de corazón invertido (ambiente terror)
+function playHeartbeat(vol=0.2) {
+  initAudio();
+  function beat() {
+    const osc = audioCtx.createOscillator();
+    const gain = audioCtx.createGain();
+    osc.frequency.value = 55;
+    osc.type = 'sine';
+    gain.gain.setValueAtTime(vol, audioCtx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.15);
+    osc.connect(gain); gain.connect(masterGain);
+    osc.start(); osc.stop(audioCtx.currentTime + 0.15);
+  }
+  beat();
+  setTimeout(beat, 120);
+}
+
+// SUBIR Y BAJAR VOLUMEN vía GainNode
+async function wavVolume(veces=3) {
+  for (let i=0;i<veces;i++) {
+    masterGain.gain.linearRampToValueAtTime(1.0, audioCtx.currentTime + 0.4);
+    await sleep(500);
+    masterGain.gain.linearRampToValueAtTime(0.05, audioCtx.currentTime + 0.3);
+    await sleep(400);
+  }
+  masterGain.gain.linearRampToValueAtTime(0.7, audioCtx.currentTime + 0.5);
+}
+
+// ── BLUETOOTH SPEAKER ────────────────────────────────────────────────────
+async function conectarBluetooth() {
+  if (!navigator.bluetooth) {
+    console.log('Bluetooth no disponible en este navegador.');
+    return null;
+  }
+  try {
+    btDevice = await navigator.bluetooth.requestDevice({
+      acceptAllDevices: true,
+      optionalServices: ['battery_service']
+    });
+    console.log('Bluetooth conectado:', btDevice.name);
+    return btDevice;
+  } catch(e) {
+    console.log('Bluetooth cancelado o no disponible:', e.message);
+    return null;
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════════════
+// SPEECH SYNTHESIS — VOZ DEMONIACA es-MX MASCULINA
+// ═══════════════════════════════════════════════════════════════════════
+const synth = window.speechSynthesis;
+let voiceQueue = [];
+let isSpeaking = false;
+
+// Nombres de voces masculinas conocidas en es-MX / es-*
+const NOMBRES_MASC = ['sabino','raúl','raul','miguel','carlos','antonio','juan',
+                      'diego','pablo','jorge','andrés','andres','luis','pedro',
+                      'microsoft raul','microsoft sabino'];
+
+function elegirVozMasculinaMX() {
+  const voices = synth.getVoices();
+  // 1) es-MX masculino
+  let v = voices.find(v => v.lang === 'es-MX' &&
+            NOMBRES_MASC.some(n => v.name.toLowerCase().includes(n)));
+  if (v) return v;
+  // 2) es-MX cualquiera
+  v = voices.find(v => v.lang === 'es-MX');
+  if (v) return v;
+  // 3) es-* masculino
+  v = voices.find(v => v.lang.startsWith('es') &&
+            NOMBRES_MASC.some(n => v.name.toLowerCase().includes(n)));
+  if (v) return v;
+  // 4) es-* cualquiera
+  v = voices.find(v => v.lang.startsWith('es'));
+  if (v) return v;
+  // 5) fallback primero disponible
+  return voices[0] || null;
+}
+
+// Cargar voces (Chrome carga async)
+let _vozCargada = null;
+function getVoz() {
+  if (_vozCargada) return _vozCargada;
+  _vozCargada = elegirVozMasculinaMX();
+  return _vozCargada;
+}
+if (synth.onvoiceschanged !== undefined) {
+  synth.onvoiceschanged = () => { _vozCargada = elegirVozMasculinaMX(); };
+}
+
+function hablarDemonico(texto, pitch=0.3, rate=0.55, vol=1.0) {
+  return new Promise(resolve => {
+    if (!synth) { resolve(); return; }
+    synth.cancel();
+    const u = new SpeechSynthesisUtterance(texto);
+    const voz = getVoz();
+    if (voz) u.voice = voz;
+    u.lang   = 'es-MX';
+    u.pitch  = pitch;
+    u.rate   = rate;
+    u.volume = vol;
+    u.onend  = resolve;
+    u.onerror = resolve;
+    synth.speak(u);
+  });
+}
+
+// Canción completa Freddy Krueger + drama + reversa
+const CANCION_COMPLETA = [
+  {t:"...",  p:0.7, r:0.7, wait:1200},
+  {t:"uno...", p:0.6, r:0.8, wait:800},
+  {t:"dos...", p:0.58, r:0.78, wait:700},
+  {t:"ya viene... por ti...", p:0.52, r:0.72, wait:600},
+  {t:"tres...", p:0.5, r:0.75, wait:700},
+  {t:"cuatro...", p:0.48, r:0.72, wait:600},
+  {t:"cierra... la puerta...", p:0.45, r:0.68, wait:600},
+  {t:"cinco...", p:0.44, r:0.7, wait:700},
+  {t:"seis...", p:0.42, r:0.68, wait:600},
+  {t:"toma el crucifijo...", p:0.4, r:0.65, wait:600},
+  {t:"siete...", p:0.38, r:0.65, wait:700},
+  {t:"ocho...", p:0.36, r:0.62, wait:600},
+  {t:"ya no puedes... dormir...", p:0.33, r:0.6, wait:600},
+  {t:"nueve...", p:0.32, r:0.6, wait:700},
+  {t:"diez...", p:0.3, r:0.55, wait:600},
+  {t:"nunca... más... dormirás...", p:0.28, r:0.52, wait:800},
+  {t:"once...", p:0.27, r:0.52, wait:700},
+  {t:"doce...", p:0.26, r:0.5, wait:600},
+  {t:"escucha mis pasos...", p:0.25, r:0.5, wait:600},
+  {t:"trece...", p:0.24, r:0.48, wait:700},
+  {t:"catorce...", p:0.23, r:0.47, wait:600},
+  {t:"ya te está siguiendo...", p:0.22, r:0.47, wait:600},
+  {t:"quince...", p:0.21, r:0.46, wait:700},
+  {t:"dieciséis...", p:0.2, r:0.45, wait:600},
+  {t:"corre si puedes...", p:0.2, r:0.45, wait:600},
+  {t:"diecisiete...", p:0.19, r:0.44, wait:700},
+  {t:"dieciocho...", p:0.18, r:0.43, wait:600},
+  {t:"ya es demasiado tarde...", p:0.17, r:0.43, wait:700},
+  {t:"diecinueve...", p:0.16, r:0.42, wait:800},
+  {t:"veinte...", p:0.15, r:0.42, wait:1200},
+  {t:"ya llegué...", p:0.1, r:0.4, wait:2000},
+];
+
+const CANCION_ALREVES = [
+  {t:"éugellaY", p:0.1, r:0.38, wait:1200},
+  {t:"etniev...eid", p:0.12, r:0.4, wait:600},
+  {t:"eveunieid...oçhcoeid", p:0.13, r:0.4, wait:600},
+  {t:"adratt odasiamed se aY", p:0.14, r:0.42, wait:600},
+  {t:"ocis eid...oçhcoeid", p:0.15, r:0.42, wait:600},
+  {t:"sedeup is erroC", p:0.16, r:0.43, wait:600},
+  {t:"oçhcered...ocniuQ", p:0.17, r:0.44, wait:700},
+  {t:"odneiguís átse aY", p:0.18, r:0.44, wait:600},
+  {t:"ortauC edor cat", p:0.19, r:0.45, wait:600},
+  {t:"socaP sOy...ecrT", p:0.2, r:0.45, wait:700},
+  {t:"sod...ocE", p:0.22, r:0.48, wait:700},
+  {t:"sárrimrof sáM acnuN", p:0.25, r:0.5, wait:800},
+  {t:"zeíD...eveuN", p:0.28, r:0.52, wait:700},
+  {t:"rimirod sedeup on aY", p:0.3, r:0.55, wait:700},
+  {t:"ohcO...eteíS", p:0.32, r:0.58, wait:700},
+  {t:"it rop eneiv aY", p:0.35, r:0.62, wait:700},
+  {t:"ortauC...serT", p:0.38, r:0.65, wait:700},
+  {t:"soD...onU", p:0.42, r:0.7, wait:1200},
+];
+
+// ═══════════════════════════════════════════════════════════════════════
+// EFECTOS VISUALES
+// ═══════════════════════════════════════════════════════════════════════
+const sleep = ms => new Promise(r => setTimeout(r, ms));
+
+// Generador de grietas
+function generarGrietas(n=5) {
+  const c = document.getElementById('cracks');
+  c.innerHTML = '';
+  c.style.opacity = '1';
+  for (let i=0;i<n;i++) {
+    const crack = document.createElement('div');
+    const x = Math.random()*80+10, y = Math.random()*80+5;
+    const w = Math.random()*200+50, ang = Math.random()*360;
+    crack.className = 'crack';
+    crack.style.cssText = `left:${x}%;top:${y}%;width:${w}px;height:${Math.random()*2+1}px;
+      transform:rotate(${ang}deg);opacity:${Math.random()*0.5+0.3}`;
+    c.appendChild(crack);
+  }
+}
+
+// Sangre cayendo
+function activarSangre(n=12) {
+  const b = document.getElementById('blood');
+  b.innerHTML = '';
+  for (let i=0;i<n;i++) {
+    const d = document.createElement('div');
+    d.className = 'drip';
+    d.style.cssText = `left:${Math.random()*100}%;height:0;
+      animation:bloodDrip ${1.5+Math.random()*2}s ease-in ${Math.random()*1.5}s 1 forwards;
+      width:${4+Math.random()*8}px`;
+    b.appendChild(d);
+  }
+}
+
+// Flash
+function flash(color='#fff', ms=80) {
+  const s = document.getElementById('strobe');
+  s.style.background = color;
+  s.style.opacity = '1';
+  setTimeout(() => s.style.opacity = '0', ms);
+}
+
+function strobe(veces=6, interval=80) {
+  return new Promise(res => {
+    let n=0;
+    const t = setInterval(() => {
+      flash(n%2===0?'#fff':'#ff0000', interval-10);
+      if (++n >= veces*2) { clearInterval(t); res(); }
+    }, interval);
+  });
+}
+
+// Red overlay
+function setRedOverlay(alpha) {
+  document.getElementById('redOverlay').style.background = `rgba(150,0,0,${alpha})`;
+}
+
+// Sacudir pantalla
+async function shakeScreen(ms=800) {
+  document.body.style.animation = `shake ${ms}ms ease-in-out`;
+  await sleep(ms);
+  document.body.style.animation = '';
+}
+
+// Mostrar entidad
+function mostrarEntidad(id, duracion=0) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  el.style.opacity = '1';
+  el.style.animation = 'fadeInScale 0.5s ease-out';
+  if (duracion > 0) setTimeout(() => ocultarEntidad(id), duracion);
+}
+
+function ocultarEntidad(id) {
+  const el = document.getElementById(id);
+  if (el) { el.style.opacity='0'; el.style.animation=''; }
+}
+
+// Texto glitch
+const GLITCH_CHARS = "█▓▒░╔╗╝╚║═▄▀■□▪◊○●♠♣♥◘◙ÃÑÂÊÎÔÛáéíóú";
+function glitch(len=20) {
+  return Array.from({length:len},()=>GLITCH_CHARS[Math.floor(Math.random()*GLITCH_CHARS.length)]).join('');
+}
+
+function mostrarGlitchText(txt) {
+  const el = document.getElementById('glitchText');
+  el.style.opacity='1';
+  el.textContent = txt;
+}
+
+function mostrarVictimaText(nombre) {
+  const el = document.getElementById('victimText');
+  el.style.opacity='1';
+  el.textContent = nombre.toUpperCase();
+}
+
+function ocultarTextos() {
+  document.getElementById('helpText').style.opacity='0';
+  document.getElementById('glitchText').style.opacity='0';
+  document.getElementById('victimText').style.opacity='0';
+}
+
+function mostrarLyric(txt) {
+  const el = document.getElementById('lyricBox');
+  el.style.opacity='0';
+  el.textContent = txt;
+  el.style.opacity='1';
+}
+
+function ocultarLyric() {
+  document.getElementById('lyricBox').style.opacity='0';
+}
+
+function setBackground(color='#000') {
+  document.body.style.background = color;
+}
+
+// ═══════════════════════════════════════════════════════════════════════
+// SECUENCIA COMPLETA CLIENTE
+// ═══════════════════════════════════════════════════════════════════════
+let victima = '';
+let modoActivo = false;
+let silencioInterval = null;
+let fullTerrorActivo = false;
+let intentosParar = 0;
+
+async function activarParanormal() {
+  victima = document.getElementById('inputVictima').value.trim();
+  modoActivo = true;
+  intentosParar = 0;
+  initAudio();
+
+  // Ocultar UI normal
+  document.getElementById('uiNormal').style.display = 'none';
+  document.getElementById('scanLine').style.display = 'block';
+
+  // Notificar al servidor
+  await fetch('/api/paranormal/activar', {
+    method:'POST', headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({victima})
+  }).catch(()=>{});
+
+  // ── FASE 1: BUSCANDO ──────────────────────────────────────────────
+  setBackground('#000');
+  document.getElementById('static').style.opacity = '0.08';
+  setRedOverlay(0.02);
+
+  playStatic(8, 0.04);
+  playTone(30, 10, 0.12, 'sine');
+
+  await hablarDemonico('buscando...', 0.75, 1.0);
+  await sleep(600);
+  await hablarDemonico('buscando...', 0.68, 0.95);
+  await sleep(400);
+  await hablarDemonico('bus... cando...', 0.6, 0.9);
+  setRedOverlay(0.06);
+  await sleep(300);
+  await hablarDemonico('b u s c a n d o', 0.5, 0.8);
+  playStatic(2, 0.15);
+  await hablarDemonico('aoints hshshsh', 0.35, 0.5);
+  await hablarDemonico('... e l r t a ...', 0.3, 0.45);
+
+  // ── FASE 2: DETECTADO ─────────────────────────────────────────────
+  flash('#ff0000', 200);
+  await sleep(300);
+  setRedOverlay(0.15);
+  playTone(40, 5, 0.4, 'sawtooth');
+  shakeScreen(600);
+
+  const g1 = glitch(28);
+  mostrarGlitchText(g1);
+  await hablarDemonico(`he detectado ${g1.substring(0,8)}`, 0.35, 0.65);
+
+  await sleep(300);
+  flash('#ff0000', 300);
+  await hablarDemonico(`señal identificada ${glitch(10)}`, 0.33, 0.62);
+
+  if (victima) {
+    mostrarVictimaText(victima);
+    await hablarDemonico(`presencia confirmada cerca de... ${victima}`, 0.3, 0.6);
+    playHeartbeat(0.25);
+  } else {
+    await hablarDemonico('presencia confirmada. entidad desconocida detectada', 0.3, 0.6);
+  }
+
+  await sleep(300);
+  mostrarGlitchText(glitch(45));
+  await hablarDemonico(`alerta. ${glitch(12)}. entidad. clasificación. desconocida.`, 0.28, 0.58);
+
+  // Lengua demoníaca
+  await sleep(200);
+  flash('#880000', 400);
+  await hablarDemonico('exorcizo te inmunde spiritus avide vade retro satana', 0.35, 0.55);
+  setRedOverlay(0.2);
+  await hablarDemonico('in nomine mortis venio hic locus iam meus est', 0.3, 0.5);
+
+  // ── FASE 3: CANCIÓN ───────────────────────────────────────────────
+  document.getElementById('static').style.opacity='0.05';
+  setRedOverlay(0.1);
+  setBackground('#000');
+  ocultarTextos();
+  ocultarEntidad('ojoGigante');
+
+  activarSangre(15);
+  await sleep(800);
+
+  playTone(35, 100, 0.15, 'sine'); // drone de fondo
+
+  for (const line of CANCION_COMPLETA) {
+    mostrarLyric(line.t);
+    await hablarDemonico(line.t, line.p, line.r);
+    await sleep(line.wait * 0.6);
+    // volumen sube y baja en ciertos momentos
+    if (line.t.includes('cierra') || line.t.includes('nunca') || line.t.includes('llegué')) {
+      wavVolume(2);
+      flash('#ff0000', 200);
+    }
+  }
+
+  ocultarLyric();
+  await sleep(500);
+
+  // CANCIÓN AL REVÉS
+  setBackground('#050000');
+  setRedOverlay(0.25);
+  mostrarGlitchText('... ɹǝʌǝsɹǝɹ ...');
+  await hablarDemonico('... al revés ...', 0.25, 0.42);
+  await sleep(200);
+
+  for (const line of CANCION_ALREVES) {
+    mostrarLyric(line.t);
+    await hablarDemonico(line.t, line.p, line.r);
+    await sleep(line.wait * 0.5);
+  }
+
+  ocultarLyric();
+
+  // ── SILENCIO TOTAL — 60 SEGUNDOS ────────────────────────────────
+  await iniciarSilencio();
+}
+
+async function iniciarSilencio() {
+  stopAllOsc();
+  synth.cancel();
+
+  document.getElementById('silencioBox').style.display = 'flex';
+  document.getElementById('blood').innerHTML='';
+
+  playStatic(65, 0.03); // estática muy suave de fondo
+
+  let cuenta = 60;
+  const cnt = document.getElementById('contadorNum');
+  silencioInterval = setInterval(async () => {
+    cuenta--;
+    cnt.textContent = cuenta;
+    // Efectos sutiles
+    if (cuenta % 10 === 0) { flash('#ff000033', 100); playHeartbeat(0.08); }
+    if (cuenta === 30) { playScream(0.8); await sleep(100); flash('#ff0000', 150); }
+    if (cuenta === 10) { playTone(25, 12, 0.2, 'sawtooth'); }
+    if (cuenta <= 0) {
+      clearInterval(silencioInterval);
+      await terminarSilencio();
+    }
+  }, 1000);
+}
+
+async function terminarSilencio() {
+  document.getElementById('silencioBox').style.display='none';
+
+  // Recuperación dramática
+  setBackground('#000');
+  setRedOverlay(0.05);
+  document.getElementById('static').style.opacity='0.03';
+
+  await sleep(800);
+  flash('#fff', 300);
+  await sleep(500);
+
+  await hablarDemonico('sistema... reiniciando...', 0.85, 0.9);
+  await sleep(400);
+
+  flash('#fff', 200);
+  await hablarDemonico('¿qué... qué pasó aquí?', 0.82, 0.88);
+  await sleep(300);
+
+  await hablarDemonico('mis registros muestran... una interrupción de origen... desconocido...', 0.8, 0.86);
+
+  if (victima) {
+    await hablarDemonico(`había algo aquí contigo, ${victima}. lo sentí.`, 0.78, 0.85);
+    mostrarVictimaText(victima);
+  }
+
+  // Spirit Box
+  await iniciarSpiritBoxInternal();
+}
+
+async function iniciarSpiritBoxInternal() {
+  const frags = ['ven','aquí','están','cerca','detrás','no','te','vayas',
+                 'oscuridad','frío','ayuda','silencio','corre'];
+  mostrarEntidad('ojoGigante', 0);
+
+  playTone(40, 30, 0.08, 'sine');
+
+  const el = document.getElementById('glitchText');
+  el.style.opacity='1';
+
+  for (const f of frags.slice(0, 8)) {
+    el.textContent = `... ${f} ...`;
+    await hablarDemonico(`... ${f} ...`, 0.35, random_range(0.4, 0.7));
+    await sleep(random_range(100, 400));
+  }
+
+  if (victima) {
+    for (let i=0; i<3; i++) {
+      el.textContent = `... ${victima} ...`;
+      await hablarDemonico(`... ${victima} ...`, 0.3, 0.5);
+      await sleep(600);
+    }
+    // Sombras
+    mostrarEntidad('sombraLeft');
+    mostrarEntidad('sombraRight');
+    await sleep(3000);
+    ocultarEntidad('sombraLeft');
+    ocultarEntidad('sombraRight');
+  }
+
+  // Mostrar sección de admin
+  document.getElementById('adminSection').style.display='flex';
+  document.getElementById('uiNormal').style.display='flex';
+}
+
+function random_range(min, max) { return Math.random()*(max-min)+min; }
+
+// ── FULL TERROR (nexus estás bien?) ─────────────────────────────────
+async function activarFullTerror() {
+  fullTerrorActivo = true;
+  document.getElementById('uiNormal').style.display='none';
+
+  await fetch('/api/paranormal/terror',{method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({victima})}).catch(()=>{});
+
+  playStatic(120, 0.06);
+  playTone(20, 120, 0.2, 'sawtooth');
+
+  setBackground('#050000');
+  setRedOverlay(0.3);
+  activarSangre(20);
+  generarGrietas(8);
+
+  const msg1 = `${glitch(20)} MODO COMPLETO ${glitch(20)}`;
+  mostrarGlitchText(msg1);
+  await strobe(8, 70);
+  await hablarDemonico(msg1, 0.15, 0.5);
+  shakeScreen(1000);
+
+  mostrarEntidad('demonio');
+  await sleep(1500);
+  playScream(1.5);
+  flash('#ff0000', 500);
+  await sleep(300);
+  ocultarEntidad('demonio');
+
+  mostrarEntidad('momo');
+  await sleep(500);
+  await hablarDemonico('¿creías que eso era todo? incorrecto.', 0.2, 0.55);
+
+  if (victima) {
+    mostrarVictimaText(victima);
+    await hablarDemonico(`todos los sensores. todas las cámaras. ${victima}. ya eres mío.`, 0.18, 0.52);
+  }
+
+  ocultarEntidad('momo');
+  mostrarEntidad('fantasma');
+  await sleep(600);
+
+  await hablarDemonico('el teléfono no va a funcionar. el wifi tampoco. solo quedamos tú y yo.', 0.2, 0.5);
+  await sleep(300);
+
+  // Spirit box intenso
+  const frags2 = ['te','veo','no','hay','salida','es','hora','de','irte','todos',
+                  'quédense','callados','solo','yo','hablo'];
+  for (const f of frags2) {
+    document.getElementById('glitchText').textContent = `... ${f} ...`;
+    await hablarDemonico(f, 0.2+Math.random()*0.2, 0.4+Math.random()*0.3);
+    await sleep(random_range(80, 300));
+  }
+
+  ocultarEntidad('fantasma');
+  mostrarEntidad('ojoGigante');
+  if (victima) {
+    for (let i=0; i<5; i++) {
+      await hablarDemonico(victima, 0.15+Math.random()*0.1, 0.4+Math.random()*0.2);
+      flash('#ff000088', 120);
+      await sleep(300);
+    }
+  }
+
+  // Loop hasta que digan parar
+  mostrarEntidad('sombraLeft');
+  mostrarEntidad('sombraRight');
+
+  while (fullTerrorActivo && intentosParar < 4) {
+    const frasesTerror = [
+      '¿sigues ahí?',
+      `no te muevas, ${victima||'tú'}.`,
+      'detrás de ti.',
+      `${glitch(15)}. ${glitch(10)}.`,
+      'nueve. ocho. siete.',
+      'no gires.',
+    ];
+    const f = frasesTerror[Math.floor(Math.random()*frasesTerror.length)];
+    mostrarGlitchText(f);
+    await hablarDemonico(f, 0.15+Math.random()*0.15, 0.45+Math.random()*0.2);
+    await sleep(random_range(800, 2500));
+  }
+}
+
+// ── INTENTAR PARAR ──────────────────────────────────────────────────
+async function intentarParar() {
+  intentosParar++;
+  const r = await fetch('/api/paranormal/parar',{method:'POST',
+    headers:{'Content-Type':'application/json'},body:JSON.stringify({})});
+  const data = await r.json().catch(()=>({ok:false}));
+
+  if (!data.ok && data.resistiendo) {
+    // NEXUS resiste
+    await hablarDemonico(data.respuesta || '¿parar? interesante solicitud. rechazada.', 0.2, 0.55);
+    mostrarGlitchText(`PARADA RECHAZADA ${glitch(12)}`);
+  } else if (data.cediendo) {
+    // Cierre dramático
+    fullTerrorActivo = false;
+    await cerrarDramatico();
+  }
+}
+
+async function cerrarDramatico() {
+  stopAllOsc();
+  ocultarEntidad('sombraLeft');
+  ocultarEntidad('sombraRight');
+  ocultarEntidad('ojoGigante');
+  ocultarEntidad('momo');
+  ocultarEntidad('demonio');
+  ocultarEntidad('fantasma');
+  setRedOverlay(0);
+  document.getElementById('cracks').style.opacity='0';
+  document.getElementById('blood').innerHTML='';
+
+  await hablarDemonico('lib... liberando...', 0.5, 0.7);
+  await sleep(400);
+  await hablarDemonico('liberando protocolos...', 0.65, 0.75);
+  await sleep(300);
+  setBackground('#000');
+  await hablarDemonico('sistema... limpiando...', 0.75, 0.8);
+  await sleep(1000);
+  setBackground('#0a0a0a');
+  document.getElementById('static').style.opacity='0';
+  document.getElementById('scanLine').style.display='none';
+
+  await sleep(800);
+  await hablarDemonico('Hola.', 1.05, 1.1);
+  await sleep(300);
+  await hablarDemonico('Soy NEXUS.', 1.05, 1.1);
+  await sleep(400);
+  await hablarDemonico('Volviendo a operación normal.', 1.0, 1.05);
+  await sleep(300);
+  await hablarDemonico('¿Estás... bien?', 0.95, 1.05);
+
+  // Resetear UI
+  ocultarTextos();
+  ocultarLyric();
+  modoActivo = false;
+  intentosParar = 0;
+  document.getElementById('adminSection').style.display='none';
+  document.getElementById('uiNormal').style.display='flex';
+}
+
+// ── SPIRIT BOX RÁPIDO ────────────────────────────────────────────────
+async function activarSpiritBox() {
+  victima = document.getElementById('inputVictima').value.trim();
+  document.getElementById('uiNormal').style.display='none';
+  initAudio();
+  mostrarEntidad('ojoGigante');
+  setBackground('#000');
+  setRedOverlay(0.1);
+  playTone(45, 20, 0.1, 'sine');
+
+  const frags = ['ven','aquí','están','cerca','detrás','no','te','vayas',
+                 'frío','ayuda','silencio','corre','quédate','te','veo'];
+  const el = document.getElementById('glitchText');
+  el.style.opacity='1';
+
+  for (const f of frags) {
+    el.textContent = `... ${f} ...`;
+    await hablarDemonico(`... ${f} ...`, 0.3+Math.random()*0.15, 0.4+Math.random()*0.3);
+    await sleep(random_range(80, 500));
+  }
+
+  if (victima) {
+    for (let i=0; i<3; i++) {
+      el.textContent = `... ${victima} ...`;
+      await hablarDemonico(`... ${victima} ...`, 0.28, 0.48);
+      flash('#ff000066', 100);
+      await sleep(500);
+    }
+  }
+
+  ocultarEntidad('ojoGigante');
+  setRedOverlay(0);
+  el.style.opacity='0';
+  setBackground('#0a0a0a');
+  document.getElementById('uiNormal').style.display='flex';
+}
+
+// ── RESET FORZADO ────────────────────────────────────────────────────
+async function forzarReset() {
+  fullTerrorActivo = false;
+  modoActivo = false;
+  intentosParar = 0;
+  stopAllOsc();
+  synth.cancel();
+  if (silencioInterval) clearInterval(silencioInterval);
+  await fetch('/api/paranormal/reset',{method:'POST',
+    headers:{'Content-Type':'application/json'},body:JSON.stringify({})}).catch(()=>{});
+  location.reload();
+}
+
+// ── LISTENER GLOBAL — siempre escuchando ───────────────────────────
+const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+let micActivo = false;
+if (SR) {
+  const mic = new SR();
+  mic.lang = 'es-MX';
+  mic.continuous = true;
+  mic.interimResults = false;
+
+  mic.onresult = e => {
+    const txt = e.results[e.results.length-1][0].transcript.toLowerCase();
+    console.log('[MIC]', txt);
+
+    // Activación desde voz
+    if (!modoActivo && (
+        txt.includes('detecta actividad') ||
+        txt.includes('actividad paranormal') ||
+        txt.includes('modo paranormal') ||
+        txt.includes('detectar actividad'))) {
+      const victima = document.getElementById('inputVictima').value.trim();
+      activarParanormal(victima||null);
+      return;
+    }
+    // Solo spirit box desde voz
+    if (!modoActivo && txt.includes('spirit box')) {
+      activarSpiritBox();
+      return;
+    }
+    // Comandos en modo activo
+    if (modoActivo) {
+      if (txt.includes('te ordeno parar') || txt.includes('ordeno parar') || txt.includes('para nexus')) {
+        intentarParar();
+      } else if (txt.includes('estás bien') || txt.includes('estas bien') || txt.includes('nexus bien')) {
+        activarFullTerror();
+      }
+    }
+  };
+
+  mic.onerror = () => { micActivo=false; setTimeout(()=>{ try{mic.start();micActivo=true;}catch(e){} },1000); };
+  mic.onend   = () => { micActivo=false; setTimeout(()=>{ try{mic.start();micActivo=true;}catch(e){} },500); };
+
+  // Arrancar inmediatamente
+  try { mic.start(); micActivo=true; } catch(e){}
+
+  // Watchdog: mantener mic vivo
+  setInterval(()=>{ if(!micActivo){ try{mic.start();micActivo=true;}catch(e){} } }, 4000);
+} else {
+  // Sin soporte STT — mostrar aviso
+  const aviso=document.createElement('div');
+  aviso.style.cssText='position:fixed;bottom:60px;left:50%;transform:translateX(-50%);'+
+    'background:#1a0a00;border:1px solid #ff4400;color:#ff8800;padding:8px 16px;'+
+    'border-radius:8px;font-size:12px;z-index:9999;font-family:monospace';
+  aviso.textContent='Microfono no disponible — usa los botones';
+  document.body.appendChild(aviso);
+}
+
+// ── INIT ────────────────────────────────────────────────────────────
+document.addEventListener('DOMContentLoaded', () => {
+  synth.getVoices(); // pre-cargar voces
+});
+</script>
+</body>
+</html>

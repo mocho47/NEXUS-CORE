@@ -1,0 +1,732 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NEXUS — Panel Central</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { background: #0a0a0a; color: #e0e0e0; font-family: 'Segoe UI', sans-serif; height: 100vh; display: flex; flex-direction: column; overflow: hidden; }
+
+        /* TOP BAR */
+        .topbar { background: #111; border-bottom: 1px solid #1e1e1e; padding: 10px 16px; display: flex; align-items: center; justify-content: space-between; flex-shrink: 0; }
+        .topbar .logo { color: #00ff88; font-weight: bold; font-size: 1.1em; letter-spacing: 3px; }
+        .topbar .dot { font-size: 0.78em; color: #444; }
+        .topbar .dot.ok { color: #00ff88; }
+
+        /* TABS */
+        .tabs-wrap { position: relative; background: #0d0d0d; border-bottom: 1px solid #1a1a1a; flex-shrink: 0; display: flex; align-items: center; }
+        .tabs { display: flex; overflow-x: auto; flex: 1; scrollbar-width: thin; scrollbar-color: #2a2a2a transparent; scroll-behavior: smooth; }
+        .tabs::-webkit-scrollbar { height: 3px; }
+        .tabs::-webkit-scrollbar-track { background: transparent; }
+        .tabs::-webkit-scrollbar-thumb { background: #2a2a2a; border-radius: 2px; }
+        .tab { padding: 11px 16px; font-size: 0.82em; color: #555; cursor: pointer; white-space: nowrap; border-bottom: 2px solid transparent; transition: color 0.15s, border-color 0.15s; user-select: none; flex-shrink: 0; }
+        .tab:hover { color: #ccc; }
+        .tab.active { color: #00ff88; border-bottom-color: #00ff88; }
+        .tab-arrow { background: #0d0d0d; border: none; color: #444; padding: 8px 10px; cursor: pointer; font-size: 1rem; flex-shrink: 0; transition: color .2s; }
+        .tab-arrow:hover { color: #00ff88; }
+
+        /* CONTENT */
+        .content { flex: 1; overflow-y: auto; padding: 14px; scrollbar-width: thin; scrollbar-color: #1e1e1e transparent; }
+        .content::-webkit-scrollbar { width: 5px; }
+        .content::-webkit-scrollbar-track { background: transparent; }
+        .content::-webkit-scrollbar-thumb { background: #1e1e1e; border-radius: 3px; }
+        .panel { display: none; }
+        .panel.active { display: block; }
+
+        /* KPIs */
+        .kpi-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(110px, 1fr)); gap: 10px; margin-bottom: 14px; }
+        .kpi { background: #111; border: 1px solid #1a1a1a; border-radius: 10px; padding: 14px; text-align: center; }
+        .kpi .num { font-size: 2em; font-weight: bold; color: #00ff88; }
+        .kpi.warn .num { color: #ffaa00; }
+        .kpi.alert .num { color: #ff4444; }
+        .kpi .lbl { font-size: 0.7em; color: #444; text-transform: uppercase; letter-spacing: 1px; margin-top: 4px; }
+
+        /* CARDS */
+        .card { background: #111; border: 1px solid #1a1a1a; border-radius: 10px; padding: 14px; margin-bottom: 12px; }
+        .card-title { font-size: 0.78em; color: #00ff88; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 12px; font-weight: bold; }
+
+        /* FORMS */
+        .form-row { display: flex; flex-wrap: wrap; gap: 8px; }
+        input, select, textarea { background: #1a1a1a; border: 1px solid #2a2a2a; color: #e0e0e0; padding: 8px 11px; border-radius: 6px; font-size: 0.88em; font-family: inherit; }
+        input:focus, select:focus, textarea:focus { outline: none; border-color: #00ff88; }
+        select option { background: #1a1a1a; }
+        .fi { flex: 1; min-width: 120px; }
+        .fi-lg { flex: 2; min-width: 160px; }
+        .btn { background: #00ff8820; border: 1px solid #00ff88; color: #00ff88; padding: 8px 18px; border-radius: 6px; cursor: pointer; font-size: 0.86em; white-space: nowrap; }
+        .btn:hover { background: #00ff8840; }
+        .btn-sm { padding: 4px 11px; font-size: 0.78em; }
+        .btn-link { background: none; border: 1px solid #2a2a2a; color: #888; }
+        .btn-link:hover { border-color: #555; color: #ccc; }
+
+        /* TABLES */
+        table { width: 100%; border-collapse: collapse; font-size: 0.86em; }
+        th { color: #444; text-align: left; padding: 6px 8px; border-bottom: 1px solid #1a1a1a; font-size: 0.76em; text-transform: uppercase; letter-spacing: 0.5px; }
+        td { padding: 9px 8px; border-bottom: 1px solid #0f0f0f; vertical-align: middle; }
+        tr:last-child td { border-bottom: none; }
+
+        /* BADGES */
+        .badge { padding: 2px 8px; border-radius: 4px; font-size: 0.74em; font-weight: bold; }
+        .b-pen  { background: #ffaa0022; color: #ffaa00; }
+        .b-ok   { background: #00ff8822; color: #00ff88; }
+        .b-done { background: #33333344; color: #666; }
+        .b-low  { background: #ff440022; color: #ff4444; }
+        .cat    { padding: 2px 7px; border-radius: 4px; font-size: 0.74em; background: #00ff8818; color: #00ff88; }
+
+        /* MISC */
+        .search { width: 100%; margin-bottom: 10px; }
+        .empty { color: #333; text-align: center; padding: 24px; font-size: 0.86em; }
+        .loading { color: #2a2a2a; text-align: center; padding: 24px; font-size: 0.86em; }
+        .mod-chip { padding: 2px 8px; border-radius: 20px; font-size: 0.78em; }
+        .row-info { display: flex; justify-content: space-between; align-items: center; padding: 7px 0; border-bottom: 1px solid #0f0f0f; font-size: 0.87em; }
+        .row-info:last-child { border-bottom: none; }
+        .link-ext { color: #00ff88; text-decoration: none; padding: 8px 16px; border: 1px solid #00ff8844; border-radius: 6px; font-size: 0.86em; display: inline-block; margin: 4px; }
+        .link-ext:hover { background: #00ff8818; }
+    </style>
+</head>
+<body>
+
+<!-- TOP BAR -->
+<div class="topbar">
+    <span class="logo">&#9889; NEXUS</span>
+    <span style="flex:1"></span>
+    <span class="dot" id="dot">&#9679; Conectando...</span>
+    <div id="topbar-right" style="display:flex;align-items:center;gap:8px;margin-left:10px"></div>
+</div>
+
+<!-- TABS -->
+<div class="tabs-wrap">
+<button class="tab-arrow" onclick="document.querySelector('.tabs').scrollBy(-120,0)">&#8249;</button>
+<div class="tabs">
+    <div class="tab active"  onclick="go('inicio')">🏠 Inicio</div>
+    <div class="tab"         onclick="go('pedidos')">📋 Pedidos</div>
+    <div class="tab"         onclick="go('clientes')">👥 Clientes</div>
+    <div class="tab"         onclick="go('stock')">📦 Stock</div>
+    <div class="tab"         onclick="go('cotizar')">💲 Cotizar</div>
+    <div class="tab"         onclick="go('agenda')">📅 Agenda</div>
+    <div class="tab"         onclick="go('marketing')">📣 Marketing</div>
+    <div class="tab"         onclick="window.location='/finanzas'">💰 Finanzas</div>
+    <div class="tab"         onclick="window.location='/galeria'">🎨 Galería</div>
+    <div class="tab"         onclick="go('oido')">🎙️ Oído</div>
+    <div class="tab"         onclick="go('autoventas')">🚀 AutoVentas</div>
+    <div class="tab"         onclick="go('paranormal')">🔮 Paranormal</div>
+    <div class="tab"         onclick="go('comandos_tab')">📋 Comandos</div>
+    <div class="tab"         onclick="go('config')">⚙️ Config</div>
+    <div class="tab"         onclick="window.location='/admin'">🔐 Admin</div>
+</div>
+<button class="tab-arrow" onclick="document.querySelector('.tabs').scrollBy(120,0)">&#8250;</button>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════ CONTENT -->
+<div class="content">
+
+<!-- ░░ INICIO ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░ -->
+<div class="panel active" id="panel-inicio">
+    <div class="kpi-row">
+        <div class="kpi warn"  id="kpi-ped-card"><div class="num" id="kpi-ped">—</div><div class="lbl">Pendientes</div></div>
+        <div class="kpi"       ><div class="num" id="kpi-cli">—</div><div class="lbl">Clientes</div></div>
+        <div class="kpi"       ><div class="num" id="kpi-stk">—</div><div class="lbl">Stock items</div></div>
+        <div class="kpi"  id="kpi-bajo-card"><div class="num" id="kpi-bajo">—</div><div class="lbl">Stock bajo</div></div>
+    </div>
+
+    <div class="card">
+        <div class="card-title">📋 Pedidos pendientes</div>
+        <div id="ini-pedidos"><div class="loading">Cargando...</div></div>
+    </div>
+
+    <div class="card" id="card-bajo" style="display:none">
+        <div class="card-title">⚠️ Stock bajo</div>
+        <div id="ini-bajo"></div>
+    </div>
+
+    <div class="card">
+        <div class="card-title">🔧 Módulos del sistema</div>
+        <div id="modulos" style="display:flex;flex-wrap:wrap;gap:6px;"></div>
+        <div style="color:#2a2a2a;font-size:0.74em;margin-top:8px;text-align:right" id="ts"></div>
+    </div>
+</div>
+
+<!-- ░░ PEDIDOS ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░ -->
+<div class="panel" id="panel-pedidos">
+    <div class="card">
+        <div class="card-title">➕ Nuevo Pedido</div>
+        <form onsubmit="postF(event,'/nuevo_pedido',()=>{cargarPedidos();cargarKPIs()})">
+            <div class="form-row">
+                <input class="fi" name="cliente" placeholder="Cliente" required>
+                <input class="fi-lg" name="producto" placeholder="Producto / descripción" required>
+                <input class="fi" name="entrega" type="datetime-local" required>
+                <button class="btn" type="submit">+ Agregar</button>
+            </div>
+        </form>
+    </div>
+    <div class="card">
+        <div class="card-title">📋 Todos los pedidos</div>
+        <div id="lst-pedidos"><div class="loading">Cargando...</div></div>
+    </div>
+</div>
+
+<!-- ░░ CLIENTES ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░ -->
+<div class="panel" id="panel-clientes">
+    <div class="card">
+        <div class="card-title">➕ Nuevo Cliente</div>
+        <form onsubmit="postF(event,'/nuevo_cliente',()=>{cargarClientes();cargarKPIs()})">
+            <div class="form-row">
+                <input class="fi-lg" name="nombre" placeholder="Nombre completo" required>
+                <input class="fi" name="telefono" type="tel" placeholder="Teléfono (10 dígitos)" required>
+                <input class="fi" name="email" type="email" placeholder="Email (opcional)">
+                <button class="btn" type="submit">+ Agregar</button>
+            </div>
+        </form>
+    </div>
+    <div class="card">
+        <div class="card-title">👥 Lista de Clientes</div>
+        <input class="search" type="text" placeholder="🔍 Buscar..." oninput="filtrar('t-cli',this.value)">
+        <div id="lst-clientes"><div class="loading">Cargando...</div></div>
+    </div>
+</div>
+
+<!-- ░░ STOCK ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░ -->
+<div class="panel" id="panel-stock">
+    <div class="card">
+        <div class="card-title">➕ Nuevo Item</div>
+        <form onsubmit="postF(event,'/nuevo_item_stock',()=>{cargarStock();cargarKPIs()})">
+            <div class="form-row">
+                <input class="fi-lg" name="nombre" placeholder="Nombre del material" required>
+                <input class="fi" name="cantidad" type="number" placeholder="Cantidad" min="0" required>
+                <input class="fi" name="precio" type="number" step="0.01" placeholder="Precio $" min="0" required>
+                <select class="fi" name="categoria">
+                    <option value="GENERAL">General</option>
+                    <option value="LASER">Laser</option>
+                    <option value="SUBLIMACION">Sublimación</option>
+                    <option value="RETROFIT">Retrofit</option>
+                    <option value="DTF">DTF</option>
+                    <option value="NEON">Neón</option>
+                </select>
+                <button class="btn" type="submit">+ Agregar</button>
+            </div>
+        </form>
+    </div>
+    <div class="card">
+        <div class="card-title">📦 Inventario</div>
+        <input class="search" type="text" placeholder="🔍 Buscar material..." oninput="filtrar('t-stk',this.value)">
+        <div id="lst-stock"><div class="loading">Cargando...</div></div>
+    </div>
+</div>
+
+<!-- ░░ COTIZAR ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░ -->
+<div class="panel" id="panel-cotizar">
+    <div class="card">
+        <div class="card-title">💲 Módulos de Cotización</div>
+        <p style="color:#555;font-size:0.85em;margin-bottom:14px;">Selecciona el tipo de cotizador:</p>
+        <a class="link-ext" href="/cotizar-rapido" target="_blank">⚡ Cotizador Rápido</a>
+        <a class="link-ext" href="/cotizar" target="_blank">🔴 Cotizador Pro</a>
+        <a class="link-ext" href="/reporte" target="_blank">📊 Reporte de ventas</a>
+        <a class="link-ext" href="/historial" target="_blank">📂 Historial pedidos</a>
+    </div>
+</div>
+
+<!-- ░░ AGENDA ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░ -->
+<div class="panel" id="panel-agenda">
+    <div class="card">
+        <div class="card-title">📅 Agenda</div>
+        <a class="link-ext" href="/agenda" target="_blank">📅 Abrir Agenda completa</a>
+    </div>
+</div>
+
+<!-- ░░ MARKETING ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░ -->
+<div class="panel" id="panel-marketing">
+    <div class="card">
+        <div class="card-title">📣 Marketing</div>
+        <a class="link-ext" href="/marketing" target="_blank">📣 Panel de Marketing</a>
+        <a class="link-ext" href="/campana_form" target="_blank">🚀 Nueva Campaña</a>
+    </div>
+</div>
+
+<!-- ░░ OÍDO ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░ -->
+<div class="panel" id="panel-oido">
+<div class="card" style="min-height:60vh">
+    <div class="card-title">🎙️ NEXUS Oído — Voz + Texto</div>
+    <div style="background:#050d08;border:1px solid #00ff8822;border-radius:10px;padding:14px;margin-bottom:12px;display:flex;align-items:center;gap:12px">
+        <div id="oid-dot" style="width:10px;height:10px;border-radius:50%;background:#333;transition:.3s"></div>
+        <span id="oid-status" style="color:#555;font-size:.83rem">Iniciando micrófono...</span>
+        <span id="oid-interim" style="color:#00ff8877;font-style:italic;font-size:.8rem;flex:1;text-align:right"></span>
+    </div>
+
+    <!-- Chat -->
+    <div id="oid-chat" style="height:320px;overflow-y:auto;display:flex;flex-direction:column;gap:8px;margin-bottom:12px;padding-right:4px"></div>
+
+    <!-- Input manual -->
+    <div style="display:flex;gap:8px">
+        <input type="text" id="oid-input" placeholder="Escribe un comando o di 'nexus'..."
+               style="flex:1;background:#111;border:1px solid #1e1e1e;color:#e0e0e0;padding:10px 14px;border-radius:8px;font-size:.88rem"
+               onkeydown="if(event.key==='Enter')oidEnviar()">
+        <button class="btn" onclick="oidEnviar()" style="white-space:nowrap">Enviar</button>
+    </div>
+    <div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:10px" id="oid-chips"></div>
+</div>
+</div>
+
+<!-- ░░ AUTO-VENTAS ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░ -->
+<div class="panel" id="panel-autoventas">
+<div class="card">
+    <div class="card-title">🚀 Auto-Ventas</div>
+    <a class="link-ext" href="/autoventas" target="_blank">🚀 Pipeline de Prospectos</a>
+    <a class="link-ext" href="/landing" target="_blank">🌐 Landing Page</a>
+    <a class="link-ext" href="/tienda" target="_blank">🛒 Tienda de Módulos</a>
+</div>
+<div class="card">
+    <div class="card-title">📊 Métricas rápidas</div>
+    <div id="av-metricas" style="color:#555;font-size:.85rem">Cargando...</div>
+</div>
+<div class="card">
+    <div class="card-title">🎣 Hooks virales de hoy</div>
+    <div id="av-hooks" style="color:#555;font-size:.85rem">Cargando...</div>
+</div>
+</div>
+
+<!-- ░░ PARANORMAL ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░ -->
+<div class="panel" id="panel-paranormal">
+<div class="card">
+    <div class="card-title">🔮 Modo Paranormal</div>
+    <p style="color:#555;font-size:.85rem;margin-bottom:14px">Teatro de terror interactivo. Solo tú sabes que es una broma.</p>
+    <input type="text" id="par-victima" placeholder="Nombre de la víctima (opcional)"
+           style="width:100%;margin-bottom:10px">
+    <div style="display:flex;gap:10px;margin-bottom:14px">
+        <button class="btn" onclick="parActivar()" style="flex:1;background:#33000022;border-color:#660000;color:#ff4444">⚡ Activar</button>
+        <button class="btn" onclick="parSpirit()" style="flex:1;background:#1a0a2222;border-color:#440088;color:#b39ddb">👁️ Spirit Box</button>
+        <button class="btn" onclick="parReset()" style="flex:1;background:#111;border-color:#333;color:#666">↺ Reset</button>
+    </div>
+    <div id="par-estado" style="background:#050505;border:1px solid #1a1a1a;border-radius:8px;padding:10px;font-size:.82rem;font-family:monospace;color:#666">
+        Estado: inactivo
+    </div>
+    <div style="margin-top:10px">
+        <a class="link-ext" href="/paranormal" target="_blank">🔮 Abrir panel paranormal completo</a>
+    </div>
+</div>
+</div>
+
+<!-- ░░ COMANDOS TAB ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░ -->
+<div class="panel" id="panel-comandos_tab">
+<div class="card">
+    <div class="card-title">📋 Probar Comandos</div>
+    <p style="color:#555;font-size:.85rem;margin-bottom:12px">Prueba cualquier comando directamente desde aquí.</p>
+    <a class="link-ext" href="/comandos" target="_blank">📋 Abrir panel de comandos completo</a>
+</div>
+<div class="card">
+    <div class="card-title">⚡ Prueba rápida</div>
+    <div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:12px">
+        <button class="btn btn-sm" onclick="testCmd('cuántos pedidos tengo hoy')">📦 Pedidos hoy</button>
+        <button class="btn btn-sm" onclick="testCmd('cómo está el stock')">📊 Stock</button>
+        <button class="btn btn-sm" onclick="testCmd('cuántos clientes tenemos')">👥 Clientes</button>
+        <button class="btn btn-sm" onclick="testCmd('cuáles son mis ventas de hoy')">💰 Ventas</button>
+        <button class="btn btn-sm" onclick="testCmd('sistema')">🖥️ Sistema</button>
+        <button class="btn btn-sm" onclick="testCmd('genera un post para instagram')">📣 Post IG</button>
+        <button class="btn btn-sm" onclick="testCmd('qué hora es')">🕐 Hora</button>
+        <button class="btn btn-sm" onclick="testCmd('ayuda')">❓ Ayuda</button>
+    </div>
+    <div id="test-result" style="background:#050505;border:1px solid #1a1a1a;border-radius:8px;padding:12px;font-size:.85rem;color:#666;min-height:60px">
+        Haz click en cualquier botón...
+    </div>
+</div>
+</div>
+
+<!-- ░░ CONFIG ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░ -->
+<div class="panel" id="panel-config">
+    <div class="card">
+        <div class="card-title">⚙️ Configuración del Negocio</div>
+        <a class="link-ext" href="/config_negocio" target="_blank">🏪 Mi Negocio</a>
+        <a class="link-ext" href="/precios_admin" target="_blank">💰 Precios base</a>
+        <a class="link-ext" href="/qr" target="_blank">📱 Acceso Móvil (QR)</a>
+        <a class="link-ext" href="/catalogo" target="_blank">📄 Catálogo</a>
+    </div>
+</div>
+
+</div><!-- /content -->
+
+<script>
+// ─── Tab navigation ────────────────────────────────────────────────────────
+const TAB_NAMES = ['inicio','pedidos','clientes','stock','cotizar','agenda','marketing',
+                   'oido','autoventas','paranormal','comandos_tab','config'];
+const loaded = { inicio: true };
+
+function go(name) {
+    document.querySelectorAll('.tab').forEach((t,i) => t.classList.toggle('active', TAB_NAMES[i]===name));
+    document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+    const panel = document.getElementById('panel-'+name);
+    if(panel) panel.classList.add('active');
+    if (!loaded[name]) {
+        loaded[name] = true;
+        const loaders = {
+            pedidos:      cargarPedidos,
+            clientes:     cargarClientes,
+            stock:        cargarStock,
+            oido:         iniciarOido,
+            autoventas:   cargarAutoventas,
+            paranormal:   cargarParEstado,
+        };
+        (loaders[name] || (()=>{}))();
+    }
+}
+
+// ═══════════════════════════════════════════════════════
+// VOZ NEXUS — HOMBRE MEXICANO (es-MX)
+// ═══════════════════════════════════════════════════════
+const NOMBRES_MASC_MX = ['raúl','raul','sabino','miguel','carlos','antonio','juan',
+                         'diego','pablo','jorge','andrés','andres','luis','pedro',
+                         'microsoft raul','microsoft sabino'];
+let _vozNexus = null;
+
+function getVozNexus(){
+    if(_vozNexus) return _vozNexus;
+    const vs = window.speechSynthesis ? window.speechSynthesis.getVoices() : [];
+    _vozNexus =
+        vs.find(v => v.lang==='es-MX' && NOMBRES_MASC_MX.some(n=>v.name.toLowerCase().includes(n)))
+     || vs.find(v => v.lang==='es-MX')
+     || vs.find(v => v.lang.startsWith('es') && NOMBRES_MASC_MX.some(n=>v.name.toLowerCase().includes(n)))
+     || vs.find(v => v.lang.startsWith('es'))
+     || vs[0] || null;
+    return _vozNexus;
+}
+if(window.speechSynthesis && window.speechSynthesis.onvoiceschanged !== undefined){
+    window.speechSynthesis.onvoiceschanged = () => { _vozNexus = null; };
+}
+
+// ═══════════════════════════════════════════════════════
+// OÍDO — STT CONTINUO CON WAKE WORD
+// ═══════════════════════════════════════════════════════
+let oidMicVivo=false, oidEsperando=false, oidHablando=false, oidMic=null;
+const OID_CHIPS = ['Pedidos','Stock','Clientes','Ventas','Sistema','Marketing','Hora','Ayuda'];
+
+// Habla NEXUS (hombre mexicano) + pausa mic mientras habla
+function nexusHablar(txt, pitch=1.05, rate=0.93){
+    return new Promise(res=>{
+        if(!window.speechSynthesis||!txt){res();return;}
+        oidHablando=true;
+        window.speechSynthesis.cancel();
+        const u=new SpeechSynthesisUtterance(txt);
+        const v=getVozNexus(); if(v) u.voice=v;
+        u.lang='es-MX'; u.pitch=pitch; u.rate=rate; u.volume=1.0;
+        u.onend=()=>{ oidHablando=false; res(); };
+        u.onerror=()=>{ oidHablando=false; res(); };
+        window.speechSynthesis.speak(u);
+    });
+}
+
+function iniciarOido(){
+    document.getElementById('oid-chips').innerHTML = OID_CHIPS.map(c=>
+        `<button class="btn btn-sm" onclick="oidCmd('${c.toLowerCase()}')">${c}</button>`
+    ).join('');
+
+    const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+    if(!SR){
+        document.getElementById('oid-status').textContent='STT no disponible (usa Chrome)';
+        return;
+    }
+    const mic=new SR(); oidMic=mic;
+    mic.lang='es-MX'; mic.continuous=true; mic.interimResults=true;
+
+    mic.onstart=()=>{ oidMicVivo=true; oidSetDot('listening'); oidSetStatus('Escuchando — di "nexus"'); };
+    mic.onresult=e=>{
+        // Ignorar mientras NEXUS está hablando (evita eco)
+        if(oidHablando) return;
+
+        let interim='',final='';
+        for(let i=e.resultIndex;i<e.results.length;i++){
+            if(e.results[i].isFinal) final+=e.results[i][0].transcript;
+            else interim+=e.results[i][0].transcript;
+        }
+        if(interim) document.getElementById('oid-interim').textContent=interim;
+        if(!final) return;
+        document.getElementById('oid-interim').textContent='';
+
+        // Limpiar eco de NEXUS: ignora si la frase es solo "mande"
+        const t=final.toLowerCase().trim().replace(/manden?/g,'').trim();
+        if(!t) return;
+
+        if(!oidEsperando){
+            // Escucha trigger "nexus"
+            if(t.includes('nexus')||t.includes('nexo')||t.includes('oye nexus')){
+                oidEsperando=true;
+                oidSetDot('processing');
+                oidSetStatus('NEXUS activo — di el comando');
+                nexusHablar('Mande.').then(()=>{
+                    // Listo para recibir comando — el mic ya está corriendo
+                    oidSetStatus('Escuchando tu comando...');
+                });
+                oidBurbuja('NEXUS','Mande.',false);
+                // Timeout de seguridad: si no llega comando en 10s, vuelve al modo escucha
+                clearTimeout(window._oidTimeout);
+                window._oidTimeout=setTimeout(()=>{
+                    if(oidEsperando){
+                        oidEsperando=false;
+                        oidSetDot('listening');
+                        oidSetStatus('Escuchando — di "nexus"');
+                    }
+                },10000);
+            }
+        } else {
+            // TENEMOS COMANDO
+            clearTimeout(window._oidTimeout);
+            oidEsperando=false;
+            oidBurbuja('tú',final,true);
+            oidSetStatus('Procesando...');
+            oidConsultar(final);
+        }
+    };
+    mic.onerror=()=>{ oidMicVivo=false; setTimeout(()=>{ try{mic.start();}catch(e){} },800); };
+    mic.onend=()=>{ oidMicVivo=false; setTimeout(()=>{ try{mic.start();}catch(e){} },400); };
+    try{ mic.start(); }catch(e){}
+    setInterval(()=>{ if(!oidMicVivo&&!oidHablando){ try{mic.start();}catch(e){} } },5000);
+}
+
+function oidSetDot(state){
+    const d=document.getElementById('oid-dot');
+    if(state==='listening') d.style.cssText='width:10px;height:10px;border-radius:50%;background:#00ff88;transition:.3s';
+    else if(state==='processing') d.style.cssText='width:10px;height:10px;border-radius:50%;background:#ffcc02;transition:.3s';
+    else d.style.cssText='width:10px;height:10px;border-radius:50%;background:#333;transition:.3s';
+}
+function oidSetStatus(t){ document.getElementById('oid-status').textContent=t; }
+
+function oidBurbuja(quien, txt, derecha){
+    const chat=document.getElementById('oid-chat');
+    const el=document.createElement('div');
+    el.style.cssText=`display:flex;justify-content:${derecha?'flex-end':'flex-start'}`;
+    el.innerHTML=`<div style="background:${derecha?'#001a08':'#111'};border:1px solid ${derecha?'#00ff8833':'#1a1a1a'};
+        border-radius:${derecha?'10px 0 10px 10px':'0 10px 10px 10px'};padding:8px 12px;max-width:80%;
+        font-size:.83rem;color:${derecha?'#00ff88':'#ccc'}">
+        <div style="font-size:.7rem;color:#444;margin-bottom:3px">${quien}</div>${txt}</div>`;
+    chat.appendChild(el);
+    chat.scrollTop=chat.scrollHeight;
+}
+
+async function oidConsultar(texto){
+    oidSetDot('processing');
+    oidSetStatus('Procesando...');
+    try{
+        const r=await fetch('/api/asistente',{method:'POST',
+            headers:{'Content-Type':'application/json'},
+            body:JSON.stringify({texto,session_id:'dashboard'})
+        }).then(x=>x.json());
+        const resp=r.respuesta||JSON.stringify(r).substring(0,200);
+        oidBurbuja('NEXUS',resp,false);
+        oidSetStatus('Respondiendo...');
+        await nexusHablar(resp.substring(0,280));
+        oidSetDot('listening');
+        oidSetStatus('Escuchando — di "nexus"');
+    }catch(e){
+        oidBurbuja('NEXUS','Error: '+e.message,false);
+        oidSetDot('listening');
+        oidSetStatus('Error — intenta de nuevo');
+    }
+}
+
+function oidEnviar(){
+    const inp=document.getElementById('oid-input');
+    const txt=inp.value.trim(); if(!txt) return;
+    inp.value='';
+    oidBurbuja('tú',txt,true);
+    oidConsultar(txt);
+}
+function oidCmd(cmd){ oidBurbuja('tú',cmd,true); oidConsultar(cmd); }
+
+// ═══════════════════════════════════════════════════════
+// AUTO-VENTAS (tab)
+// ═══════════════════════════════════════════════════════
+function cargarAutoventas(){
+    fetch('/api/autoventas/metricas').then(r=>r.json()).then(d=>{
+        const el=document.getElementById('av-metricas');
+        el.innerHTML=`Prospectos: <b>${d.total_prospectos||0}</b> &nbsp;|&nbsp;
+            Clientes: <b>${d.clientes||0}</b> &nbsp;|&nbsp;
+            Conversión: <b>${(d.conversion_rate||0).toFixed(1)}%</b>`;
+    }).catch(()=>{});
+    fetch('/api/autoventas/hooks/tiktok').then(r=>r.json()).then(d=>{
+        const el=document.getElementById('av-hooks');
+        const hooks=(d.hooks||[]).slice(0,3);
+        el.innerHTML=hooks.map(h=>`<div style="border-left:2px solid #00ff8844;padding:6px 10px;margin-bottom:6px;color:#aaa;font-size:.82rem">"${h}"</div>`).join('');
+    }).catch(()=>{});
+}
+
+// ═══════════════════════════════════════════════════════
+// PARANORMAL (tab)
+// ═══════════════════════════════════════════════════════
+function cargarParEstado(){
+    fetch('/api/paranormal/estado').then(r=>r.json()).then(d=>{
+        document.getElementById('par-estado').innerHTML=
+            `Estado: <b style="color:#b39ddb">${d.estado}</b>${d.victima?` &nbsp;|&nbsp; Víctima: <b>${d.victima}</b>`:''}`;
+    }).catch(()=>{});
+}
+async function parActivar(){
+    const v=document.getElementById('par-victima').value.trim()||null;
+    await fetch('/api/paranormal/activar',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({victima:v})});
+    cargarParEstado();
+    window.open('/paranormal','_blank');
+}
+async function parSpirit(){
+    const v=document.getElementById('par-victima').value.trim()||null;
+    await fetch('/api/paranormal/spirit',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({victima:v})});
+    cargarParEstado();
+    window.open('/paranormal','_blank');
+}
+async function parReset(){
+    await fetch('/api/paranormal/reset',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({})});
+    cargarParEstado();
+}
+
+// ═══════════════════════════════════════════════════════
+// COMANDOS — PRUEBA RÁPIDA (tab)
+// ═══════════════════════════════════════════════════════
+async function testCmd(texto){
+    const el=document.getElementById('test-result');
+    el.style.color='#555'; el.textContent='Consultando...';
+    try{
+        const r=await fetch('/api/asistente',{method:'POST',
+            headers:{'Content-Type':'application/json'},
+            body:JSON.stringify({texto,session_id:'test'})
+        }).then(x=>x.json());
+        const resp=r.respuesta||JSON.stringify(r);
+        el.style.color='#b0ffda'; el.textContent=resp;
+        nexusHablar(resp.substring(0,200));
+    }catch(e){
+        el.style.color='#ff8888'; el.textContent='Error: '+e.message;
+    }
+}
+
+// ─── POST via fetch sin recargar página ────────────────────────────────────
+function postF(e, url, cb) {
+    e.preventDefault();
+    fetch(url, { method:'POST', body: new FormData(e.target), redirect:'manual' })
+        .then(() => { e.target.reset(); cb && cb(); })
+        .catch(console.error);
+}
+
+// ─── Marcar pedido listo ───────────────────────────────────────────────────
+function marcarListo(id) {
+    fetch('/marcar_listo?id='+id, { method:'POST', redirect:'manual' })
+        .then(() => { cargarPedidos(); cargarKPIs(); });
+}
+
+// ─── KPIs + Inicio ─────────────────────────────────────────────────────────
+function cargarKPIs() {
+    // Status sistema
+    fetch('/api/nexus_status').then(r=>r.json()).then(d=>{
+        document.getElementById('dot').textContent = '● ONLINE v'+(d.version||'');
+        document.getElementById('dot').className = 'dot ok';
+        document.getElementById('modulos').innerHTML = (d.modules||[]).map(m=>
+            `<span class="mod-chip" style="background:${m.ok?'#00ff8818':'#ff444418'};color:${m.ok?'#00ff88':'#ff4444'}">${m.nombre} ${m.ok?'✓':'✗'}</span>`
+        ).join('');
+        document.getElementById('ts').textContent = new Date().toLocaleString('es-MX');
+    }).catch(()=>{
+        document.getElementById('dot').textContent = '● Sin conexión';
+        document.getElementById('dot').className = 'dot';
+    });
+
+    // Pedidos
+    fetch('/api/pedidos').then(r=>r.json()).then(data=>{
+        const pend = data.filter(p=>p.status==='PENDIENTE');
+        document.getElementById('kpi-ped').textContent = pend.length;
+        document.getElementById('kpi-ped-card').className = 'kpi' + (pend.length>0?' warn':'');
+        const el = document.getElementById('ini-pedidos');
+        if (!pend.length) { el.innerHTML='<div class="empty">Sin pedidos pendientes ✓</div>'; return; }
+        el.innerHTML = '<table><thead><tr><th>Cliente</th><th>Producto</th><th>Entrega</th><th>Estado</th><th></th></tr></thead><tbody>'+
+            pend.slice(0,6).map(p=>`<tr>
+                <td><b>${p.cliente}</b></td>
+                <td style="color:#777">${(p.producto||'').substring(0,35)}</td>
+                <td style="color:#555;font-size:0.82em">${(p.deadline||'').substring(0,16)}</td>
+                <td><span class="badge b-pen">${p.status}</span></td>
+                <td><button class="btn btn-sm" onclick="marcarListo(${p.id})">✓</button></td>
+            </tr>`).join('') + '</tbody></table>';
+    });
+
+    // Clientes
+    fetch('/api/clientes').then(r=>r.json()).then(d=>{ document.getElementById('kpi-cli').textContent=d.length; });
+
+    // Stock
+    fetch('/api/stock').then(r=>r.json()).then(d=>{
+        document.getElementById('kpi-stk').textContent = d.length;
+        const bajo = d.filter(i=>i.cantidad<=3);
+        document.getElementById('kpi-bajo').textContent = bajo.length;
+        document.getElementById('kpi-bajo-card').className = 'kpi' + (bajo.length>0?' alert':'');
+        const card = document.getElementById('card-bajo');
+        if (bajo.length) {
+            card.style.display='block';
+            document.getElementById('ini-bajo').innerHTML = bajo.map(i=>
+                `<div class="row-info"><span>${i.nombre}</span><span class="badge b-low">${i.cantidad} uds</span></div>`
+            ).join('');
+        } else { card.style.display='none'; }
+    });
+}
+
+// ─── Cargar Pedidos ─────────────────────────────────────────────────────────
+function cargarPedidos() {
+    fetch('/api/pedidos').then(r=>r.json()).then(data=>{
+        const el = document.getElementById('lst-pedidos');
+        if (!data.length) { el.innerHTML='<div class="empty">Sin pedidos registrados</div>'; return; }
+        el.innerHTML = '<table id="t-ped"><thead><tr><th>#</th><th>Cliente</th><th>Producto</th><th>Entrega</th><th>Estado</th><th></th></tr></thead><tbody>'+
+            data.map(p=>`<tr>
+                <td style="color:#444">${p.id||''}</td>
+                <td><b>${p.cliente}</b></td>
+                <td style="color:#777">${(p.producto||'').substring(0,38)}</td>
+                <td style="color:#555;font-size:0.82em">${(p.deadline||'').substring(0,16)}</td>
+                <td><span class="badge ${p.status==='PENDIENTE'?'b-pen':p.status==='LISTO'?'b-ok':'b-done'}">${p.status}</span></td>
+                <td>${p.status==='PENDIENTE'?`<button class="btn btn-sm" onclick="marcarListo(${p.id})">✓ Listo</button>`:'—'}</td>
+            </tr>`).join('') + '</tbody></table>';
+    });
+}
+
+// ─── Cargar Clientes ────────────────────────────────────────────────────────
+function cargarClientes() {
+    fetch('/api/clientes').then(r=>r.json()).then(data=>{
+        const el = document.getElementById('lst-clientes');
+        if (!data.length) { el.innerHTML='<div class="empty">Sin clientes registrados</div>'; return; }
+        el.innerHTML = '<table id="t-cli"><thead><tr><th>Nombre</th><th>Teléfono</th><th>Email</th><th>Acciones</th></tr></thead><tbody>'+
+            data.map(c=>`<tr>
+                <td><b>${c.nombre}</b></td>
+                <td>${c.telefono||'—'}</td>
+                <td style="color:#666">${c.email||'—'}</td>
+                <td style="display:flex;gap:8px;align-items:center">
+                    ${c.telefono?`<a href="https://wa.me/${(c.telefono||'').replace(/\D/g,'')}" target="_blank" style="color:#25D366;font-size:0.82em">💬</a>`:''}
+                    <a href="/perfil_cliente?nombre=${encodeURIComponent(c.nombre)}" target="_blank" style="color:#555;font-size:0.82em">👤 Perfil</a>
+                </td>
+            </tr>`).join('') + '</tbody></table>';
+    });
+}
+
+// ─── Cargar Stock ───────────────────────────────────────────────────────────
+function cargarStock() {
+    fetch('/api/stock').then(r=>r.json()).then(data=>{
+        const el = document.getElementById('lst-stock');
+        if (!data.length) { el.innerHTML='<div class="empty">Sin items en inventario</div>'; return; }
+        el.innerHTML = '<table id="t-stk"><thead><tr><th>Material</th><th>Categoría</th><th>Cantidad</th><th>Precio unit.</th></tr></thead><tbody>'+
+            data.map(i=>`<tr>
+                <td><b>${i.nombre}</b></td>
+                <td><span class="cat">${i.categoria||'GENERAL'}</span></td>
+                <td ${i.cantidad<=3?'style="color:#ff4444;font-weight:bold"':''}>${i.cantidad}</td>
+                <td style="color:#00ff88">$${parseFloat(i.precio||0).toFixed(2)}</td>
+            </tr>`).join('') + '</tbody></table>';
+    });
+}
+
+// ─── Busqueda en tablas ─────────────────────────────────────────────────────
+function filtrar(id, q) {
+    const t = document.getElementById(id);
+    if (!t) return;
+    t.querySelectorAll('tbody tr').forEach(r => {
+        r.style.display = r.innerText.toLowerCase().includes(q.toLowerCase()) ? '' : 'none';
+    });
+}
+
+// ─── Init ───────────────────────────────────────────────────────────────────
+cargarKPIs();
+setInterval(cargarKPIs, 30000);
+</script>
+
+<!-- ── NEXUS AMBIENT AUDIO ──────────────────────────────────────────────── -->
+<script src="/static/nexus_ambient.js"></script>
+<!-- Legal footer -->
+<div style="text-align:center;padding:8px;font-size:0.72em;color:#1e1e1e;border-top:1px solid #111;margin-top:8px">
+    <a href="/legal" style="color:#1e1e1e;text-decoration:none" onmouseover="this.style.color='#444'" onmouseout="this.style.color='#1e1e1e'">
+        ⚖️ Aviso de Privacidad · LFPDPPP México
+    </a>
+</div>
+</body>
+</html>

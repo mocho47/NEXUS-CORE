@@ -1,0 +1,23 @@
+{
+  "prospectos": {
+    "0ad9738c6424": {
+      "pid": "0ad9738c6424",
+      "nombre": "TestNexus",
+      "telefono": "5500000001",
+      "tipo_negocio": "taller",
+      "canal": "test",
+      "notas": "",
+      "stage": "nuevo",
+      "fecha_registro": "2026-02-24T04:10:23.078615",
+      "demo_inicio": null,
+      "ultimo_contacto": null,
+      "seguimiento_enviado": [],
+      "licencia": null
+    }
+  },
+  "metricas": {
+    "total": 1,
+    "clientes": 0,
+    "perdidos": 0
+  }
+}

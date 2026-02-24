@@ -1,0 +1,27 @@
+{
+    "comandos_apps": {
+        "diseno": {
+            "corel": "Abre CorelDraw",
+            "aspire": "Abre Aspire",
+            "silhouette": "Abre Silhouette Studio"
+        },
+        "social": {
+            "facebook": "Abre Facebook (App o Web)",
+            "whatsapp": "Abre WhatsApp",
+            "tiktok": "Abre TikTok",
+            "instagram": "Abre Instagram",
+            "pinterest": "Abre Pinterest",
+            "messenger": "Abre Messenger"
+        }
+    },
+    "comandos_taller": {
+        "caja": {
+            "trigger": ["caja", "diseñar caja"],
+            "desc": "Genera planos de corte."
+        }
+    },
+    "comandos_iot": {
+        "escanear": { "trigger": ["escanea la red"], "desc": "Busca dispositivos." },
+        "transmitir": { "trigger": ["transmite a"], "desc": "Envía contenido." }
+    }
+}

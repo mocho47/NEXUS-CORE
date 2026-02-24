@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Acceso Móvil - NEXUS</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { background: #0a0a0a; color: #e0e0e0; font-family: 'Segoe UI', sans-serif;
+               padding: 24px; display: flex; flex-direction: column; align-items: center; }
+        .nav { width: 100%; max-width: 360px; margin-bottom: 20px; }
+        .nav a { color: #888; text-decoration: none; font-size: 0.9em; }
+        h2 { color: #00ff88; margin-bottom: 6px; font-size: 1.1em; text-align: center; }
+        .sub { color: #555; font-size: 0.82em; text-align: center; margin-bottom: 24px; }
+        .qr-wrap {
+            background: #fff; border-radius: 12px; padding: 12px;
+            display: inline-block; margin-bottom: 20px;
+        }
+        .qr-wrap img { display: block; }
+        .url-box {
+            background: #111; border: 1px solid #00ff8833; border-radius: 8px;
+            padding: 12px 20px; font-family: monospace; font-size: 1em;
+            color: #00ff88; text-align: center; margin-bottom: 20px;
+            cursor: pointer; width: 100%; max-width: 360px;
+        }
+        .steps { max-width: 360px; width: 100%; }
+        .step { display: flex; gap: 12px; align-items: flex-start; margin-bottom: 12px; }
+        .step .num { background: #00ff8822; color: #00ff88; border-radius: 50%;
+                     width: 26px; height: 26px; display: flex; align-items: center;
+                     justify-content: center; font-size: 0.8em; font-weight: bold; flex-shrink: 0; }
+        .step .txt { font-size: 0.88em; color: #888; padding-top: 4px; }
+        .copied { color: #00ff88; font-size: 0.8em; text-align: center;
+                  display: none; margin-top: -12px; margin-bottom: 12px; }
+    </style>
+</head>
+<body>
+    <div class="nav"><a href="/dashboard">← Dashboard</a></div>
+    <h2>📱 Accede desde tu celular</h2>
+    <p class="sub">Escanea el QR o abre esta URL en el mismo WiFi</p>
+
+    <div class="qr-wrap">
+        <img src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&data={{ url }}&bgcolor=ffffff&color=000000"
+             width="200" height="200" alt="QR">
+    </div>
+
+    <div class="url-box" onclick="copiarURL()" title="Toca para copiar">{{ url }}</div>
+    <div class="copied" id="copiedMsg">Copiado ✓</div>
+
+    <div class="steps">
+        <div class="step">
+            <div class="num">1</div>
+            <div class="txt">Conecta tu celular al mismo WiFi que esta PC</div>
+        </div>
+        <div class="step">
+            <div class="num">2</div>
+            <div class="txt">Escanea el código QR o escribe la dirección en tu navegador</div>
+        </div>
+        <div class="step">
+            <div class="num">3</div>
+            <div class="txt">Agrega la página a tu pantalla de inicio para acceso instantáneo</div>
+        </div>
+    </div>
+
+    <script>
+    function copiarURL() {
+        navigator.clipboard.writeText('{{ url }}').then(() => {
+            const m = document.getElementById('copiedMsg');
+            m.style.display = 'block';
+            setTimeout(() => m.style.display = 'none', 2000);
+        }).catch(() => {});
+    }
+    </script>
+</body>
+</html>

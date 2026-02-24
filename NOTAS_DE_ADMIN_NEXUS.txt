@@ -1,0 +1,108 @@
+--------------------------------------------------------------------------------
+   MANUAL OPERATIVO NEXUS V9.5 - REALIDAD RESTAURADA
+   Ubicación Maestra: Documents\trae_projects\nexus
+--------------------------------------------------------------------------------
+
+¡Hola! Si estás leyendo esto, estás en la ubicación CORRECTA y ÚNICA.
+Se ha confirmado que Trae NO puede acceder a C:\NEXUS por seguridad.
+Cualquier referencia a C:\NEXUS en bitácoras pasadas es obsoleta o errónea.
+
+================================================================================
+   BITÁCORA DE MANTENIMIENTO (02/02/2026) - TRAE PRO RECOVERY
+================================================================================
+[HECHO] VERIFICACIÓN DE REALIDAD: Se confirmó que el proyecto vive en 'Documents'.
+[HECHO] LIMPIEZA DE CONTEXTO: Se desmintió la migración fantasma a C:\NEXUS.
+[HECHO] OPTIMIZACIÓN RED: Se arregló el DNS IPv6 que causaba lentitud extrema.
+[HECHO] PERMISOS: Se aplicó 'icacls' para acceso total a usuarios estándar.
+[HECHO] ACCESO: Se eliminó acceso directo duplicado. Ahora solo existe UNO en Public Desktop.
+[HECHO] INTERFAZ: Se creó ícono ROJO con la letra 'N' a petición del usuario.
+[HECHO] CORE: Reparado error de sintaxis en 'nexus_core.py' y ruta de 'nexus_panel.py'.
+
+================================================================================
+   BITÁCORA DE MANTENIMIENTO (27/01/2026) - NEXUS UNLEASHED
+================================================================================
+[HECHO] NEXUS CODER: Integración de módulo de autoprogramación (nexus_coder.py).
+[HECHO] UNLEASHED MODE: Eliminación de restricciones de seguridad para generación de código.
+[HECHO] BACKUP GITHUB: Repositorio conectado (mocho47/NEXUS-CORE) como punto de restauración.
+[HECHO] WEB BUILDER: Inicio de arquitectura para Nexus SaaS (Landing Page + Launcher).
+[HECHO] PASSWORD VAULT: Módulo de seguridad para autologin en redes sociales.
+[HECHO] DOCUMENTACIÓN: Actualización de COMANDOS_NEXUS.txt con nuevas capacidades.
+
+================================================================================
+   ⚠️ MISIÓN CRÍTICA PARA TRAE (PERFIL USUARIO) ⚠️
+   ASUNTO: MIGRACIÓN A SUPABASE (NEXUS EN LA NUBE)
+================================================================================
+
+TRAE, ATENCIÓN:
+El usuario requiere conectar Nexus a SUPABASE para habilitar control remoto, 
+sincronización multi-usuario real y base de datos en la nube.
+
+TU MISIÓN ES EJECUTAR LA SIGUIENTE HOJA DE RUTA SIN ERRORES:
+
+1. CONFIGURACIÓN INICIAL
+   - [ ] Usa la herramienta `supabase_get_project` para obtener credenciales (URL, KEYS).
+   - [ ] Si no hay proyecto, instruye al usuario para crearlo o usa `init_env` si aplica.
+   - [ ] Instala la librería: `pip install supabase` en el entorno global.
+
+2. MIGRACIÓN DE DATOS (JSON -> SQL)
+   - [ ] Analiza `C:\NEXUS\PEDIDOS\clientes.json` y crea la tabla 'clientes' en Supabase.
+   - [ ] Analiza `C:\NEXUS\PEDIDOS\pedidos_activos.json` y crea la tabla 'pedidos'.
+   - [ ] Analiza `C:\NEXUS\CONFIG\materiales.json` y crea la tabla 'inventario'.
+   - [ ] Sube los datos locales actuales a la nube para no perder nada.
+
+3. REFACTORIZACIÓN DE CÓDIGO (LO MÁS IMPORTANTE)
+   - [ ] Modifica `nexus_orders.py`: Reemplaza lectura/escritura de JSON por llamadas `supabase.table('pedidos').select/insert/update`.
+   - [ ] Modifica `nexus_stock.py`: Conecta el stock a la tabla 'inventario' en tiempo real.
+   - [ ] Modifica `nexus_crm.py`: Centraliza la base de datos de clientes.
+
+4. SINCRONIZACIÓN Y FALLBACK
+   - [ ] Implementa un `try/except` robusto. Si no hay internet, Nexus debe seguir funcionando con una caché local (JSON) y sincronizar cuando vuelva la conexión.
+
+5. VERIFICACIÓN
+   - [ ] Realiza una prueba de pedido desde el Perfil Usuario y verifica que aparezca en el Perfil Administrador.
+
+NOTA: El usuario exige que se aproveche "TODO EL POTENCIAL". 
+Esto incluye Realtime Subscriptions (para que el panel se actualice solo sin refrescar) y Storage (para guardar los SVGs de las cajas en la nube).
+
+¡NO FALLES! El objetivo es un Nexus omnipresente.
+
+--- COMANDOS DE VOZ ACTIVOS ---
+
+1. 🏭 PRODUCCIÓN Y DISEÑO
+   - "Nexus... abre Corel" (o Aspire, Silhouette, Photoshop)
+   - "Nexus... abre Canva" (o Pinterest, Mercado Libre, Amazon, AliExpress)
+   - "Nexus... caja" -> (Te pedirá medidas: Largo, Ancho, Alto en mm)
+     * Genera automáticamente el plano SVG en C:\NEXUS\TALLER\ENTRADA
+
+2. 💰 COTIZADOR Y VENTAS
+   - "Nexus... cotiza láser" -> (Te pedirá minutos)
+     * Calcula costo operativo ($3/min) y precio venta ($8/min).
+   - "Nexus... cotiza taza mágica" (o termo, playera)
+     * Te da el precio sugerido y tu ganancia neta al instante.
+
+3. 🧠 BASE DE CONOCIMIENTO (PARAMETROS)
+   - "Nexus... parámetros acrílico 6 milímetros"
+   - "Nexus... parámetros sublimación taza"
+   - "Nexus... parámetros DTF"
+   * Te dictará temperaturas, tiempos, velocidades y potencias exactas.
+
+4. 🛠️ HERRAMIENTAS DE TALLER
+   - "Nexus... convierte 25 milímetros a pulgadas"
+   - "Nexus... calcula 150 por 4"
+   - "Nexus... temporizador de 5 minutos"
+
+5. 🔊 CONTROL DE SISTEMA
+   - "Sube volumen" / "Baja volumen" / "Silencio"
+   - "Escritorio" (Minimiza todo para limpiar pantalla)
+   - "Nexus... abre Spotify"
+
+--- NOTA PARA EL PROGRAMADOR ---
+Si vas a editar el código desde este perfil:
+1. Abre la carpeta C:\NEXUS en Trae.
+2. NO uses la carpeta de "Documents", esa es la versión vieja.
+3. El archivo principal es 'nexus_core.py'.
+4. La base de datos de precios está en 'CONFIG\materiales.json'.
+
+--------------------------------------------------------------------------------
+   "El éxito es la suma de pequeños esfuerzos repetidos día tras día."
+--------------------------------------------------------------------------------

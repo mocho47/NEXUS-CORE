@@ -1,0 +1,27 @@
+{
+    "pc_name": "Administrador",
+    "last_update": "2026-01-27 13:37:17",
+    "current_app": "nexus_cast.py - nexus - Trae",
+    "metrics": {
+        "prod_sec": 240,
+        "unprod_sec": 20,
+        "efficiency": 92.0
+    },
+    "history": [
+        {
+            "app": "Trae",
+            "duration_sec": 10,
+            "timestamp": "13:33:07"
+        },
+        {
+            "app": "Trae [Administrator]",
+            "duration_sec": 10,
+            "timestamp": "13:33:17"
+        },
+        {
+            "app": "nexus_cast.py - nexus - Trae",
+            "duration_sec": 240,
+            "timestamp": "13:37:17"
+        }
+    ]
+}

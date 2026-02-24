@@ -1,0 +1,10 @@
+{
+  "enabled": true,
+  "interval_sec": 1800,
+  "logs_keep_days": 30,
+  "perf_keep_days": 30,
+  "voice_keep_days": 14,
+  "temp_keep_days": 7,
+  "max_voice_files": 200,
+  "report_only": false
+}

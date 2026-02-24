@@ -1,0 +1,7 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(cd /c/nexus && python -c \"\nimport nexus_finanzas; print\\('finanzas OK'\\)\nimport nexus_fingerprint; print\\('fingerprint OK'\\)\nimport nexus_license; print\\('license OK'\\)\nimport nexus_autopilot; print\\('autopilot OK'\\)\n# test fingerprint\nhw = nexus_fingerprint.obtener_info_hardware\\(\\)\nprint\\('Huella:', hw['huella']\\)\nprint\\('Sistema:', hw['sistema']\\)\n\" 2>&1)"
+    ]
+  }
+}

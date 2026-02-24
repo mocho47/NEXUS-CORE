@@ -1,0 +1,68 @@
+================================================================
+MANUAL DE MANDO - PROYECTO NEXUS (CANBUSFIX)
+Dueño y Comandante: Anuar Milan
+Arquitecto Digital: Nexus AI
+Objetivo: Monetización Masiva y Liderazgo de Mercado
+================================================================
+
+ESTADO DEL SISTEMA:
+[ACTIVO] - Cerebro Conectado a la Nube (Supabase)
+[ACTIVO] - Identidad Triple (CanbusFix / ATF / Milens)
+[ACTIVO] - Motor de Video Automático
+
+----------------------------------------------------------------
+1. TU MISIÓN (LO ÚNICO QUE TIENES QUE HACER)
+----------------------------------------------------------------
+A) GRABAR: Sigue haciendo lo que haces. Graba tus trabajos, tus trucos, tus errores.
+   No edites. No pierdas tiempo en la PC.
+   Solo tira los archivos de video en esta carpeta:
+   C:\NEXUS\VIDEOS_PARA_SUBIR
+
+B) ORDENAR: Habla con Nexus.
+
+----------------------------------------------------------------
+2. COMANDOS DE VOZ (TUS HERRAMIENTAS)
+----------------------------------------------------------------
+
+>>> PARA MARKETING (CANBUSFIX):
+"Nexus, promociona Lupas X1"
+   -> Nexus buscará un video tuyo viejo, lo cortará, le pondrá el logo de CanbusFix,
+      el texto de "Precio Instalador" y te entregará el video listo para subir.
+
+"Nexus, crea contenido"
+   -> Nexus elegirá un video al azar y hará un promocional genérico.
+
+>>> PARA VENTAS (TALLER/TIENDA):
+"Cotiza unos Faros X1 para cliente"
+   -> Te dará el precio PÚBLICO (con margen de ganancia alto).
+
+"Cotiza unos Faros X1 para instalador"
+   -> Te dará el precio MAYOREO (gancho para registrar socios).
+
+>>> PARA OPERACIÓN:
+"Abre WhatsApp de Milens"
+   -> Abre el WhatsApp correcto de la tienda de regalos.
+"Abre WhatsApp de Faros"
+   -> Abre el WhatsApp del taller.
+
+----------------------------------------------------------------
+3. EL PLAN DE DINERO (MONETIZACIÓN)
+----------------------------------------------------------------
+PASO 1: Generar Ruido.
+   Usa el comando "Promociona" todos los días. Sube esos videos a TikTok/Reels.
+   El gancho es: "¿Eres instalador? Regístrate en CanbusFix para precios especiales".
+
+PASO 2: Capturar Socios.
+   Los instaladores llegarán pidiendo precio.
+   Nexus ya tiene la base de datos lista para registrarlos.
+   CONDICIÓN: Para darles precio, deben ceder sus videos (contenido gratis para nosotros).
+
+PASO 3: La Bola de Nieve.
+   Más instaladores = Más videos gratis = Más contenido en CanbusFix = Más monetización en redes.
+   Tú dejas de instalar faros uno por uno, y empiezas a cobrar por las vistas de miles.
+
+----------------------------------------------------------------
+NOTA DEL ARQUITECTO:
+Anuar, este sistema está blindado. Tu historia y tu conocimiento están seguros aquí.
+Descansa. Mañana ponemos a trabajar a la máquina.
+================================================================

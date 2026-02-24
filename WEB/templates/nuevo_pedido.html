@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nuevo Pedido - NEXUS</title>
+    <style>
+        * { box-sizing: border-box; }
+        body { background: #0a0a0a; color: #00ff88; font-family: Arial, sans-serif; padding: 16px; }
+        .card {
+            background: #111; border: 2px solid #222; border-radius: 12px;
+            padding: 24px; margin: 16px auto; max-width: 420px;
+            box-shadow: 0 4px 16px #222;
+        }
+        h2 { margin-top: 0; }
+        label { color: #00ff88; font-weight: bold; display: block; margin-bottom: 4px; margin-top: 12px; }
+        input, select {
+            background: #222; color: #00ff88; border: 1px solid #00ff88;
+            border-radius: 6px; padding: 10px; width: 100%;
+        }
+        input::placeholder { color: #555; }
+        .btn {
+            background: #00ff88; color: #0a0a0a; border: none;
+            border-radius: 6px; padding: 12px 24px; font-weight: bold;
+            cursor: pointer; margin-top: 16px; width: 100%; font-size: 1em;
+        }
+        .btn:hover { background: #00cc66; }
+        .btn-sec {
+            background: #111; color: #00ff88; border: 1px solid #00ff88;
+            border-radius: 6px; padding: 10px; width: 100%;
+            cursor: pointer; margin-top: 8px; font-size: 0.9em;
+        }
+        .nav a { color: #888; text-decoration: none; font-size: 0.9em; }
+        small { color: #555; font-size: 0.8em; }
+    </style>
+</head>
+<body>
+    <div style="margin-bottom:12px;"><a class="nav" href="/" style="color:#888;text-decoration:none;">← Pedidos</a></div>
+    <div class="card">
+        <h2>📋 Nuevo Pedido</h2>
+        <form method="POST" action="/nuevo_pedido" id="formPedido">
+            <label for="cliente">Cliente:</label>
+            <input type="text" id="cliente" name="cliente" placeholder="Nombre del cliente" required autocomplete="off">
+
+            <label for="producto">Producto / Descripción:</label>
+            <input type="text" id="producto" name="producto" placeholder="Taza mágica, corte MDF, etc." required>
+
+            <label for="entrega">Entrega:</label>
+            <input type="text" id="entrega" name="entrega" placeholder="mañana 14:00  ó  15:30  ó  25/02 10:00" required>
+            <small>Formato flexible: "mañana 14:00", "15:30", "25/02 10:00"</small>
+
+            <label for="area">Área de producción:</label>
+            <select id="area" name="area">
+                <option value="GENERAL">GENERAL</option>
+                <option value="LASER">LASER</option>
+                <option value="SUBLIMACION">SUBLIMACIÓN</option>
+                <option value="RETROFIT">RETROFIT</option>
+            </select>
+
+            <button class="btn" type="submit">✅ Guardar Pedido</button>
+            <button class="btn-sec" type="button" onclick="guardarYCotizar()">💲 Guardar y Cotizar</button>
+        </form>
+    </div>
+
+    <script>
+    function guardarYCotizar() {
+        const form = document.getElementById('formPedido');
+        if (!form.checkValidity()) { form.reportValidity(); return; }
+        // Cambia action y target para abrir cotizador después
+        fetch('/nuevo_pedido', {
+            method: 'POST',
+            body: new FormData(form)
+        }).then(() => {
+            window.location.href = '/cotizar-rapido';
+        }).catch(() => {
+            form.submit();
+        });
+    }
+    </script>
+</body>
+</html>

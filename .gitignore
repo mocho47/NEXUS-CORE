@@ -1,0 +1,53 @@
+__pycache__/
+*.py[cod]
+*$py.class
+.env
+.venv
+env/
+venv/
+.idea/
+.vscode/
+*.log
+*.sqlite
+nexus_logs.txt
+C:\NEXUS\
+TALLER/ENTRADA/
+TALLER/MARKETING_STUDIO/
+
+# PyInstaller build output (no subir binarios compilados)
+dist/
+build/
+
+# Media binaria
+*.mp3
+*.wav
+*.jpg
+*.jpeg
+*.png
+*.pdf
+
+# Logs volátiles de runtime
+logs/perf_snapshot_*.json
+logs/nexus_server_launch.log
+logs/pyinstaller_build.log
+logs/nexus_log_*.txt
+
+# Archivos grandes / binarios del sistema
+nexus_model.zip
+nexus_v2.db
+*.db
+RESPALDO_MAESTRO/
+CEREBRO/model/
+
+# Archivos de diseño y producción
+*.studio3
+*.rd
+*.gcode
+*.dxf
+*.RDVSet
+*.svg
+
+# Runtime
+web_command.txt
+CONFIG/housekeeping_last.json
+CONFIG/supabase_keepalive*.json

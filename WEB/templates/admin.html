@@ -1,0 +1,568 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="theme-color" content="#0a0a0a">
+<title>NEXUS — Panel ADMIN</title>
+<style>
+:root{
+  --bg:#0a0a0a; --surface:#111; --surface2:#1a1a1a; --border:#2a2a2a;
+  --accent:#ff4444; --accent2:#ff6600; --green:#00ff88; --blue:#00aaff;
+  --purple:#b39ddb; --gold:#ffd700; --text:#f0f0f0; --muted:#666;
+  --r:12px; --rr:8px;
+}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;min-height:100dvh;padding-bottom:80px}
+
+/* ── HEADER ── */
+.hdr{background:linear-gradient(135deg,#1a0000,#0a0a0a);border-bottom:1px solid #3a0000;padding:16px;display:flex;align-items:center;gap:12px;position:sticky;top:0;z-index:50}
+.hdr-icon{width:44px;height:44px;background:var(--accent);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:22px;box-shadow:0 0 20px #ff444455}
+.hdr-info h1{font-size:18px;font-weight:700;color:var(--accent)}
+.hdr-info span{font-size:11px;color:var(--muted)}
+.btn-logout{margin-left:auto;background:transparent;border:1px solid #333;color:var(--muted);padding:6px 12px;border-radius:var(--rr);font-size:12px;cursor:pointer}
+.btn-logout:hover{border-color:var(--accent);color:var(--accent)}
+
+/* ── LOGIN OVERLAY ── */
+#loginOverlay{position:fixed;inset:0;background:#0a0a0a;z-index:100;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:20px}
+#loginOverlay .logo{font-size:60px;filter:drop-shadow(0 0 30px var(--accent))}
+#loginOverlay h2{font-size:22px;color:var(--accent)}
+#loginOverlay p{font-size:13px;color:var(--muted)}
+#pinInput{background:var(--surface);border:1px solid var(--border);color:var(--text);font-size:28px;letter-spacing:8px;width:200px;text-align:center;padding:12px;border-radius:var(--r);outline:none}
+#pinInput:focus{border-color:var(--accent)}
+#btnLogin{background:var(--accent);color:#fff;border:none;padding:12px 40px;border-radius:var(--r);font-size:16px;font-weight:700;cursor:pointer;width:200px}
+#loginError{color:#ff4444;font-size:13px;display:none}
+
+/* ── TABS ── */
+.tabs{display:flex;gap:6px;padding:12px;overflow-x:auto;border-bottom:1px solid var(--border)}
+.tab{flex-shrink:0;background:var(--surface);border:1px solid var(--border);color:var(--muted);padding:6px 14px;border-radius:20px;font-size:13px;cursor:pointer;white-space:nowrap}
+.tab.active{background:var(--accent);border-color:var(--accent);color:#fff;font-weight:600}
+
+/* ── PANELS ── */
+.panel{display:none;padding:16px;flex-direction:column;gap:16px}
+.panel.active{display:flex}
+
+/* ── CARDS ── */
+.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:16px;display:flex;flex-direction:column;gap:10px}
+.card-title{font-size:14px;font-weight:700;color:var(--text);display:flex;align-items:center;gap:6px}
+.card-sub{font-size:12px;color:var(--muted)}
+
+/* ── STAT GRID ── */
+.stat-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
+.stat{background:var(--surface2);border:1px solid var(--border);border-radius:var(--rr);padding:12px;text-align:center}
+.stat-val{font-size:28px;font-weight:800;color:var(--green)}
+.stat-lbl{font-size:11px;color:var(--muted);margin-top:2px}
+
+/* ── MÓDULOS GRID ── */
+.mod-grid{display:flex;flex-direction:column;gap:8px}
+.mod-item{background:var(--surface2);border:1px solid var(--border);border-radius:var(--rr);padding:12px;display:flex;align-items:center;gap:12px;cursor:pointer;transition:.2s}
+.mod-item:hover{border-color:var(--accent)}
+.mod-item.enabled{border-color:#00ff8844;background:#00ff8808}
+.mod-emoji{font-size:22px;width:36px;text-align:center}
+.mod-info{flex:1}
+.mod-name{font-size:13px;font-weight:600;color:var(--text)}
+.mod-desc{font-size:11px;color:var(--muted);margin-top:2px}
+.mod-price{font-size:12px;font-weight:700;color:var(--gold)}
+.toggle{width:44px;height:24px;background:#222;border:1px solid #333;border-radius:12px;position:relative;cursor:pointer;flex-shrink:0;transition:.3s}
+.toggle.on{background:var(--green);border-color:var(--green)}
+.toggle::after{content:'';position:absolute;top:2px;left:2px;width:18px;height:18px;background:#fff;border-radius:50%;transition:.3s}
+.toggle.on::after{left:22px}
+
+/* ── TIER TABS ── */
+.tier-tabs{display:flex;gap:6px;flex-wrap:wrap}
+.tier-btn{background:var(--surface2);border:1px solid var(--border);color:var(--muted);padding:6px 14px;border-radius:20px;font-size:13px;cursor:pointer}
+.tier-btn.active{background:var(--blue);border-color:var(--blue);color:#fff;font-weight:600}
+
+/* ── PRECIO INPUTS ── */
+.price-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
+.price-item{background:var(--surface2);border:1px solid var(--border);border-radius:var(--rr);padding:10px}
+.price-label{font-size:11px;color:var(--muted);margin-bottom:4px}
+.price-input{background:transparent;border:none;border-bottom:1px solid var(--border);color:var(--gold);font-size:20px;font-weight:700;width:100%;outline:none;padding:2px 0}
+
+/* ── CATÁLOGO TIENDA ── */
+.cat-section{display:flex;flex-direction:column;gap:8px}
+.cat-header{font-size:12px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:1px;padding:4px 0}
+.store-item{background:var(--surface2);border:1px solid var(--border);border-radius:var(--rr);padding:12px;display:flex;gap:12px;align-items:flex-start}
+.store-emoji{font-size:24px;margin-top:2px}
+.store-info{flex:1}
+.store-name{font-size:13px;font-weight:600;color:var(--text);display:flex;align-items:center;gap:6px}
+.store-desc{font-size:11px;color:var(--muted);margin-top:3px;line-height:1.4}
+.store-detail{font-size:10px;color:var(--blue);margin-top:4px}
+.badge-nuevo{background:#ff4081;color:#fff;font-size:9px;font-weight:700;padding:2px 6px;border-radius:4px}
+.tier-chips{display:flex;gap:4px;flex-wrap:wrap;margin-top:6px}
+.chip{font-size:10px;background:var(--surface);border:1px solid var(--border);color:var(--muted);padding:2px 6px;border-radius:4px}
+.chip.demo{border-color:#00ff88;color:#00ff88}
+.chip.lite{border-color:#00aaff;color:#00aaff}
+.chip.pro{border-color:#ffd700;color:#ffd700}
+.chip.full{border-color:#b39ddb;color:#b39ddb}
+
+/* ── BOTONES ── */
+.btn{padding:10px 20px;border-radius:var(--rr);border:none;font-size:14px;font-weight:600;cursor:pointer;transition:.2s}
+.btn-primary{background:var(--accent);color:#fff}
+.btn-primary:hover{filter:brightness(1.1)}
+.btn-success{background:var(--green);color:#000}
+.btn-outline{background:transparent;border:1px solid var(--border);color:var(--muted)}
+.btn-outline:hover{border-color:var(--text);color:var(--text)}
+.btn-full{width:100%}
+
+/* ── TOAST ── */
+#toast{position:fixed;bottom:90px;left:50%;transform:translateX(-50%);background:#1a1a1a;border:1px solid var(--green);color:var(--green);padding:10px 20px;border-radius:var(--rr);font-size:13px;opacity:0;pointer-events:none;transition:.3s;z-index:200;white-space:nowrap}
+#toast.show{opacity:1}
+
+/* ── GUARD LABEL ── */
+.guard{background:#ff000011;border:1px solid #ff000033;color:#ff4444;padding:10px 14px;border-radius:var(--rr);font-size:12px;display:flex;align-items:center;gap:8px}
+</style>
+</head>
+<body>
+
+<!-- ── LOGIN OVERLAY ─────────────────────────────────────────────────────── -->
+<div id="loginOverlay">
+  <div class="logo">🔐</div>
+  <h2>NEXUS ADMIN</h2>
+  <p>Acceso exclusivo del administrador</p>
+  <input id="pinInput" type="password" inputmode="numeric" placeholder="••••" maxlength="20"
+         onkeydown="if(event.key==='Enter')btnLogin()">
+  <div id="loginError">PIN incorrecto</div>
+  <button id="btnLogin" class="btn btn-primary" onclick="doLogin()">ENTRAR</button>
+</div>
+
+<!-- ── HEADER ─────────────────────────────────────────────────────────────── -->
+<div class="hdr" id="mainHdr" style="display:none">
+  <div class="hdr-icon">⚙️</div>
+  <div class="hdr-info">
+    <h1>NEXUS ADMIN</h1>
+    <span id="hdrNegocio">Panel de Control</span>
+  </div>
+  <button class="btn-logout" onclick="doLogout()">Salir</button>
+</div>
+
+<!-- ── TABS ─────────────────────────────────────────────────────────────────  -->
+<div class="tabs" id="mainTabs" style="display:none">
+  <div class="tab active" data-panel="panelDash"    onclick="switchTab(this)">📊 Dashboard</div>
+  <div class="tab"        data-panel="panelTiers"   onclick="switchTab(this)">🎛️ Tiers</div>
+  <div class="tab"        data-panel="panelStore"   onclick="switchTab(this)">🛒 Catálogo</div>
+  <div class="tab"        data-panel="panelPrecios" onclick="switchTab(this)">💰 Precios</div>
+  <div class="tab"        data-panel="panelSetup"   onclick="switchTab(this)">🔧 Config</div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════════════
+     PANEL: DASHBOARD
+══════════════════════════════════════════════════════════════════════════ -->
+<div class="panel active" id="panelDash">
+
+  <div class="guard">
+    🔒 Área de acceso exclusivo. Solo tú eres el administrador de NEXUS.
+  </div>
+
+  <div class="stat-grid" id="statGrid">
+    <div class="stat"><div class="stat-val" id="statModulos">—</div><div class="stat-lbl">Módulos</div></div>
+    <div class="stat"><div class="stat-val" id="statLic">—</div><div class="stat-lbl">Licencias activas</div></div>
+    <div class="stat"><div class="stat-val" id="statDemo">—</div><div class="stat-lbl">Módulos en DEMO</div></div>
+    <div class="stat"><div class="stat-val" id="statFull">—</div><div class="stat-lbl">Módulos en FULL</div></div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">📋 Tiers activos</div>
+    <div id="tierSummary" style="display:flex;flex-direction:column;gap:6px"></div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">💲 Precios actuales</div>
+    <div id="priceSummary" style="display:flex;flex-wrap:wrap;gap:8px"></div>
+  </div>
+
+  <button class="btn btn-success btn-full" onclick="switchTabById('panelTiers')">
+    🎛️ Configurar módulos por tier
+  </button>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════════════
+     PANEL: TIERS
+══════════════════════════════════════════════════════════════════════════ -->
+<div class="panel" id="panelTiers">
+
+  <div class="card" style="gap:12px">
+    <div class="card-title">🎛️ Módulos por Tier</div>
+    <div class="card-sub">Elige qué módulos incluye cada plan. Los cambios se guardan inmediatamente.</div>
+    <div class="tier-tabs" id="tierTabsBtns">
+      <div class="tier-btn active" data-tier="DEMO" onclick="switchTier(this,'DEMO')">DEMO</div>
+      <div class="tier-btn" data-tier="LITE" onclick="switchTier(this,'LITE')">LITE</div>
+      <div class="tier-btn" data-tier="PRO" onclick="switchTier(this,'PRO')">PRO</div>
+      <div class="tier-btn" data-tier="FULL" onclick="switchTier(this,'FULL')">FULL</div>
+    </div>
+    <div style="font-size:12px;color:var(--muted)">Tier seleccionado: <span id="tierLabel" style="color:var(--blue);font-weight:700">DEMO</span></div>
+  </div>
+
+  <div class="mod-grid" id="modGrid">
+    <!-- módulos generados por JS -->
+  </div>
+
+  <button class="btn btn-primary btn-full" onclick="guardarTier()">💾 Guardar cambios</button>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════════════
+     PANEL: CATÁLOGO (TIENDA PÚBLICA)
+══════════════════════════════════════════════════════════════════════════ -->
+<div class="panel" id="panelStore">
+  <div class="card">
+    <div class="card-title">🛒 Catálogo de la Tienda</div>
+    <div class="card-sub">Así ven los usuarios el catálogo. Puedes activar módulos per usuario desde aquí.</div>
+  </div>
+  <div id="storeContent">
+    <!-- generado por JS -->
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════════════
+     PANEL: PRECIOS
+══════════════════════════════════════════════════════════════════════════ -->
+<div class="panel" id="panelPrecios">
+  <div class="card">
+    <div class="card-title">💰 Precios de Licencias</div>
+    <div class="card-sub">Precios en MXN. Cambios aplicados de inmediato.</div>
+    <div class="price-grid" id="precioGrid">
+      <!-- generado por JS -->
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">➕ Módulos Extra</div>
+    <div class="card-sub">Precio de activación por módulo adicional.</div>
+    <div class="price-grid" id="extraGrid">
+      <!-- generado por JS -->
+    </div>
+  </div>
+
+  <button class="btn btn-success btn-full" onclick="guardarPrecios()">💾 Guardar precios</button>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════════════
+     PANEL: CONFIGURACIÓN
+══════════════════════════════════════════════════════════════════════════ -->
+<div class="panel" id="panelSetup">
+  <div class="card" style="gap:12px">
+    <div class="card-title">🏢 Nombre del Negocio</div>
+    <input id="inputNegocio" type="text" placeholder="Tu Negocio"
+      style="background:var(--surface2);border:1px solid var(--border);color:var(--text);padding:10px;border-radius:var(--rr);outline:none;font-size:14px">
+    <button class="btn btn-outline" onclick="guardarNegocio()">Actualizar</button>
+  </div>
+
+  <div class="card" style="gap:12px">
+    <div class="card-title">🔑 Cambiar PIN Admin</div>
+    <input id="pinActual" type="password" placeholder="PIN actual"
+      style="background:var(--surface2);border:1px solid var(--border);color:var(--text);padding:10px;border-radius:var(--rr);outline:none;font-size:14px">
+    <input id="pinNuevo" type="password" placeholder="PIN nuevo (mín 4)"
+      style="background:var(--surface2);border:1px solid var(--border);color:var(--text);padding:10px;border-radius:var(--rr);outline:none;font-size:14px">
+    <button class="btn btn-primary" onclick="cambiarPin()">Cambiar PIN</button>
+  </div>
+
+  <div class="card">
+    <div class="card-title">ℹ️ Información del Sistema</div>
+    <div id="sysInfo" style="font-size:12px;color:var(--muted);display:flex;flex-direction:column;gap:4px"></div>
+  </div>
+
+  <a href="/dashboard" style="text-decoration:none">
+    <button class="btn btn-outline btn-full">← Volver al Dashboard</button>
+  </a>
+</div>
+
+<!-- ── TOAST ──────────────────────────────────────────────────────────────── -->
+<div id="toast"></div>
+
+<script>
+// ── ESTADO ─────────────────────────────────────────────────────────────────
+let TOKEN   = localStorage.getItem('nx_admin_token') || '';
+let CATALOG = {};     // catálogo de módulos
+let TIERS   = {};     // config actual de tiers
+let PRECIOS = {};     // precios actuales
+let CURRENT_TIER = 'DEMO';
+let SELECTED_MODS = new Set();
+
+// ── UTILIDADES ──────────────────────────────────────────────────────────────
+const toast = (msg, ok=true) => {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.style.borderColor = ok ? 'var(--green)' : 'var(--accent)';
+  t.style.color       = ok ? 'var(--green)' : 'var(--accent)';
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2800);
+};
+
+async function api(path, body=null) {
+  const opts = { headers: { 'Content-Type': 'application/json' } };
+  if (body) { opts.method = 'POST'; opts.body = JSON.stringify(body); }
+  const r = await fetch(path, opts);
+  return r.json();
+}
+
+// ── AUTENTICACIÓN ───────────────────────────────────────────────────────────
+async function doLogin() {
+  const pin = document.getElementById('pinInput').value.trim();
+  if (!pin) return;
+  const r = await api('/api/admin/login', { pin });
+  if (r.ok) {
+    TOKEN = r.token;
+    localStorage.setItem('nx_admin_token', TOKEN);
+    document.getElementById('loginOverlay').style.display = 'none';
+    document.getElementById('mainHdr').style.display      = 'flex';
+    document.getElementById('mainTabs').style.display     = 'flex';
+    document.getElementById('hdrNegocio').textContent     = r.nombre_negocio || 'NEXUS Admin';
+    document.getElementById('loginError').style.display   = 'none';
+    await loadAll();
+  } else {
+    document.getElementById('loginError').style.display = 'block';
+    document.getElementById('pinInput').value = '';
+  }
+}
+
+async function checkSession() {
+  if (!TOKEN) return;
+  const r = await api(`/api/admin/dashboard?token=${TOKEN}`);
+  if (r.ok) {
+    document.getElementById('loginOverlay').style.display = 'none';
+    document.getElementById('mainHdr').style.display      = 'flex';
+    document.getElementById('mainTabs').style.display     = 'flex';
+    document.getElementById('hdrNegocio').textContent     = r.nombre_negocio || 'NEXUS Admin';
+    await loadAll();
+  } else {
+    TOKEN = '';
+    localStorage.removeItem('nx_admin_token');
+  }
+}
+
+async function doLogout() {
+  await api('/api/admin/logout', { token: TOKEN });
+  TOKEN = '';
+  localStorage.removeItem('nx_admin_token');
+  location.reload();
+}
+
+// ── CARGAR TODO ─────────────────────────────────────────────────────────────
+async function loadAll() {
+  const [dash, cat] = await Promise.all([
+    api(`/api/admin/dashboard?token=${TOKEN}`),
+    api('/api/admin/catalogo'),
+  ]);
+  if (dash.ok) renderDash(dash);
+  if (cat.ok)  { CATALOG = cat; renderStore(cat); renderPrecioGrid(dash.precios || {}); }
+}
+
+// ── DASHBOARD ───────────────────────────────────────────────────────────────
+function renderDash(d) {
+  TIERS   = d.tiers_config || {};
+  PRECIOS = d.precios || {};
+
+  document.getElementById('statModulos').textContent = d.total_modulos || '—';
+  document.getElementById('statLic').textContent     = (d.licencias_activas||[]).length || '0';
+  document.getElementById('statDemo').textContent    = TIERS['DEMO'] || '—';
+  document.getElementById('statFull').textContent    = TIERS['FULL'] || '—';
+
+  // Tier summary
+  const ts = document.getElementById('tierSummary');
+  ts.innerHTML = '';
+  const tierColors = {DEMO:'var(--green)',LITE:'var(--blue)',PRO:'var(--gold)',FULL:'var(--purple)',ADMIN:'var(--accent)'};
+  for (const [t, cnt] of Object.entries(TIERS)) {
+    if (t === 'ADMIN') continue;
+    const precio = PRECIOS[t] || 0;
+    ts.innerHTML += `<div style="display:flex;justify-content:space-between;align-items:center;padding:6px 8px;background:var(--surface2);border-radius:6px">
+      <span style="font-weight:700;color:${tierColors[t]||'#fff'}">${t}</span>
+      <span style="font-size:12px;color:var(--muted)">${cnt} módulos</span>
+      <span style="font-size:13px;color:var(--gold);font-weight:700">${precio?'$'+precio+' MXN':'GRATIS'}</span>
+    </div>`;
+  }
+
+  // Price summary
+  const ps = document.getElementById('priceSummary');
+  ps.innerHTML = '';
+  for (const [k, v] of Object.entries(PRECIOS)) {
+    ps.innerHTML += `<div style="background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:6px 10px;text-align:center">
+      <div style="font-size:10px;color:var(--muted)">${k}</div>
+      <div style="font-size:14px;color:var(--gold);font-weight:700">${v?'$'+v:'GRATIS'}</div>
+    </div>`;
+  }
+
+  // sysInfo
+  document.getElementById('sysInfo').innerHTML = `
+    <span>📅 Setup: ${d.setup_at||'N/D'}</span>
+    <span>🏢 Negocio: ${d.nombre_negocio||'—'}</span>
+    <span>📦 Total módulos: ${d.total_modulos}</span>`;
+}
+
+// ── TIERS ────────────────────────────────────────────────────────────────────
+function switchTier(el, tier) {
+  document.querySelectorAll('.tier-btn').forEach(b => b.classList.remove('active'));
+  el.classList.add('active');
+  CURRENT_TIER = tier;
+  document.getElementById('tierLabel').textContent = tier;
+  renderModGrid();
+}
+
+async function renderModGrid() {
+  // Carga config actual del tier
+  const r = await api(`/api/admin/tier/${CURRENT_TIER}?token=${TOKEN}`);
+  SELECTED_MODS = new Set(r.modulos || []);
+
+  const grid = document.getElementById('modGrid');
+  grid.innerHTML = '';
+  if (!CATALOG.categorias) return;
+
+  for (const [cat, mods] of Object.entries(CATALOG.categorias)) {
+    const h = document.createElement('div');
+    h.style.cssText = 'font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:1px;padding:4px 2px';
+    h.textContent = cat;
+    grid.appendChild(h);
+
+    for (const m of mods) {
+      const on = SELECTED_MODS.has(m.id);
+      const el = document.createElement('div');
+      el.className = `mod-item${on?' enabled':''}`;
+      el.dataset.id = m.id;
+      el.innerHTML = `
+        <div class="mod-emoji">${m.emoji}</div>
+        <div class="mod-info">
+          <div class="mod-name">${m.nombre}</div>
+          <div class="mod-desc">${m.descripcion}</div>
+        </div>
+        <div class="toggle${on?' on':''}" id="tog_${m.id}" onclick="event.stopPropagation();toggleMod('${m.id}')"></div>`;
+      el.onclick = () => toggleMod(m.id);
+      grid.appendChild(el);
+    }
+  }
+}
+
+function toggleMod(id) {
+  if (id === 'core') { toast('⚡ El núcleo no se puede desactivar', false); return; }
+  const tog = document.getElementById(`tog_${id}`);
+  const item = tog.closest('.mod-item');
+  if (SELECTED_MODS.has(id)) {
+    SELECTED_MODS.delete(id);
+    tog.classList.remove('on');
+    item.classList.remove('enabled');
+  } else {
+    SELECTED_MODS.add(id);
+    tog.classList.add('on');
+    item.classList.add('enabled');
+  }
+}
+
+async function guardarTier() {
+  const r = await api('/api/admin/tier/set', {
+    token: TOKEN,
+    tier: CURRENT_TIER,
+    modulos: [...SELECTED_MODS],
+  });
+  toast(r.ok ? `✅ Tier ${CURRENT_TIER} guardado (${r.modulos?.length} módulos)` : '❌ ' + r.error, r.ok);
+  if (r.ok) await loadAll();
+}
+
+// ── CATÁLOGO TIENDA ──────────────────────────────────────────────────────────
+function renderStore(cat) {
+  const sc = document.getElementById('storeContent');
+  sc.innerHTML = '';
+  for (const [nombre, mods] of Object.entries(cat.categorias||{})) {
+    const sec = document.createElement('div');
+    sec.className = 'cat-section';
+    sec.innerHTML = `<div class="cat-header">${nombre}</div>`;
+    for (const m of mods) {
+      const tiers = (m.incluido_en||[]).map(t =>
+        `<span class="chip ${t.toLowerCase()}">${t}</span>`).join('');
+      const precio = m.precio_extra > 0 ? `<span style="color:var(--gold);font-weight:700;font-size:13px">+$${m.precio_extra} MXN</span>` : `<span style="color:var(--green);font-size:12px">Incluido</span>`;
+      const badge  = m.badge === 'NUEVO' ? '<span class="badge-nuevo">NUEVO</span>' : '';
+      sec.innerHTML += `<div class="store-item">
+        <div class="store-emoji">${m.emoji}</div>
+        <div class="store-info">
+          <div class="store-name">${m.nombre} ${badge}</div>
+          <div class="store-desc">${m.descripcion}</div>
+          <div class="store-detail">${m.detalle}</div>
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-top:6px">
+            <div class="tier-chips">${tiers}</div>
+            ${precio}
+          </div>
+        </div>
+      </div>`;
+    }
+    sc.appendChild(sec);
+  }
+}
+
+// ── PRECIOS ──────────────────────────────────────────────────────────────────
+const TIER_KEYS  = ['DEMO','LITE','PRO','FULL','TEENS'];
+const EXTRA_KEYS = ['galeria','spy','binaural','facturacion','meta_ig','teens','iot','video','milens','paranormal'];
+
+function renderPrecioGrid(precios) {
+  PRECIOS = precios;
+  const pg = document.getElementById('precioGrid');
+  pg.innerHTML = '';
+  for (const k of TIER_KEYS) {
+    pg.innerHTML += `<div class="price-item">
+      <div class="price-label">${k}</div>
+      <input class="price-input" data-key="${k}" type="number" value="${precios[k]||0}" min="0">
+    </div>`;
+  }
+  const eg = document.getElementById('extraGrid');
+  eg.innerHTML = '';
+  for (const k of EXTRA_KEYS) {
+    const m = CATALOG.categorias ? Object.values(CATALOG.categorias).flat().find(x=>x.id===k) : null;
+    const label = m ? `${m.emoji} ${m.nombre}` : k;
+    const val = precios[k] ?? (m?.precio_extra ?? 0);
+    eg.innerHTML += `<div class="price-item">
+      <div class="price-label" style="font-size:10px">${label}</div>
+      <input class="price-input" data-key="${k}" type="number" value="${val}" min="0">
+    </div>`;
+  }
+}
+
+async function guardarPrecios() {
+  const inputs = document.querySelectorAll('.price-input');
+  const updates = [];
+  for (const inp of inputs) {
+    updates.push(api('/api/admin/precio/set', {
+      token: TOKEN,
+      item: inp.dataset.key,
+      precio: parseFloat(inp.value)||0,
+    }));
+  }
+  const results = await Promise.all(updates);
+  const ok = results.every(r=>r.ok);
+  toast(ok ? '✅ Precios guardados' : '⚠️ Algunos no se guardaron', ok);
+  if (ok) await loadAll();
+}
+
+// ── CONFIGURACIÓN ────────────────────────────────────────────────────────────
+async function guardarNegocio() {
+  const nombre = document.getElementById('inputNegocio').value.trim();
+  if (!nombre) return;
+  const r = await api('/api/admin/negocio', { token: TOKEN, nombre });
+  toast(r.ok ? '✅ Nombre actualizado' : '❌ ' + r.error, r.ok);
+}
+
+async function cambiarPin() {
+  const actual = document.getElementById('pinActual').value;
+  const nuevo  = document.getElementById('pinNuevo').value;
+  if (!actual || !nuevo || nuevo.length < 4) { toast('Completa los campos correctamente', false); return; }
+  const r = await api('/api/admin/cambiar_pin', { pin_actual: actual, pin_nuevo: nuevo });
+  toast(r.ok ? '✅ PIN actualizado' : '❌ ' + r.error, r.ok);
+  if (r.ok) { document.getElementById('pinActual').value=''; document.getElementById('pinNuevo').value=''; }
+}
+
+// ── NAVEGACIÓN ────────────────────────────────────────────────────────────────
+function switchTab(el) {
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+  el.classList.add('active');
+  document.getElementById(el.dataset.panel).classList.add('active');
+  // Lazy render de tiers
+  if (el.dataset.panel === 'panelTiers') renderModGrid();
+}
+
+function switchTabById(id) {
+  const tab = document.querySelector(`[data-panel="${id}"]`);
+  if (tab) switchTab(tab);
+}
+
+// ── INIT ─────────────────────────────────────────────────────────────────────
+document.addEventListener('DOMContentLoaded', checkSession);
+</script>
+</body>
+</html>

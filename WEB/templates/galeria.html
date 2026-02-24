@@ -1,0 +1,454 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Galer&iacute;a de Experiencias — NEXUS</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { background: #070707; color: #e0e0e0; font-family: 'Segoe UI', sans-serif; min-height: 100vh; }
+
+        .topbar {
+            display: flex; align-items: center; gap: 10px; padding: 10px 20px;
+            background: #0a0a0a; border-bottom: 1px solid #111;
+            position: sticky; top: 0; z-index: 100;
+        }
+        .topbar a { color: #333; text-decoration: none; font-size: 0.9em; }
+        .topbar h1 { color: #00ff88; font-size: 0.9em; font-weight: 700; letter-spacing: 2px; flex: 1; }
+        .plan-badge {
+            font-size: 0.7em; padding: 3px 10px; border-radius: 12px;
+            background: #00ff8818; border: 1px solid #00ff8830; color: #00ff88; letter-spacing: 1px;
+        }
+
+        .page { max-width: 980px; margin: 0 auto; padding: 20px 16px 60px; }
+
+        /* DISCLAIMER */
+        .disclaimer {
+            background: #0d0d0d; border: 1px solid #1a1a1a; border-left: 3px solid #ffaa00;
+            border-radius: 8px; padding: 12px 16px; margin-bottom: 20px;
+            font-size: 0.78em; color: #666; line-height: 1.6;
+        }
+        .disclaimer strong { color: #ffaa00; }
+
+        /* CUOTA METER */
+        .cuota-row {
+            display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 20px;
+        }
+        .cuota-card {
+            background: #0d0d0d; border: 1px solid #141414; border-radius: 10px; padding: 14px;
+        }
+        .cuota-card h3 { font-size: 0.7em; color: #333; text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 8px; }
+        .cuota-nums { font-size: 1.4em; font-weight: 700; color: #e0e0e0; }
+        .cuota-nums span { font-size: 0.6em; color: #333; font-weight: 400; }
+        .cuota-bar-t { background: #111; border-radius: 4px; height: 5px; margin-top: 8px; overflow: hidden; }
+        .cuota-bar-f { height: 100%; border-radius: 4px; background: #00ff8866; transition: width 0.6s; }
+        .cuota-bar-f.lleno { background: #ff550066; }
+        .cuota-extra { font-size: 0.72em; color: #333; margin-top: 6px; }
+
+        /* SECTION */
+        .sec-title {
+            font-size: 0.72em; color: #333; text-transform: uppercase; letter-spacing: 2px;
+            margin: 24px 0 14px; display: flex; align-items: center; gap: 10px;
+        }
+        .sec-title::after { content:''; flex:1; height:1px; background:#111; }
+
+        /* CARDS */
+        .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 10px; }
+
+        .exp-card {
+            background: #0d0d0d; border: 1px solid #141414; border-radius: 12px; padding: 16px;
+            cursor: pointer; transition: all 0.2s; position: relative; overflow: hidden;
+        }
+        .exp-card:hover:not(.bloqueado) { border-color: var(--c,#00ff88); transform: translateY(-2px); }
+        .exp-card.activo { border-color: var(--c,#00ff88); background: #0d1a12; }
+        .exp-card.activo::before { content:'ACTIVO'; position:absolute; top:8px; right:8px; font-size:0.6em; color:var(--c,#00ff88); letter-spacing:1px; border:1px solid var(--c,#00ff88); border-radius:4px; padding:1px 5px; }
+        .exp-card.bloqueado { opacity: 0.4; cursor: not-allowed; }
+        .exp-card.bloqueado:hover { transform: none; }
+
+        .card-icon { font-size: 1.6em; margin-bottom: 8px; }
+        .card-nombre { font-size: 0.88em; font-weight: 600; color: #ddd; margin-bottom: 4px; }
+        .card-cat { font-size: 0.68em; color: #333; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px; }
+        .card-desc { font-size: 0.76em; color: #555; line-height: 1.5; }
+        .card-beat { font-size: 0.68em; color: #333; margin-top: 8px; }
+        .card-beat strong { color: #444; }
+
+        .card-lock {
+            position: absolute; bottom: 12px; right: 12px;
+            font-size: 0.72em; color: #252525; border: 1px solid #1a1a1a;
+            border-radius: 4px; padding: 2px 7px;
+        }
+        .card-plan-req { font-size: 0.65em; color: #333; margin-top: 6px; }
+
+        /* CONTROL BAR */
+        .control-bar {
+            position: fixed; bottom: 0; left: 0; right: 0;
+            background: #0a0a0a; border-top: 1px solid #111;
+            padding: 10px 20px; display: flex; align-items: center; gap: 12px;
+            z-index: 50;
+        }
+        .ctrl-now { font-size: 0.78em; color: #444; flex: 1; }
+        .ctrl-now strong { color: #00ff88; }
+        .ctrl-vol { display: flex; align-items: center; gap: 8px; font-size: 0.72em; color: #333; }
+        .ctrl-vol input[type=range] {
+            -webkit-appearance: none; width: 80px; height: 3px;
+            background: #1a1a1a; border-radius: 2px; outline: none;
+        }
+        .ctrl-vol input[type=range]::-webkit-slider-thumb {
+            -webkit-appearance: none; width: 10px; height: 10px;
+            border-radius: 50%; background: #00ff88; cursor: pointer;
+        }
+        .btn-off {
+            background: none; border: 1px solid #1a1a1a; color: #444;
+            border-radius: 7px; padding: 6px 14px; font-size: 0.78em; cursor: pointer;
+        }
+        .btn-off:hover { color: #ff5050; border-color: #ff505030; }
+
+        /* UPGRADE MODAL */
+        .modal-bg {
+            display: none; position: fixed; inset: 0;
+            background: rgba(0,0,0,0.85); z-index: 200;
+            align-items: center; justify-content: center;
+        }
+        .modal-bg.open { display: flex; }
+        .modal {
+            background: #111; border: 1px solid #1e1e1e; border-radius: 14px;
+            padding: 24px; max-width: 380px; width: 90%;
+        }
+        .modal h2 { color: #00ff88; font-size: 1em; margin-bottom: 10px; }
+        .modal p  { font-size: 0.82em; color: #666; line-height: 1.6; margin-bottom: 14px; }
+        .modal .price { font-size: 1.3em; color: #e0e0e0; font-weight: 700; margin: 10px 0; }
+        .modal .price span { font-size: 0.6em; color: #444; font-weight: 400; }
+        .btn-upgrade {
+            width: 100%; background: #00ff8820; border: 1px solid #00ff8840;
+            color: #00ff88; border-radius: 8px; padding: 11px; font-size: 0.88em;
+            font-weight: bold; cursor: pointer; margin-bottom: 8px;
+        }
+        .btn-upgrade:hover { background: #00ff8830; }
+        .btn-cancel { width:100%; background:none; border:none; color:#333; font-size:0.8em; cursor:pointer; }
+
+        ::-webkit-scrollbar { width: 3px; }
+        ::-webkit-scrollbar-thumb { background: #1a1a1a; }
+    </style>
+</head>
+<body>
+
+<div class="topbar">
+    <a href="/dashboard">&#8592;</a>
+    <h1>GALERÍA DE EXPERIENCIAS</h1>
+    <span class="plan-badge" id="plan-badge">CARGANDO</span>
+</div>
+
+<div class="page">
+
+    <!-- DISCLAIMER LEGAL -->
+    <div class="disclaimer">
+        <strong>Aviso de uso responsable:</strong>
+        Los tonos binaurales son frecuencias de audio reales que pueden afectar el estado mental.
+        El uso de estas experiencias es <strong>responsabilidad exclusiva del usuario</strong>.
+        No se recomienda su uso si padeces epilepsia fotosensible, trastornos auditivos o estás bajo tratamiento psiquiátrico.
+        Usa siempre audífonos para el efecto binaural completo. No operes vehículos ni maquinaria durante su uso.
+        NEXUS no asume responsabilidad por el efecto de estas experiencias en el usuario.
+    </div>
+
+    <!-- CUOTAS -->
+    <div class="cuota-row">
+        <div class="cuota-card">
+            <h3>Audios este mes</h3>
+            <div class="cuota-nums" id="q-audio">—</div>
+            <div class="cuota-bar-t"><div class="cuota-bar-f" id="qb-audio" style="width:0%"></div></div>
+            <div class="cuota-extra" id="qe-audio"></div>
+        </div>
+        <div class="cuota-card">
+            <h3>Visuales este mes</h3>
+            <div class="cuota-nums" id="q-visual">—</div>
+            <div class="cuota-bar-t"><div class="cuota-bar-f" id="qb-visual" style="width:0%"></div></div>
+            <div class="cuota-extra" id="qe-visual"></div>
+        </div>
+    </div>
+
+    <!-- AUDIOS -->
+    <div class="sec-title">Experiencias de Audio &mdash; <span style="color:#444;font-weight:400">Binaural + Mensajes de voz</span></div>
+    <div class="grid" id="grid-audio"></div>
+
+    <!-- VISUALES -->
+    <div class="sec-title">Experiencias Visuales &mdash; <span style="color:#444;font-weight:400">Fondos ambientales generativos</span></div>
+    <div class="grid" id="grid-visual"></div>
+
+</div>
+
+<!-- BARRA DE CONTROL -->
+<div class="control-bar">
+    <div class="ctrl-now" id="ctrl-now">
+        <span id="ctrl-audio-lbl" style="color:#444">Sin audio activo</span>
+        &nbsp;&middot;&nbsp;
+        <span id="ctrl-visual-lbl" style="color:#444">Sin visual activo</span>
+    </div>
+    <div class="ctrl-vol">
+        <span>Vol</span>
+        <input type="range" id="vol-range" min="1" max="15" value="5"
+            oninput="setVol(this.value)" title="Volumen del tono binaural">
+    </div>
+    <button class="btn-off" onclick="apagarTodo()">Apagar todo</button>
+</div>
+
+<!-- MODAL UPGRADE / EXTRA -->
+<div class="modal-bg" id="modal-bg" onclick="cerrarModal(event)">
+    <div class="modal">
+        <h2 id="m-title">L&iacute;mite alcanzado</h2>
+        <p id="m-text">Has usado tu cuota mensual de audios.</p>
+        <div class="price" id="m-price">$20 MXN <span>por activaci&oacute;n adicional</span></div>
+        <button class="btn-upgrade" onclick="solicitarCredito()">Agregar activaci&oacute;n extra</button>
+        <button class="btn-cancel" onclick="cerrarModal()">Cancelar</button>
+    </div>
+</div>
+
+<script src="/static/nexus_ambient.js"></script>
+<script src="/static/nexus_galeria.js"></script>
+<script>
+let _catalogo  = null;
+let _audioActivo  = null;  // { id, nombre }
+let _visualActivo = null;  // { id, nombre, css_key }
+let _modalData = {};
+
+async function cargar() {
+    try {
+        const r  = await fetch('/api/galeria/catalogo');
+        const d  = await r.json();
+        if (!d.ok) return;
+        _catalogo = d;
+
+        // Badge de plan
+        document.getElementById('plan-badge').textContent = d.plan;
+
+        // Cuotas
+        renderCuota('audio',  d.cuotas.audio);
+        renderCuota('visual', d.cuotas.visual);
+
+        // Grids
+        document.getElementById('grid-audio').innerHTML  = d.audios.map(renderCardAudio).join('');
+        document.getElementById('grid-visual').innerHTML = d.visuales.map(renderCardVisual).join('');
+
+        // Restaurar activos desde localStorage
+        const savedAudio  = localStorage.getItem('nexus_galeria_audio');
+        const savedVisual = localStorage.getItem('nexus_galeria_visual');
+        if (savedAudio)  { const a = d.audios.find(x=>x.id===savedAudio);  if(a&&a.ya_activado)  aplicarAudio(a,true); }
+        if (savedVisual) { const v = d.visuales.find(x=>x.id===savedVisual);if(v&&v.ya_activado) aplicarVisual(v,true); }
+
+    } catch(e) { console.error(e); }
+}
+
+function renderCuota(tipo, q) {
+    const usado = q.usados, max = q.max;
+    const pct   = max > 0 ? Math.min(usado / max * 100, 100) : 0;
+    const lleno = usado >= max && max < 9999;
+    document.getElementById(`q-${tipo}`).innerHTML =
+        `${used_label(usado,max)}`;
+    const bar = document.getElementById(`qb-${tipo}`);
+    bar.style.width   = pct + '%';
+    if (lleno) bar.classList.add('lleno');
+    document.getElementById(`qe-${tipo}`).textContent =
+        lleno ? 'Cuota agotada. Puedes agregar activaciones extra.' :
+        max >= 9999 ? 'Ilimitado' :
+        `${max - usado} restantes este mes`;
+}
+
+function used_label(u,m) {
+    if (m >= 9999) return `<span>${u}</span> / <span style="color:#333">∞</span>`;
+    return `${u} <span>/ ${m} este mes</span>`;
+}
+
+function planColor(cat) {
+    const colores = {
+        NEXUS:'#00ff88', INTRO:'#00ff88', TRABAJO:'#0088ff',
+        CREATIVIDAD:'#aa00ff', VENTAS:'#ff4400', AUTOESTIMA:'#ffaa00',
+        BIENESTAR:'#336699', PREMIUM:'#ffdd00', PARANORMAL:'#550088'
+    };
+    return colores[cat] || '#00ff88';
+}
+
+function renderCardAudio(a) {
+    const col     = a.color || planColor(a.categoria);
+    const blq     = !a.puede_activar && !a.ya_activado ? 'bloqueado' : '';
+    const activo  = _audioActivo?.id === a.id ? 'activo' : '';
+    const lockedTxt = a.razon === 'plan_insuficiente'
+        ? `Plan ${a.plan_requerido || 'PRO'}+`
+        : a.razon === 'cuota_agotada' ? 'Cuota agotada' : '';
+    return `<div class="exp-card ${blq} ${activo}" style="--c:${col}"
+        onclick="clickAudio('${a.id}')" id="ca-${a.id}">
+        <div class="card-icon">${a.icono}</div>
+        <div class="card-nombre">${a.nombre}</div>
+        <div class="card-cat">${a.categoria}</div>
+        <div class="card-desc">${a.beneficio}</div>
+        <div class="card-beat"><strong>${a.beat_hz}Hz</strong> beat binaural</div>
+        ${lockedTxt ? `<div class="card-lock">${lockedTxt}</div>` : ''}
+    </div>`;
+}
+
+function renderCardVisual(v) {
+    const col    = v.color || '#00ff88';
+    const blq    = !v.puede_activar && !v.ya_activado ? 'bloqueado' : '';
+    const activo = _visualActivo?.id === v.id ? 'activo' : '';
+    const lockedTxt = v.razon === 'plan_insuficiente'
+        ? `Plan ${v.plan_requerido || 'PRO'}+`
+        : v.razon === 'cuota_agotada' ? 'Cuota agotada' : '';
+    return `<div class="exp-card ${blq} ${activo}" style="--c:${col}"
+        onclick="clickVisual('${v.id}')" id="cv-${v.id}">
+        <div class="card-icon">${v.icono}</div>
+        <div class="card-nombre">${v.nombre}</div>
+        <div class="card-cat">${v.categoria}</div>
+        <div class="card-desc">${v.descripcion}</div>
+        ${lockedTxt ? `<div class="card-lock">${lockedTxt}</div>` : ''}
+    </div>`;
+}
+
+async function clickAudio(id) {
+    const a = _catalogo?.audios?.find(x => x.id === id);
+    if (!a) return;
+
+    // Si está bloqueado
+    if (!a.puede_activar && !a.ya_activado) {
+        if (a.razon === 'cuota_agotada') {
+            const p = _catalogo.precios_extra.audio;
+            mostrarModal('Cuota de audios agotada',
+                `Has activado el máximo de audios este mes para tu plan ${_catalogo.plan}. Puedes agregar una activación extra por:`,
+                `$${p} MXN`, 'audio');
+        } else {
+            mostrarModal('Plan insuficiente',
+                `"${a.nombre}" requiere plan ${a.plan_requerido || 'PRO'} o superior. Actualiza tu licencia para acceder a este contenido.`,
+                '', 'upgrade');
+        }
+        return;
+    }
+
+    // Activar en servidor
+    try {
+        const r = await fetch('/api/galeria/activar', {
+            method: 'POST',
+            headers: {'Content-Type':'application/json'},
+            body: JSON.stringify({tipo:'audio', id})
+        });
+        const d = await r.json();
+        if (d.ok) {
+            aplicarAudio(a);
+            await cargar(); // Refrescar cuotas
+        }
+    } catch(e) { console.error(e); }
+}
+
+async function clickVisual(id) {
+    const v = _catalogo?.visuales?.find(x => x.id === id);
+    if (!v) return;
+
+    if (!v.puede_activar && !v.ya_activado) {
+        if (v.razon === 'cuota_agotada') {
+            const p = _catalogo.precios_extra.visual;
+            mostrarModal('Cuota de visuales agotada',
+                `Puedes agregar una activación visual extra por:`, `$${p} MXN`, 'visual');
+        } else {
+            mostrarModal('Plan insuficiente',
+                `"${v.nombre}" requiere un plan superior. Actualiza tu licencia.`, '', 'upgrade');
+        }
+        return;
+    }
+
+    try {
+        const r = await fetch('/api/galeria/activar', {
+            method: 'POST',
+            headers: {'Content-Type':'application/json'},
+            body: JSON.stringify({tipo:'visual', id})
+        });
+        const d = await r.json();
+        if (d.ok) {
+            aplicarVisual(v);
+            await cargar();
+        }
+    } catch(e) { console.error(e); }
+}
+
+function aplicarAudio(a, silencioso = false) {
+    // Detener anterior si existía
+    if (typeof NexusAmbient !== 'undefined') NexusAmbient.detener();
+
+    _audioActivo = a;
+    localStorage.setItem('nexus_galeria_audio', a.id);
+    actualizarCtrl();
+
+    // Reconstruir NexusAmbient con los mensajes del audio seleccionado
+    if (!silencioso && typeof NexusAmbient !== 'undefined') {
+        // Sobrescribir mensajes en el objeto de sesión
+        window.__nexus_audio_override = {
+            hz_L:     a.hz_L,
+            hz_R:     a.hz_R,
+            mensajes: a.mensajes || []
+        };
+        NexusAmbient.iniciar();
+    }
+
+    // Resaltar card
+    document.querySelectorAll('[id^="ca-"]').forEach(c => c.classList.remove('activo'));
+    const card = document.getElementById(`ca-${a.id}`);
+    if (card) card.classList.add('activo');
+}
+
+function aplicarVisual(v, silencioso = false) {
+    _visualActivo = v;
+    localStorage.setItem('nexus_galeria_visual', v.id);
+    actualizarCtrl();
+
+    if (typeof NexusGaleria !== 'undefined') {
+        NexusGaleria.activar(v.css_key);
+    }
+
+    document.querySelectorAll('[id^="cv-"]').forEach(c => c.classList.remove('activo'));
+    const card = document.getElementById(`cv-${v.id}`);
+    if (card) card.classList.add('activo');
+}
+
+function actualizarCtrl() {
+    document.getElementById('ctrl-audio-lbl').innerHTML  =
+        _audioActivo  ? `<strong style="color:#00ff88">${_audioActivo.nombre}</strong> activo` : '<span style="color:#333">Sin audio</span>';
+    document.getElementById('ctrl-visual-lbl').innerHTML =
+        _visualActivo ? `<strong style="color:#00ff88">${_visualActivo.nombre}</strong>` : '<span style="color:#333">Sin visual</span>';
+}
+
+function apagarTodo() {
+    if (typeof NexusAmbient  !== 'undefined') NexusAmbient.detener();
+    if (typeof NexusGaleria  !== 'undefined') NexusGaleria.desactivar();
+    _audioActivo = _visualActivo = null;
+    localStorage.removeItem('nexus_galeria_audio');
+    localStorage.removeItem('nexus_galeria_visual');
+    document.querySelectorAll('.exp-card.activo').forEach(c => c.classList.remove('activo'));
+    actualizarCtrl();
+}
+
+function setVol(v) {
+    const gain = (v / 15) * 0.08;
+    if (typeof NexusAmbient  !== 'undefined') NexusAmbient.setVolumen(gain);
+    if (typeof NexusGaleria  !== 'undefined') NexusGaleria.setOpacidad(gain * 1.2);
+}
+
+function mostrarModal(titulo, texto, precio, tipo) {
+    _modalData = { tipo };
+    document.getElementById('m-title').textContent = titulo;
+    document.getElementById('m-text').textContent  = texto;
+    const priceEl = document.getElementById('m-price');
+    priceEl.style.display = precio ? '' : 'none';
+    priceEl.innerHTML = precio ? `${precio} <span>por activación adicional</span>` : '';
+    document.getElementById('modal-bg').classList.add('open');
+}
+
+function cerrarModal(e) {
+    if (!e || e.target.id === 'modal-bg' || !e.target) {
+        document.getElementById('modal-bg').classList.remove('open');
+    }
+}
+
+function solicitarCredito() {
+    cerrarModal();
+    alert('Para agregar activaciones extra contacta al administrador de NEXUS o al soporte técnico.\n\nEl admin puede agregar créditos con:\npython nexus_galeria.py credito ' + (_modalData.tipo||'audio') + ' 1');
+}
+
+cargar();
+</script>
+</body>
+</html>

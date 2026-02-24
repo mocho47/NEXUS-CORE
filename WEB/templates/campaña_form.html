@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nueva Campaña - NEXUS</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { background: #0a0a0a; color: #e0e0e0; font-family: 'Segoe UI', sans-serif; padding: 16px; }
+        .nav { margin-bottom: 14px; }
+        .nav a { color: #888; text-decoration: none; font-size: 0.9em; }
+        h2 { color: #00ff88; margin-bottom: 4px; }
+        .sub { color: #555; font-size: 0.8em; margin-bottom: 20px; }
+        .card { background: #111; border: 1px solid #1e1e1e; border-radius: 10px; padding: 20px; max-width: 500px; }
+        .field { margin-bottom: 14px; }
+        label { display: block; font-size: 0.78em; color: #555; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 5px; }
+        input, select, textarea {
+            width: 100%; background: #0a0a0a; border: 1px solid #2a2a2a; border-radius: 6px;
+            color: #e0e0e0; padding: 9px 12px; font-size: 0.9em; outline: none; font-family: inherit;
+        }
+        input:focus, select:focus, textarea:focus { border-color: #00ff8844; }
+        .plataformas { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+        .plat-btn {
+            background: #141414; border: 1px solid #222; border-radius: 8px; padding: 10px 6px;
+            text-align: center; cursor: pointer; font-size: 0.8em; color: #888;
+        }
+        .plat-btn.active { border-color: #00ff8844; color: #00ff88; background: #00ff8811; }
+        .plat-btn .ic { font-size: 1.5em; display: block; margin-bottom: 4px; }
+        .btn-crear {
+            width: 100%; background: #00ff8822; border: 1px solid #00ff8844; color: #00ff88;
+            border-radius: 8px; padding: 12px; font-size: 0.9em; font-weight: bold;
+            cursor: pointer; margin-top: 8px;
+        }
+        .result { display: none; margin-top: 14px; background: #00ff8811; border: 1px solid #00ff8833;
+                  border-radius: 8px; padding: 14px; font-size: 0.85em; color: #00ff88; }
+        .result.error { background: #ff444411; border-color: #ff444433; color: #ff4444; }
+    </style>
+</head>
+<body>
+    <div class="nav"><a href="/marketing">← Marketing</a></div>
+    <h2>📁 Nueva Campaña</h2>
+    <p class="sub">Crea una carpeta de campaña con guión, hashtags y copies listos</p>
+
+    <div class="card">
+        <div class="field">
+            <label>Nombre de la campaña</label>
+            <input type="text" id="nombre" placeholder="Ej: Retrofit Febrero 2026" autocomplete="off">
+        </div>
+
+        <div class="field">
+            <label>Plataforma principal</label>
+            <div class="plataformas">
+                <div class="plat-btn active" data-plat="instagram" onclick="elegir(this)">
+                    <span class="ic">📸</span>Instagram
+                </div>
+                <div class="plat-btn" data-plat="tiktok" onclick="elegir(this)">
+                    <span class="ic">🎵</span>TikTok
+                </div>
+                <div class="plat-btn" data-plat="whatsapp" onclick="elegir(this)">
+                    <span class="ic">💬</span>WhatsApp
+                </div>
+            </div>
+            <input type="hidden" id="plataforma" value="instagram">
+        </div>
+
+        <div class="field">
+            <label>Tipo de servicio</label>
+            <select id="tipo_servicio">
+                <option value="laser">Corte Láser</option>
+                <option value="retrofit_premium">Retrofit Premium</option>
+                <option value="sublimacion">Sublimación</option>
+                <option value="dtf">DTF / Textil</option>
+                <option value="neon">Neón</option>
+            </select>
+        </div>
+
+        <div class="field">
+            <label>Objetivo (opcional)</label>
+            <textarea id="objetivo" rows="2" placeholder="Ej: Promocionar paquete San Valentín, generar 10 leads"></textarea>
+        </div>
+
+        <button class="btn-crear" onclick="crearCampaña()">⚡ Crear carpeta de campaña</button>
+
+        <div class="result" id="result"></div>
+    </div>
+
+    <script>
+    function elegir(el) {
+        document.querySelectorAll('.plat-btn').forEach(b => b.classList.remove('active'));
+        el.classList.add('active');
+        document.getElementById('plataforma').value = el.dataset.plat;
+    }
+
+    async function crearCampaña() {
+        const nombre = document.getElementById('nombre').value.trim();
+        if (!nombre) { alert('Escribe un nombre para la campaña'); return; }
+        const res = document.getElementById('result');
+        res.className = 'result';
+        res.innerText = 'Creando campaña...';
+        res.style.display = '';
+        try {
+            const r = await fetch('/api/crear_campaña', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    nombre,
+                    plataforma: document.getElementById('plataforma').value,
+                    tipo: document.getElementById('tipo_servicio').value,
+                    objetivo: document.getElementById('objetivo').value,
+                })
+            });
+            const d = await r.json();
+            if (d.ok) {
+                res.innerText = '✓ Campaña creada en:\n' + d.folder;
+            } else {
+                res.className = 'result error';
+                res.innerText = 'Error: ' + (d.error || 'desconocido');
+            }
+        } catch(e) {
+            res.className = 'result error';
+            res.innerText = 'Sin conexión al servidor.';
+        }
+    }
+    </script>
+</body>
+</html>

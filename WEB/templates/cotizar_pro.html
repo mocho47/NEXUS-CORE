@@ -1,0 +1,359 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nexus Cotizador V3</title>
+    <style>
+        body { font-family: 'Segoe UI', sans-serif; background: #0f0f0f; color: #e0e0e0; padding: 15px; padding-bottom: 90px; margin: 0; }
+        
+        /* HEADER */
+        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; border-bottom: 1px solid #333; padding-bottom: 10px; }
+        .header h2 { margin: 0; color: #00ff00; font-size: 1.5em; text-transform: uppercase; letter-spacing: 1px; }
+        
+        /* TABS */
+        .tabs-container { overflow-x: auto; white-space: nowrap; padding-bottom: 10px; margin-bottom: 15px; -webkit-overflow-scrolling: touch; }
+        .tab { display: inline-block; background: #222; padding: 10px 20px; border-radius: 25px; margin-right: 10px; cursor: pointer; border: 1px solid #333; transition: all 0.2s; }
+        .tab.active { background: #00ff00; color: #000; font-weight: bold; border-color: #00ff00; box-shadow: 0 0 10px rgba(0,255,0,0.3); }
+        
+        /* SECTIONS */
+        .section { display: none; animation: fadeIn 0.3s; }
+        .section.active { display: block; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* INPUTS */
+        .form-group { margin-bottom: 15px; background: #1a1a1a; padding: 15px; border-radius: 10px; border: 1px solid #333; }
+        label { display: block; color: #888; margin-bottom: 8px; font-size: 0.9em; font-weight: 600; }
+        input, select { width: 100%; padding: 12px; background: #000; border: 1px solid #444; color: #fff; border-radius: 6px; font-size: 16px; box-sizing: border-box; }
+        input:focus, select:focus { border-color: #00ff00; outline: none; }
+        
+        /* BUTTONS */
+        .btn-calc { width: 100%; background: #333; color: #fff; padding: 12px; border: 1px solid #555; border-radius: 6px; cursor: pointer; font-weight: bold; margin-top: 10px; }
+        .btn-calc:hover { background: #444; }
+
+        /* RESULT BAR */
+        .result-bar { position: fixed; bottom: 0; left: 0; right: 0; background: #1a1a1a; padding: 15px 20px; border-top: 2px solid #00ff00; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 -5px 20px rgba(0,0,0,0.8); z-index: 1000; }
+        .price-tag { font-size: 1.8em; color: #00ff00; font-weight: bold; line-height: 1; }
+        .price-desc { font-size: 0.8em; color: #aaa; }
+        .btn-agendar { background: #00ff00; color: #000; padding: 12px 25px; border: none; border-radius: 30px; font-weight: bold; font-size: 1em; box-shadow: 0 0 15px rgba(0,255,0,0.4); cursor: pointer; }
+
+        /* LISTS */
+        .item-row { display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px solid #2a2a2a; }
+        .item-row:last-child { border-bottom: none; }
+        .badge { font-size: 0.75em; padding: 2px 6px; border-radius: 4px; background: #333; color: #aaa; margin-left: 5px; }
+
+        /* TOGGLE BUTTONS */
+        .tech-selector { display: flex; gap: 5px; margin-top: 5px; }
+        .tech-btn { flex: 1; padding: 8px; background: #222; border: 1px solid #444; color: #888; text-align: center; border-radius: 4px; cursor: pointer; font-size: 0.9em; }
+        .tech-btn.selected { background: #004400; border-color: #00ff00; color: #fff; }
+
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <h2>Nexus V3</h2>
+        <a href="/" style="color: #666; text-decoration: none; font-size: 1.5em;">&times;</a>
+    </div>
+
+    <div class="tabs-container">
+        <div class="tab active" onclick="setTab('laser')">Láser</div>
+        <div class="tab" onclick="setTab('neon')">Neón Flex</div>
+        <div class="tab" onclick="setTab('productos')">Productos</div>
+        <div class="tab" onclick="setTab('textil')">Textil/DTF</div>
+        <div class="tab" onclick="setTab('retrofit')">Retrofit</div>
+    </div>
+
+    <!-- ==================== LÁSER ==================== -->
+    <div id="laser" class="section active">
+        <div class="form-group">
+            <label>Material</label>
+            <select id="laser_mat">
+                <option value="none">Maquila (Solo corte)</option>
+                {% for m in db.laser.materiales %}
+                <option value="{{m.nombre}}" data-price="{{m.precio_hoja}}" data-w="{{m.ancho}}" data-h="{{m.alto}}">
+                    {{m.nombre}}
+                </option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <div class="form-group" id="laser_dims" style="display:none;">
+            <label>Medidas del Diseño (cm)</label>
+            <div style="display:flex; gap: 10px;">
+                <input type="number" id="lx" placeholder="Ancho">
+                <input type="number" id="ly" placeholder="Alto">
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label>Tiempo de Máquina (Minutos)</label>
+            <input type="number" id="laser_time" placeholder="Minutos estimados">
+        </div>
+
+        <button class="btn-calc" onclick="calcLaser()">Calcular Láser</button>
+    </div>
+
+    <!-- ==================== NEÓN FLEX ==================== -->
+    <div id="neon" class="section">
+        <div class="form-group">
+            <label>Base de Acrílico (cm)</label>
+            <div style="display:flex; gap: 10px;">
+                <input type="number" id="nx" placeholder="Ancho">
+                <input type="number" id="ny" placeholder="Alto">
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label>Longitud de Neón (Metros)</label>
+            <input type="number" id="n_metros" placeholder="Suma total de metros">
+        </div>
+
+        <div class="form-group">
+            <label>Complejidad</label>
+            <select id="n_complex">
+                <option value="1">Texto Simple (x3)</option>
+                <option value="1.2">Logotipo / Curvas (x3.6)</option>
+                <option value="1.5">Arte Complejo (x4.5)</option>
+            </select>
+        </div>
+
+        <button class="btn-calc" onclick="calcNeon()">Cotizar Neón</button>
+        <p style="color:#666; font-size:0.8em; margin-top:10px; text-align:center;">*Incluye Fuente 12V y Mano de Obra</p>
+    </div>
+
+    <!-- ==================== PRODUCTOS (Tazas, Termos, Sellos) ==================== -->
+    <div id="productos" class="section">
+        <div class="form-group">
+            <label>Selecciona Producto</label>
+            <select id="prod_select" onchange="updateTechOptions()">
+                {% for p in db.sublimacion_personalizacion %}
+                <option value="{{p.nombre}}" 
+                        data-cat="{{p.cat}}"
+                        data-subli="{{p.precio_subli}}" 
+                        data-laser="{{p.precio_laser}}"
+                        data-vinil="{{p.precio_vinil or 0}}"
+                        data-dtf="{{p.precio_dtf or 0}}">
+                    {{p.cat}} - {{p.nombre}}
+                </option>
+                {% endfor %}
+            </select>
+            
+            <!-- Selector de Técnica Dinámico -->
+            <div id="tech_options" class="tech-selector">
+                <!-- Se llena con JS -->
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label>Cantidad</label>
+            <input type="number" id="prod_cant" value="1">
+        </div>
+
+        <button class="btn-calc" onclick="calcProd()">Calcular</button>
+    </div>
+
+    <!-- ==================== TEXTIL / DTF / MAQUILA ==================== -->
+    <div id="textil" class="section">
+        <div class="form-group">
+            <label>Insumo / Maquila</label>
+            <select id="textil_type">
+                <option value="dtf" data-price="{{db.insumos_textil.dtf_metro}}">Impresión DTF (Metro)</option>
+                <option value="dtf_uv" data-price="{{db.insumos_textil.dtf_uv_metro}}">DTF UV (Metro)</option>
+                <option value="vinil" data-price="{{db.insumos_textil.vinil_textil_metro}}">Vinil Textil (Metro)</option>
+            </select>
+        </div>
+        <div class="form-group">
+            <label>Cantidad (Metros lineales)</label>
+            <input type="number" id="textil_qty" placeholder="Ej: 0.5">
+        </div>
+        <button class="btn-calc" onclick="calcTextil()">Cotizar Insumo</button>
+    </div>
+
+    <!-- ==================== RETROFIT ==================== -->
+    <div id="retrofit" class="section">
+        <div style="background:#1a1a1a; border-radius:10px; padding:10px;">
+            {% for r in db.retrofit %}
+            <div class="item-row">
+                <div>
+                    <div style="font-weight:bold; font-size:0.9em;">{{r.nombre}}</div>
+                    <div style="color:#00ff00;">${{r.precio}}</div>
+                </div>
+                <input type="checkbox" class="retro-check" data-name="{{r.nombre}}" data-price="{{r.precio}}" style="width:25px; height:25px;">
+            </div>
+            {% endfor %}
+        </div>
+        <button class="btn-calc" onclick="calcRetro()">Sumar Retrofit</button>
+    </div>
+
+    <!-- ==================== RESULT BAR ==================== -->
+    <div class="result-bar" id="result_bar" style="display:none;">
+        <div>
+            <div class="price-tag" id="total_display">$0</div>
+            <div class="price-desc" id="desc_display">...</div>
+        </div>
+        <button class="btn-agendar" onclick="agendar()">AGENDAR</button>
+    </div>
+
+    <!-- JSON Data Container to avoid JS Syntax Errors -->
+    <script type="application/json" id="db-data">
+        {{ db | tojson }}
+    </script>
+
+    <script>
+        // DATA FROM SERVER
+        const DB = JSON.parse(document.getElementById('db-data').textContent);
+        let currentTotal = 0;
+        let currentDesc = "";
+        let selectedTechPrice = 0;
+        let selectedTechName = "";
+
+        // TABS LOGIC
+        function setTab(id) {
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+            event.target.classList.add('active');
+            document.getElementById(id).classList.add('active');
+            document.getElementById('result_bar').style.display = 'none';
+        }
+
+        // LASER LOGIC
+        document.getElementById('laser_mat').addEventListener('change', function() {
+            document.getElementById('laser_dims').style.display = (this.value === 'none') ? 'none' : 'block';
+        });
+
+        function calcLaser() {
+            const min = parseFloat(document.getElementById('laser_time').value) || 0;
+            const matName = document.getElementById('laser_mat').value;
+            let matCost = 0;
+
+            if (matName !== 'none') {
+                const opt = document.getElementById('laser_mat').selectedOptions[0];
+                const w = parseFloat(document.getElementById('lx').value) || 0;
+                const h = parseFloat(document.getElementById('ly').value) || 0;
+                const sheetW = parseFloat(opt.dataset.w);
+                const sheetH = parseFloat(opt.dataset.h);
+                const sheetPrice = parseFloat(opt.dataset.price);
+                
+                // Area ratio + 20% waste
+                if(w>0 && h>0) {
+                    matCost = ((w*h) / (sheetW*sheetH)) * sheetPrice * 1.20;
+                }
+            }
+
+            const total = (min * DB.laser.costo_minuto) + matCost;
+            showResult(total, `Láser: ${matName} (${min} min)`);
+        }
+
+        // NEON LOGIC
+        function calcNeon() {
+            const w = parseFloat(document.getElementById('nx').value) || 0;
+            const h = parseFloat(document.getElementById('ny').value) || 0;
+            const meters = parseFloat(document.getElementById('n_metros').value) || 0;
+            const complexity = parseFloat(document.getElementById('n_complex').value);
+
+            // Costo Base Acrílico (aprox proporcional a hoja completa 120x180 de $800)
+            // Precio cm2 acrilico transp = 800 / (120*180) = 0.037
+            const acrylicCost = (w * h) * 0.037; 
+            
+            // Costos Directos
+            const neonCost = meters * DB.neon_flex.costo_metro_neon;
+            const powerCost = DB.neon_flex.costo_fuente_12v;
+            
+            const rawCost = acrylicCost + neonCost + powerCost;
+            
+            // Formula Magica
+            const finalPrice = rawCost * DB.neon_flex.factor_ganancia * complexity;
+            
+            showResult(finalPrice, `Neón Flex ${w}x${h}cm (${meters}m)`);
+        }
+
+        // PRODUCTOS LOGIC (Tech Selector)
+        function updateTechOptions() {
+            const opt = document.getElementById('prod_select').selectedOptions[0];
+            const div = document.getElementById('tech_options');
+            div.innerHTML = '';
+            
+            const techs = [
+                {k:'subli', n:'Sublimación', p: opt.dataset.subli},
+                {k:'laser', n:'Láser', p: opt.dataset.laser},
+                {k:'vinil', n:'Vinil', p: opt.dataset.vinil},
+                {k:'dtf', n:'DTF', p: opt.dataset.dtf}
+            ];
+
+            let first = true;
+            techs.forEach(t => {
+                const price = parseFloat(t.p);
+                if (price > 0) {
+                    const btn = document.createElement('div');
+                    btn.className = `tech-btn ${first?'selected':''}`;
+                    btn.innerText = t.n;
+                    btn.onclick = () => {
+                        document.querySelectorAll('.tech-btn').forEach(b => b.classList.remove('selected'));
+                        btn.classList.add('selected');
+                        selectedTechPrice = price;
+                        selectedTechName = t.n;
+                    };
+                    div.appendChild(btn);
+                    if(first) { selectedTechPrice = price; selectedTechName = t.n; first=false; }
+                }
+            });
+        }
+        // Init tech options on load
+        setTimeout(updateTechOptions, 500);
+
+        function calcProd() {
+            const qty = parseFloat(document.getElementById('prod_cant').value) || 1;
+            const prodName = document.getElementById('prod_select').value;
+            
+            let total = selectedTechPrice * qty;
+            if(qty >= 12) total *= 0.9; // Mayoreo auto
+
+            showResult(total, `${qty} x ${prodName} (${selectedTechName})`);
+        }
+
+        // TEXTIL LOGIC
+        function calcTextil() {
+            const qty = parseFloat(document.getElementById('textil_qty').value) || 0;
+            const opt = document.getElementById('textil_type').selectedOptions[0];
+            const total = qty * parseFloat(opt.dataset.price);
+            showResult(total, `${opt.text} x ${qty}`);
+        }
+
+        // RETROFIT LOGIC
+        function calcRetro() {
+            let total = 0;
+            let names = [];
+            document.querySelectorAll('.retro-check:checked').forEach(c => {
+                total += parseFloat(c.dataset.price);
+                names.push(c.dataset.name);
+            });
+            showResult(total, `Retrofit: ${names.length} servicios`);
+        }
+
+        // GENERAL
+        function showResult(amount, desc) {
+            currentTotal = amount;
+            currentDesc = desc;
+            document.getElementById('total_display').innerText = "$" + amount.toFixed(2);
+            document.getElementById('desc_display').innerText = desc;
+            document.getElementById('result_bar').style.display = 'flex';
+        }
+
+        async function agendar() {
+            const cliente = prompt("Nombre del Cliente:");
+            if(!cliente) return;
+            const entrega = prompt("Entrega:", "Mañana 5pm");
+            
+            const formData = new FormData();
+            formData.append("cliente", cliente);
+            formData.append("producto", currentDesc + ` ($${currentTotal.toFixed(2)})`);
+            formData.append("entrega", entrega);
+
+            await fetch('/nuevo_pedido', { method: 'POST', body: formData });
+            alert("¡Agendado!");
+            window.location.reload();
+        }
+    </script>
+</body>
+</html>

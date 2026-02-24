@@ -1,0 +1,62 @@
+[
+  {
+    "item": "Taza Blanca",
+    "qty": 36,
+    "min": 10,
+    "price": 80,
+    "nombre": "TAZA BLANCA",
+    "cantidad": 36,
+    "precio": 80,
+    "categoria": "SUBLIMACION",
+    "id": null,
+    "updated_at": "2026-02-24T07:17:08.100995+00:00"
+  },
+  {
+    "item": "Taza Magica",
+    "qty": 12,
+    "min": 5,
+    "price": 150,
+    "nombre": "TAZA MAGICA",
+    "cantidad": 12,
+    "precio": 150,
+    "categoria": "SUBLIMACION",
+    "id": null,
+    "updated_at": "2026-02-24T07:17:08.100995+00:00"
+  },
+  {
+    "item": "Playera Algodon",
+    "qty": 20,
+    "min": 10,
+    "price": 180,
+    "nombre": "PLAYERA ALGODON",
+    "cantidad": 20,
+    "precio": 180,
+    "categoria": "SUBLIMACION",
+    "id": null,
+    "updated_at": "2026-02-24T07:17:08.100995+00:00"
+  },
+  {
+    "item": "MDF 3mm",
+    "qty": 10,
+    "min": 3,
+    "price": 50,
+    "nombre": "MDF 3MM",
+    "cantidad": 10,
+    "precio": 50,
+    "categoria": "LASER",
+    "id": null,
+    "updated_at": "2026-02-24T07:17:08.100995+00:00"
+  },
+  {
+    "item": "Aozoom A3+",
+    "qty": 2,
+    "min": 1,
+    "price": 2500,
+    "nombre": "AOZOOM A3+",
+    "cantidad": 2,
+    "precio": 2500,
+    "categoria": "RETROFIT",
+    "id": null,
+    "updated_at": "2026-02-24T07:17:08.100995+00:00"
+  }
+]

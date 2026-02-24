@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cotización #{{ folio }} - {{ negocio.nombre }}</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { background: #fff; color: #111; font-family: 'Segoe UI', Arial, sans-serif; padding: 32px; max-width: 720px; margin: 0 auto; }
+        .header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 28px; border-bottom: 3px solid #111; padding-bottom: 16px; }
+        .marca h1 { font-size: 1.6em; font-weight: 900; color: #111; }
+        .marca p { font-size: 0.82em; color: #555; margin-top: 2px; }
+        .doc-info { text-align: right; }
+        .doc-info .folio { font-size: 1em; font-weight: bold; }
+        .doc-info .fecha { font-size: 0.82em; color: #555; margin-top: 4px; }
+        .validez { font-size: 0.78em; color: #888; margin-top: 2px; }
+        .section { margin-bottom: 20px; }
+        .section h3 { font-size: 0.78em; text-transform: uppercase; letter-spacing: 1px; color: #888; margin-bottom: 8px; }
+        .cliente-box { background: #f8f8f8; border-radius: 6px; padding: 12px 16px; }
+        .cliente-box .nombre { font-size: 1em; font-weight: bold; }
+        .cliente-box .tel { font-size: 0.85em; color: #555; margin-top: 2px; }
+        table { width: 100%; border-collapse: collapse; margin-top: 8px; }
+        th { background: #111; color: #fff; padding: 8px 12px; text-align: left; font-size: 0.82em; }
+        th:last-child { text-align: right; }
+        td { padding: 9px 12px; border-bottom: 1px solid #eee; font-size: 0.88em; }
+        td:last-child { text-align: right; font-weight: bold; }
+        .subtotal-row td { color: #555; border-bottom: none; padding-top: 6px; }
+        .total-row td { font-size: 1.05em; font-weight: 900; border-top: 2px solid #111; padding-top: 10px; }
+        .nota { background: #fffbe6; border-left: 3px solid #ffcc00; padding: 10px 14px; font-size: 0.82em; color: #555; border-radius: 0 4px 4px 0; margin-top: 12px; }
+        .footer { margin-top: 32px; display: flex; justify-content: space-between; align-items: flex-end; }
+        .firma { text-align: center; min-width: 180px; }
+        .firma-line { border-top: 1px solid #999; padding-top: 6px; font-size: 0.78em; color: #888; }
+        .contacto { font-size: 0.78em; color: #888; text-align: right; line-height: 1.7; }
+        .badge { display: inline-block; background: #111; color: #fff; font-size: 0.72em; padding: 2px 8px; border-radius: 4px; margin-left: 8px; }
+        @media print {
+            body { padding: 16px; }
+            .no-print { display: none; }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <div class="header">
+        <div class="marca">
+            <h1>{{ negocio.nombre or 'Nexus Taller' }}</h1>
+            <p>{{ negocio.ciudad or 'Guadalajara, Jalisco' }}</p>
+            <p>{{ negocio.horario or '' }}</p>
+        </div>
+        <div class="doc-info">
+            <div class="folio">COTIZACIÓN <span class="badge">#{{ folio }}</span></div>
+            <div class="fecha">Fecha: {{ fecha }}</div>
+            <div class="validez">Válida por 15 días naturales</div>
+        </div>
+    </div>
+
+    <!-- Cliente -->
+    <div class="section">
+        <h3>Para</h3>
+        <div class="cliente-box">
+            <div class="nombre">{{ cliente or 'Cliente general' }}</div>
+        </div>
+    </div>
+
+    <!-- Tabla de items -->
+    <div class="section">
+        <h3>Detalle de servicios / productos</h3>
+        <table>
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>Descripción</th>
+                    <th>Cant.</th>
+                    <th>P. Unit.</th>
+                    <th>Total</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in items %}
+                <tr>
+                    <td>{{ loop.index }}</td>
+                    <td>{{ item.detalle }}</td>
+                    <td>{{ item.cantidad or 1 }}</td>
+                    <td>${{ "%.2f"|format(item.precio_unit or item.precio or 0) }}</td>
+                    <td>${{ "%.2f"|format((item.precio_unit or item.precio or 0) * (item.cantidad or 1)) }}</td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="5" style="text-align:center;color:#999;padding:20px">
+                        Sin ítems. Genera cotizaciones desde el Cotizador.
+                    </td>
+                </tr>
+                {% endfor %}
+                {% if items %}
+                <tr class="subtotal-row">
+                    <td colspan="4" style="text-align:right">Subtotal</td>
+                    <td>${{ "%.2f"|format(subtotal or total) }}</td>
+                </tr>
+                <tr class="total-row">
+                    <td colspan="4" style="text-align:right">TOTAL</td>
+                    <td>${{ "%.2f"|format(total) }}</td>
+                </tr>
+                {% endif %}
+            </tbody>
+        </table>
+        {% if items %}
+        <div class="nota">
+            💡 Precios en pesos mexicanos (MXN) e incluyen mano de obra.
+            Diseño NO incluido salvo que se indique. Anticipo del 50% para confirmar.
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- Footer -->
+    <div class="footer">
+        <div class="firma">
+            <div style="height:50px"></div>
+            <div class="firma-line">{{ negocio.nombre or 'Autorizado' }}</div>
+        </div>
+        <div class="contacto">
+            {% if negocio.telefono %}
+            📲 {{ negocio.telefono }}<br>
+            {% endif %}
+            {% if negocio.redes and negocio.redes.instagram %}
+            📸 {{ negocio.redes.instagram }}<br>
+            {% endif %}
+            {{ negocio.slogan or '' }}
+        </div>
+    </div>
+
+    <!-- Botones de acción (no se imprimen) -->
+    <div class="no-print" style="margin-top:24px;display:flex;gap:12px;">
+        <button onclick="window.print()" style="background:#111;color:#fff;border:none;padding:10px 24px;border-radius:6px;cursor:pointer;font-size:0.9em">🖨️ Imprimir / PDF</button>
+        <a href="/dashboard" style="background:#f1f1f1;color:#111;padding:10px 24px;border-radius:6px;text-decoration:none;font-size:0.9em">← Volver</a>
+    </div>
+</body>
+</html>

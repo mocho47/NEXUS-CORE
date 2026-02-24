@@ -1,0 +1,420 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<meta name="theme-color" content="#0a0a0a">
+<title>NEXUS — Auto-Ventas</title>
+<style>
+:root{
+  --bg:#0a0a0a;--surface:#111;--surface2:#1a1a1a;--border:#2a2a2a;
+  --green:#00ff88;--blue:#00aaff;--gold:#ffd700;--accent:#ff4444;
+  --purple:#b39ddb;--muted:#666;--text:#f0f0f0;--r:12px;--rr:8px;
+}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;min-height:100dvh;padding-bottom:80px}
+
+.hdr{background:linear-gradient(135deg,#001a00,#0a0a0a);border-bottom:1px solid #003300;padding:16px;display:flex;align-items:center;gap:12px;position:sticky;top:0;z-index:50}
+.hdr-icon{width:44px;height:44px;background:var(--green);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:22px;box-shadow:0 0 20px #00ff8855;color:#000}
+.hdr h1{font-size:18px;font-weight:700;color:var(--green)}
+.hdr span{font-size:11px;color:var(--muted);display:block}
+
+.tabs{display:flex;gap:6px;padding:12px;overflow-x:auto;border-bottom:1px solid var(--border)}
+.tab{flex-shrink:0;background:var(--surface);border:1px solid var(--border);color:var(--muted);padding:6px 14px;border-radius:20px;font-size:13px;cursor:pointer}
+.tab.active{background:var(--green);border-color:var(--green);color:#000;font-weight:700}
+
+.panel{display:none;padding:16px;flex-direction:column;gap:14px}
+.panel.active{display:flex}
+
+.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:14px;display:flex;flex-direction:column;gap:10px}
+.card-title{font-size:14px;font-weight:700;display:flex;align-items:center;gap:6px}
+
+/* ── STATS ── */
+.stat-row{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.stat{background:var(--surface2);border:1px solid var(--border);border-radius:var(--rr);padding:10px;text-align:center}
+.stat-val{font-size:26px;font-weight:800;color:var(--green)}
+.stat-lbl{font-size:10px;color:var(--muted);margin-top:2px}
+
+/* ── PIPELINE ── */
+.stage-col{display:flex;flex-direction:column;gap:6px;margin-bottom:8px}
+.stage-header{font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:1px;display:flex;justify-content:space-between;padding:4px 0}
+.lead-card{background:var(--surface2);border:1px solid var(--border);border-radius:var(--rr);padding:10px;cursor:pointer;transition:.2s}
+.lead-card:hover{border-color:var(--green)}
+.lead-name{font-size:13px;font-weight:600;color:var(--text)}
+.lead-sub{font-size:11px;color:var(--muted)}
+.lead-canal{font-size:10px;color:var(--blue)}
+
+/* ── SEGUIMIENTO ── */
+.seg-item{background:var(--surface2);border:1px solid #ff440033;border-radius:var(--rr);padding:12px;display:flex;flex-direction:column;gap:6px}
+.seg-nombre{font-size:13px;font-weight:700;color:var(--accent)}
+.seg-msg{font-size:12px;color:var(--text);line-height:1.4}
+.seg-dia{font-size:11px;color:var(--muted)}
+
+/* ── CONTENIDO ── */
+.hook-item{background:var(--surface2);border:1px solid var(--border);border-radius:var(--rr);padding:10px;font-size:13px;cursor:pointer;transition:.2s}
+.hook-item:hover{border-color:var(--green);color:var(--green)}
+
+.cal-item{background:var(--surface2);border:1px solid var(--border);border-radius:var(--rr);padding:10px;display:flex;flex-direction:column;gap:4px}
+.cal-dia{font-size:12px;font-weight:700;color:var(--gold)}
+.cal-titulo{font-size:13px;color:var(--text)}
+.cal-hook{font-size:11px;color:var(--muted);line-height:1.3}
+
+/* ── FORM ── */
+input,select,textarea{background:var(--surface2);border:1px solid var(--border);color:var(--text);padding:10px;border-radius:var(--rr);outline:none;font-size:14px;width:100%}
+input:focus,select:focus,textarea:focus{border-color:var(--green)}
+
+.btn{padding:10px 20px;border-radius:var(--rr);border:none;font-size:14px;font-weight:600;cursor:pointer;width:100%;margin-top:4px}
+.btn-green{background:var(--green);color:#000}
+.btn-blue{background:var(--blue);color:#fff}
+.btn-outline{background:transparent;border:1px solid var(--border);color:var(--muted)}
+
+/* ── CANAL TABS ── */
+.canal-tabs{display:flex;gap:6px;flex-wrap:wrap}
+.canal-btn{background:var(--surface2);border:1px solid var(--border);color:var(--muted);padding:5px 12px;border-radius:16px;font-size:12px;cursor:pointer}
+.canal-btn.active{background:var(--blue);border-color:var(--blue);color:#fff;font-weight:700}
+
+/* ── PROPUESTA MODAL ── */
+#propModal{position:fixed;inset:0;background:#000a;z-index:100;display:none;align-items:flex-end;justify-content:center}
+#propModal.open{display:flex}
+.prop-sheet{background:var(--surface);border-radius:var(--r) var(--r) 0 0;width:100%;max-width:600px;max-height:85dvh;overflow-y:auto;padding:20px;display:flex;flex-direction:column;gap:10px}
+.prop-text{font-size:12px;color:var(--text);white-space:pre-wrap;line-height:1.6;background:var(--surface2);border-radius:var(--rr);padding:12px;font-family:monospace}
+
+#toast{position:fixed;bottom:90px;left:50%;transform:translateX(-50%);background:#1a1a1a;border:1px solid var(--green);color:var(--green);padding:10px 20px;border-radius:var(--rr);font-size:13px;opacity:0;pointer-events:none;transition:.3s;z-index:200;white-space:nowrap}
+#toast.show{opacity:1}
+</style>
+</head>
+<body>
+
+<div class="hdr">
+  <div class="hdr-icon">💹</div>
+  <div>
+    <h1>Auto-Ventas NEXUS</h1>
+    <span>NEXUS se vende a sí mismo</span>
+  </div>
+</div>
+
+<div class="tabs">
+  <div class="tab active" data-panel="pDash"   onclick="go(this)">📊 Dashboard</div>
+  <div class="tab"        data-panel="pPipe"   onclick="go(this)">🔄 Pipeline</div>
+  <div class="tab"        data-panel="pSeg"    onclick="go(this)">📅 Seguimiento</div>
+  <div class="tab"        data-panel="pConten" onclick="go(this)">🎬 Contenido</div>
+  <div class="tab"        data-panel="pLead"   onclick="go(this)">➕ Nuevo Lead</div>
+</div>
+
+<!-- ── DASHBOARD ─────────────────────────────────────────────────────────── -->
+<div class="panel active" id="pDash">
+
+  <div class="stat-row" id="statsRow">
+    <div class="stat"><div class="stat-val" id="sTotal">—</div><div class="stat-lbl">Prospectos</div></div>
+    <div class="stat"><div class="stat-val" id="sClientes">—</div><div class="stat-lbl">Clientes</div></div>
+    <div class="stat"><div class="stat-val" id="sConv" style="color:var(--gold)">—%</div><div class="stat-lbl">Conversión</div></div>
+  </div>
+
+  <div class="stat-row">
+    <div class="stat"><div class="stat-val" id="sActivos" style="color:var(--blue)">—</div><div class="stat-lbl">En pipeline</div></div>
+    <div class="stat"><div class="stat-val" id="sSeg" style="color:var(--accent)">—</div><div class="stat-lbl">Seguimientos</div></div>
+    <div class="stat"><div class="stat-val" id="sPerdidos" style="color:var(--muted)">—</div><div class="stat-lbl">Perdidos</div></div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">📣 Canal de adquisición</div>
+    <div id="canalRanking" style="display:flex;flex-direction:column;gap:6px"></div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">⚡ Acceso rápido</div>
+    <button class="btn btn-blue" onclick="go(document.querySelector('[data-panel=pSeg]'))">Ver seguimientos pendientes</button>
+    <button class="btn btn-outline" style="margin-top:6px" onclick="go(document.querySelector('[data-panel=pConten]'))">Generar contenido hoy</button>
+    <a href="/landing" target="_blank" style="text-decoration:none">
+      <button class="btn btn-outline" style="margin-top:6px">🌐 Ver Landing Page</button>
+    </a>
+  </div>
+</div>
+
+<!-- ── PIPELINE ──────────────────────────────────────────────────────────── -->
+<div class="panel" id="pPipe">
+  <div id="pipelineContent" style="display:flex;flex-direction:column;gap:14px">
+    <div style="color:var(--muted);font-size:13px;text-align:center;padding:30px">Cargando pipeline...</div>
+  </div>
+</div>
+
+<!-- ── SEGUIMIENTO ───────────────────────────────────────────────────────── -->
+<div class="panel" id="pSeg">
+  <div class="card">
+    <div class="card-title">📅 Seguimientos pendientes hoy</div>
+    <div class="card-sub" style="font-size:12px;color:var(--muted)">Solo prospectos en demo activo. Secuencia: día 7, 14, 25 y 28.</div>
+  </div>
+  <div id="segContent" style="display:flex;flex-direction:column;gap:10px"></div>
+</div>
+
+<!-- ── CONTENIDO VIRAL ───────────────────────────────────────────────────── -->
+<div class="panel" id="pConten">
+
+  <div class="card" style="gap:10px">
+    <div class="card-title">🎬 Hooks virales por canal</div>
+    <div class="canal-tabs" id="canalTabs">
+      <div class="canal-btn active" data-canal="tiktok" onclick="switchCanal(this)">TikTok</div>
+      <div class="canal-btn" data-canal="instagram" onclick="switchCanal(this)">Instagram</div>
+      <div class="canal-btn" data-canal="facebook" onclick="switchCanal(this)">Facebook</div>
+      <div class="canal-btn" data-canal="youtube" onclick="switchCanal(this)">YouTube</div>
+    </div>
+    <div id="hooksGrid" style="display:flex;flex-direction:column;gap:6px"></div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">📅 Calendario editorial semanal</div>
+    <div id="calGrid" style="display:flex;flex-direction:column;gap:8px"></div>
+  </div>
+</div>
+
+<!-- ── NUEVO LEAD ─────────────────────────────────────────────────────────── -->
+<div class="panel" id="pLead">
+  <div class="card" style="gap:10px">
+    <div class="card-title">➕ Registrar prospecto</div>
+    <input id="lNombre" type="text" placeholder="Nombre completo">
+    <input id="lTelefono" type="tel" placeholder="Teléfono (10 dígitos)">
+    <select id="lTipo">
+      <option value="General">Tipo de negocio...</option>
+      <option value="taller">Taller gráfico / impresión</option>
+      <option value="tienda">Tienda / comercio</option>
+      <option value="restaurante">Restaurante / food</option>
+      <option value="servicios">Servicios profesionales</option>
+      <option value="familia">Familia emprendedora</option>
+    </select>
+    <select id="lCanal">
+      <option value="web">Web / Landing page</option>
+      <option value="tiktok">TikTok</option>
+      <option value="instagram">Instagram</option>
+      <option value="facebook">Facebook</option>
+      <option value="referido">Referido</option>
+      <option value="whatsapp">WhatsApp directo</option>
+    </select>
+    <textarea id="lNotas" placeholder="Notas (opcional)" rows="2" style="resize:none"></textarea>
+    <button class="btn btn-green" onclick="registrarLead()">✅ Registrar prospecto</button>
+  </div>
+</div>
+
+<!-- ── PROPUESTA MODAL ────────────────────────────────────────────────────── -->
+<div id="propModal" onclick="closeProp(event)">
+  <div class="prop-sheet">
+    <div style="font-size:16px;font-weight:700;color:var(--green)">📋 Propuesta generada</div>
+    <pre class="prop-text" id="propText"></pre>
+    <button class="btn btn-green" onclick="copiarPropuesta()">📋 Copiar propuesta</button>
+    <button class="btn btn-outline" onclick="document.getElementById('propModal').classList.remove('open')">Cerrar</button>
+  </div>
+</div>
+
+<div id="toast"></div>
+
+<script>
+const toast = (msg, ok=true) => {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.style.borderColor = ok ? 'var(--green)' : 'var(--accent)';
+  t.style.color       = ok ? 'var(--green)' : 'var(--accent)';
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2800);
+};
+
+const api = async (path, body=null) => {
+  const opts = { headers:{'Content-Type':'application/json'} };
+  if (body) { opts.method='POST'; opts.body=JSON.stringify(body); }
+  return (await fetch(path, opts)).json();
+};
+
+function go(el) {
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
+  el.classList.add('active');
+  const pid = el.dataset.panel;
+  document.getElementById(pid).classList.add('active');
+  if (pid === 'pDash')   loadMetricas();
+  if (pid === 'pPipe')   loadPipeline();
+  if (pid === 'pSeg')    loadSeguimiento();
+  if (pid === 'pConten') { loadHooks('tiktok'); loadCalendario(); }
+}
+
+// ── MÉTRICAS ─────────────────────────────────────────────────────────────────
+async function loadMetricas() {
+  const m = await api('/api/autoventas/metricas');
+  if (!m.ok) return;
+  document.getElementById('sTotal').textContent    = m.total_prospectos;
+  document.getElementById('sClientes').textContent = m.clientes;
+  document.getElementById('sConv').textContent     = m.conversion_rate + '%';
+  document.getElementById('sActivos').textContent  = m.activos;
+  document.getElementById('sSeg').textContent      = m.pendientes_seguimiento;
+  document.getElementById('sPerdidos').textContent = m.perdidos;
+
+  const cr = document.getElementById('canalRanking');
+  cr.innerHTML = '';
+  for (const [canal, cnt] of (m.canal_ranking || [])) {
+    const pct = Math.round(cnt / Math.max(m.total_prospectos,1) * 100);
+    cr.innerHTML += `<div style="display:flex;align-items:center;gap:8px">
+      <span style="font-size:12px;width:80px;color:var(--text)">${canal}</span>
+      <div style="flex:1;height:6px;background:#222;border-radius:3px">
+        <div style="width:${pct}%;height:6px;background:var(--green);border-radius:3px"></div>
+      </div>
+      <span style="font-size:12px;color:var(--muted)">${cnt}</span>
+    </div>`;
+  }
+}
+
+// ── PIPELINE ──────────────────────────────────────────────────────────────────
+const STAGE_LABELS = {
+  nuevo:'🆕 Nuevo',demo_activo:'🔥 Demo activo',propuesta_enviada:'📋 Propuesta',
+  seguimiento:'📅 Seguimiento',cliente:'✅ Cliente',perdido:'❌ Perdido'
+};
+
+async function loadPipeline() {
+  const r = await api('/api/autoventas/pipeline');
+  if (!r.ok) return;
+  const pc = document.getElementById('pipelineContent');
+  pc.innerHTML = '';
+  for (const [stage, lista] of Object.entries(r.pipeline)) {
+    if (!lista.length && stage !== 'nuevo') continue;
+    const sec = document.createElement('div');
+    sec.className = 'stage-col';
+    sec.innerHTML = `<div class="stage-header">
+      <span>${STAGE_LABELS[stage]||stage}</span>
+      <span style="color:var(--green)">${lista.length}</span>
+    </div>`;
+    if (!lista.length) {
+      sec.innerHTML += `<div style="font-size:12px;color:var(--muted);padding:6px 0">Sin prospectos aquí</div>`;
+    }
+    for (const p of lista) {
+      sec.innerHTML += `<div class="lead-card" onclick="openLead('${p.pid}','${stage}','${p.nombre}')">
+        <div class="lead-name">${p.nombre}</div>
+        <div class="lead-sub">${p.tipo_negocio} · ${p.fecha}</div>
+        <div class="lead-canal">Canal: ${p.canal} &nbsp;📱 ${p.telefono}</div>
+      </div>`;
+    }
+    pc.appendChild(sec);
+  }
+}
+
+async function openLead(pid, stage, nombre) {
+  const stages = ['nuevo','demo_activo','propuesta_enviada','seguimiento','cliente','perdido'];
+  const idx    = stages.indexOf(stage);
+  const next   = stages[idx+1];
+  const opts   = stages.map((s,i) => `<option value="${s}"${s===stage?' selected':''}>${STAGE_LABELS[s]||s}</option>`).join('');
+
+  const action = confirm(`${nombre}\nEstado actual: ${stage}\n\n¿Generar propuesta?`);
+  if (action) {
+    const r = await api(`/api/autoventas/propuesta/${pid}`);
+    if (r.ok) {
+      document.getElementById('propText').textContent = r.texto;
+      document.getElementById('propModal').classList.add('open');
+      // Marcar como propuesta enviada
+      await api('/api/autoventas/stage', {pid, stage:'propuesta_enviada', nota:'Propuesta generada'});
+    } else {
+      toast('❌ ' + r.error, false);
+    }
+  }
+}
+
+function closeProp(e) {
+  if (e.target === document.getElementById('propModal'))
+    document.getElementById('propModal').classList.remove('open');
+}
+
+function copiarPropuesta() {
+  navigator.clipboard.writeText(document.getElementById('propText').textContent);
+  toast('✅ Propuesta copiada al portapapeles');
+}
+
+// ── SEGUIMIENTO ───────────────────────────────────────────────────────────────
+async function loadSeguimiento() {
+  const r = await api('/api/autoventas/seguimiento');
+  const sc = document.getElementById('segContent');
+  sc.innerHTML = '';
+  if (!r.ok) return;
+  if (!r.pendientes.length) {
+    sc.innerHTML = '<div style="color:var(--green);font-size:14px;text-align:center;padding:30px">✅ Sin seguimientos pendientes hoy</div>';
+    return;
+  }
+  for (const s of r.pendientes) {
+    sc.innerHTML += `<div class="seg-item">
+      <div class="seg-nombre">📱 ${s.nombre} — ${s.telefono}</div>
+      <div class="seg-dia">Día ${s.dia} del demo</div>
+      <div class="seg-msg">${s.mensaje}</div>
+      <div style="display:flex;gap:8px;margin-top:4px">
+        <button onclick="copiarMensaje('${s.mensaje}')" style="flex:1;background:var(--surface);border:1px solid var(--border);color:var(--text);padding:6px;border-radius:6px;cursor:pointer;font-size:12px">📋 Copiar</button>
+        <button onclick="marcarEnviado('${s.pid}',${s.dia},this)" style="flex:1;background:var(--green);border:none;color:#000;padding:6px;border-radius:6px;cursor:pointer;font-size:12px;font-weight:700">✅ Enviado</button>
+      </div>
+    </div>`;
+  }
+}
+
+function copiarMensaje(msg) {
+  navigator.clipboard.writeText(msg);
+  toast('✅ Mensaje copiado');
+}
+
+async function marcarEnviado(pid, dia, btn) {
+  const r = await api('/api/autoventas/seguimiento/marcar', {pid, dia});
+  if (r.ok) {
+    btn.closest('.seg-item').style.opacity = '0.3';
+    toast('✅ Seguimiento marcado como enviado');
+  }
+}
+
+// ── CONTENIDO ─────────────────────────────────────────────────────────────────
+async function loadHooks(canal) {
+  const r = await api(`/api/autoventas/hooks/${canal}`);
+  const hg = document.getElementById('hooksGrid');
+  hg.innerHTML = '';
+  for (const h of (r.hooks||[])) {
+    hg.innerHTML += `<div class="hook-item" onclick="copiarHook(this)">${h}</div>`;
+  }
+}
+
+function switchCanal(el) {
+  document.querySelectorAll('.canal-btn').forEach(b=>b.classList.remove('active'));
+  el.classList.add('active');
+  loadHooks(el.dataset.canal);
+}
+
+function copiarHook(el) {
+  navigator.clipboard.writeText(el.textContent);
+  toast('✅ Hook copiado');
+}
+
+async function loadCalendario() {
+  const r = await api('/api/autoventas/calendario');
+  const cg = document.getElementById('calGrid');
+  cg.innerHTML = '';
+  for (const d of (r.calendario||[])) {
+    cg.innerHTML += `<div class="cal-item">
+      <div class="cal-dia">${d.dia} · ${d.tipo}</div>
+      <div class="cal-titulo">${d.titulo}</div>
+      <div class="cal-hook" style="color:var(--blue)">TikTok: ${d.hook_tiktok}</div>
+      <div class="cal-hook">IG: ${d.hook_instagram}</div>
+      <div style="font-size:10px;color:var(--purple);margin-top:2px">${d.hashtags}</div>
+    </div>`;
+  }
+}
+
+// ── NUEVO LEAD ────────────────────────────────────────────────────────────────
+async function registrarLead() {
+  const nombre   = document.getElementById('lNombre').value.trim();
+  const telefono = document.getElementById('lTelefono').value.trim();
+  const tipo     = document.getElementById('lTipo').value;
+  const canal    = document.getElementById('lCanal').value;
+  const notas    = document.getElementById('lNotas').value;
+  if (!nombre || !telefono) { toast('Nombre y teléfono son requeridos', false); return; }
+  const r = await api('/api/autoventas/prospecto', {nombre,telefono,tipo_negocio:tipo,canal,notas});
+  if (r.ok) {
+    toast(r.nuevo ? `✅ ${nombre} registrado en pipeline` : `⚠️ ${nombre} ya existe`);
+    document.getElementById('lNombre').value='';
+    document.getElementById('lTelefono').value='';
+    document.getElementById('lNotas').value='';
+  } else {
+    toast('❌ ' + r.error, false);
+  }
+}
+
+// ── INIT ─────────────────────────────────────────────────────────────────────
+document.addEventListener('DOMContentLoaded', loadMetricas);
+</script>
+</body>
+</html>

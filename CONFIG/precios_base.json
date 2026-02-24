@@ -1,0 +1,52 @@
+{
+    "laser": {
+        "costo_minuto": 8.0,
+        "materiales": [
+            {"nombre": "MDF 2.7mm (Hoja)", "precio_hoja": 110.0, "ancho": 122, "alto": 244},
+            {"nombre": "MDF 5.5mm (Hoja)", "precio_hoja": 280.0, "ancho": 122, "alto": 244},
+            {"nombre": "Multiplay 4mm (Hoja)", "precio_hoja": 350.0, "ancho": 122, "alto": 244},
+            {"nombre": "Acrílico 3mm Color (Hoja)", "precio_hoja": 900.0, "ancho": 120, "alto": 180},
+            {"nombre": "Acrílico 3mm Transparente (Hoja)", "precio_hoja": 800.0, "ancho": 120, "alto": 180},
+            {"nombre": "Acrílico 6mm (Hoja)", "precio_hoja": 1800.0, "ancho": 120, "alto": 180}
+        ]
+    },
+    "neon_flex": {
+        "costo_metro_neon": 45.0, 
+        "costo_fuente_12v": 150.0,
+        "factor_ganancia": 3.0,
+        "descripcion_factor": "Multiplica costos x3 para cubrir mano de obra de soldado y pegado"
+    },
+    "sublimacion_personalizacion": [
+        {"cat": "Tazas", "nombre": "Taza Mágica", "precio_subli": 150.0, "precio_laser": 0},
+        {"cat": "Tazas", "nombre": "Taza Cerámica 11oz", "precio_subli": 95.0, "precio_laser": 0},
+        {"cat": "Termos", "nombre": "Termo 20oz (Skinny)", "precio_subli": 280.0, "precio_laser": 350.0},
+        {"cat": "Termos", "nombre": "Termo 30oz", "precio_subli": 320.0, "precio_laser": 390.0},
+        {"cat": "Termos", "nombre": "Termo 40oz (Travel)", "precio_subli": 450.0, "precio_laser": 550.0},
+        {"cat": "Termos", "nombre": "Termo 18oz (Bala)", "precio_subli": 220.0, "precio_laser": 280.0},
+        {"cat": "Termos", "nombre": "Vasos Plásticos (Cafetero)", "precio_subli": 0, "precio_laser": 0, "precio_vinil": 85.0},
+        {"cat": "Textil", "nombre": "Playera Algodón (DTF)", "precio_subli": 0, "precio_laser": 0, "precio_dtf": 250.0},
+        {"cat": "Textil", "nombre": "Playera Poliéster (Subli)", "precio_subli": 180.0, "precio_laser": 0},
+        {"cat": "Textil", "nombre": "Gorra (Subli/Vinil)", "precio_subli": 120.0, "precio_laser": 0, "precio_vinil": 150.0},
+        {"cat": "Oficina", "nombre": "Agenda Vinipiel (Laser)", "precio_subli": 0, "precio_laser": 280.0},
+        {"cat": "Oficina", "nombre": "Bolígrafo Metal (Laser)", "precio_subli": 0, "precio_laser": 45.0},
+        {"cat": "Oficina", "nombre": "Sello de Goma (Chico)", "precio_subli": 0, "precio_laser": 180.0},
+        {"cat": "Oficina", "nombre": "Sello de Goma (Grande)", "precio_subli": 0, "precio_laser": 280.0},
+        {"cat": "Temporada", "nombre": "Módulo de Voz (Peluches)", "precio_subli": 150.0, "precio_laser": 0}
+    ],
+    "insumos_textil": {
+        "dtf_metro": 300.0,
+        "dtf_uv_metro": 550.0,
+        "vinil_textil_metro": 180.0,
+        "bifaz_metro": 80.0
+    },
+    "retrofit": [
+        {"id": "tira_sec_prem", "nombre": "Tiras Secuenciales Premium (2300)", "precio": 2300.0},
+        {"id": "tira_sec_std", "nombre": "Tiras Secuenciales Std (1600)", "precio": 1600.0},
+        {"id": "demon_1", "nombre": "Ojos Demonio (1 Color)", "precio": 500.0},
+        {"id": "demon_rgb", "nombre": "Ojos Demonio RGB BT", "precio": 1500.0},
+        {"id": "fibra", "nombre": "Fibra Óptica Interior", "precio": 2000.0},
+        {"id": "led_h4_prem", "nombre": "LED H4 Premium", "precio": 1850.0},
+        {"id": "led_h7_prem", "nombre": "LED H7 Premium", "precio": 1850.0},
+        {"id": "led_int", "nombre": "LED Intermedio (General)", "precio": 950.0}
+    ]
+}

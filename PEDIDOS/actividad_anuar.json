@@ -1,0 +1,92 @@
+{
+    "pc_name": "anuar",
+    "last_update": "2026-01-27 02:24:22",
+    "current_app": "\u25cf README.md - NEXUS - Trae",
+    "metrics": {
+        "prod_sec": 525,
+        "unprod_sec": 50,
+        "efficiency": 91.1
+    },
+    "history": [
+        {
+            "app": "NEXUS V10.1 - COMMAND CENTER (ENTERPRISE)",
+            "duration_sec": 60,
+            "timestamp": "02:15:16"
+        },
+        {
+            "app": "Administrador:  NEXUS V10 - SISTEMA CENTRAL",
+            "duration_sec": 5,
+            "timestamp": "02:15:21"
+        },
+        {
+            "app": "Buscar",
+            "duration_sec": 5,
+            "timestamp": "02:15:31"
+        },
+        {
+            "app": "WhatsApp",
+            "duration_sec": 100,
+            "timestamp": "02:17:11"
+        },
+        {
+            "app": "Host de experiencia del shell de Windows",
+            "duration_sec": 5,
+            "timestamp": "02:17:16"
+        },
+        {
+            "app": "WhatsApp",
+            "duration_sec": 130,
+            "timestamp": "02:19:26"
+        },
+        {
+            "app": "NEXUS V10.1 - COMMAND CENTER (ENTERPRISE)",
+            "duration_sec": 80,
+            "timestamp": "02:20:46"
+        },
+        {
+            "app": "\u25cf README.md - NEXUS - Trae",
+            "duration_sec": 80,
+            "timestamp": "02:22:06"
+        },
+        {
+            "app": "NEXUS V10.1 - COMMAND CENTER (ENTERPRISE)",
+            "duration_sec": 40,
+            "timestamp": "02:22:46"
+        },
+        {
+            "app": "NEXUS V10.1 - COMMAND CENTER (ENTERPRISE) (No responde)",
+            "duration_sec": 10,
+            "timestamp": "02:22:56"
+        },
+        {
+            "app": "Conversor DXF",
+            "duration_sec": 10,
+            "timestamp": "02:23:06"
+        },
+        {
+            "app": "NEXUS V10.1 - COMMAND CENTER (ENTERPRISE)",
+            "duration_sec": 5,
+            "timestamp": "02:23:11"
+        },
+        {
+            "app": "NEXUS V10.1 - COMMAND CENTER (ENTERPRISE)",
+            "duration_sec": 5,
+            "timestamp": "02:23:21"
+        },
+        {
+            "app": "Inicio - Explorador de archivos",
+            "duration_sec": 15,
+            "timestamp": "02:23:36"
+        },
+        {
+            "app": "Inicio - Explorador de archivos",
+            "duration_sec": 15,
+            "timestamp": "02:24:11"
+        },
+        {
+            "app": "\u25cf README.md - NEXUS - Trae",
+            "duration_sec": 10,
+            "timestamp": "02:24:22"
+        }
+    ]
+}
