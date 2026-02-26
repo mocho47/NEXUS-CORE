@@ -1,0 +1,659 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NEXUS Estudio — Procesamiento de Archivos</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { background: #080808; color: #e0e0e0; font-family: 'Segoe UI', sans-serif; min-height: 100vh; }
+.topbar { background: #0f0f0f; border-bottom: 1px solid #1e1e1e; padding: 12px 20px; display: flex; align-items: center; gap: 14px; }
+.topbar a { color: #00ff88; text-decoration: none; font-size: .85em; }
+.topbar h1 { color: #00ff88; font-size: 1.1em; letter-spacing: 2px; flex: 1; }
+.topbar .version { color: #333; font-size: .72em; }
+.content { max-width: 900px; margin: 0 auto; padding: 24px 16px; }
+.card { background: #111; border: 1px solid #1a1a1a; border-radius: 12px; padding: 20px; margin-bottom: 16px; }
+.card-title { font-size: .75em; color: #00ff88; text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 16px; font-weight: bold; }
+
+/* ── Drop Zone ── */
+.drop-zone {
+    border: 2px dashed #252525;
+    border-radius: 14px; padding: 60px 20px; text-align: center;
+    cursor: pointer; transition: all .2s; position: relative; min-height: 200px;
+    display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px;
+}
+.drop-zone.drag  { border-color: #00ff88; background: #00ff8808; }
+.drop-zone.ready { border-color: #00ff8860; border-style: solid; }
+.drop-zone input { position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; height: 100%; }
+.dz-icon { font-size: 3.5em; }
+.dz-main { font-size: 1em; color: #aaa; }
+.dz-sub  { font-size: .78em; color: #333; }
+.dz-filename { font-size: .9em; color: #00ff88; font-weight: bold; }
+
+/* ── Preview ── */
+.preview-wrap { display: none; text-align: center; }
+.preview-wrap img { max-width: 100%; max-height: 280px; border-radius: 8px; border: 1px solid #1a1a1a; }
+.preview-info { font-size: .78em; color: #555; margin-top: 8px; }
+
+/* ── Pregunta NEXUS ── */
+.nexus-ask { display: none; background: #0a0a0a; border: 1px solid #00ff8830; border-radius: 12px; padding: 18px; margin-bottom: 16px; }
+.nexus-ask .q { color: #00ff88; font-size: .9em; margin-bottom: 14px; font-weight: bold; }
+.modos-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 10px; }
+.modo-btn { background: #0d0d0d; border: 2px solid #1a1a1a; border-radius: 10px; padding: 14px 10px; cursor: pointer; text-align: center; transition: all .15s; }
+.modo-btn:hover { border-color: #00ff8870; transform: translateY(-2px); }
+.modo-btn.sel  { border-color: #00ff88; background: #00ff8812; }
+.modo-btn .m-icon { font-size: 1.8em; margin-bottom: 6px; }
+.modo-btn .m-name { font-size: .82em; font-weight: bold; color: #ccc; }
+.modo-btn .m-desc { font-size: .7em; color: #444; margin-top: 3px; line-height: 1.3; }
+
+/* ── Opciones avanzadas ── */
+.opts-panel { display: none; background: #0d0d0d; border: 1px solid #1a1a1a; border-radius: 10px; padding: 14px; margin-top: 12px; }
+.opts-panel label { font-size: .78em; color: #555; display: block; margin-bottom: 4px; }
+.fi { background: #1a1a1a; border: 1px solid #2a2a2a; color: #e0e0e0; padding: 8px 12px; border-radius: 7px; font-size: .85em; width: 100%; }
+.fi:focus { outline: none; border-color: #00ff88; }
+.row { display: flex; gap: 10px; flex-wrap: wrap; }
+.row > * { flex: 1; min-width: 100px; }
+
+/* ── Botones ── */
+.btn { background: #00ff8820; border: 1px solid #00ff88; color: #00ff88; padding: 11px 24px; border-radius: 8px; cursor: pointer; font-size: .88em; font-family: inherit; transition: all .15s; }
+.btn:hover { background: #00ff8840; }
+.btn:disabled { opacity: .35; cursor: not-allowed; }
+.btn-sec { background: #1a1a1a; border: 1px solid #2a2a2a; color: #666; }
+.btn-sec:hover:not(:disabled) { border-color: #555; color: #ccc; }
+.btn-danger { background: transparent; border: 1px solid #ff444440; color: #ff4444; }
+.btn-danger:hover { background: #ff444415; }
+
+/* ── Progress ── */
+.prog-wrap { display: none; margin: 14px 0; }
+.prog-bar-bg { height: 4px; background: #1a1a1a; border-radius: 2px; overflow: hidden; }
+.prog-bar { height: 100%; background: linear-gradient(90deg,#00ff88,#00ccff,#00ff88); background-size: 200%; animation: shimmer 1.5s linear infinite; width: 0%; transition: width .4s; }
+@keyframes shimmer { 0%{background-position:200%} 100%{background-position:-200%} }
+.prog-msg { font-size: .78em; color: #555; margin-top: 6px; text-align: center; }
+
+/* ── Resultado ── */
+.result-panel { display: none; }
+.result-header { display: flex; align-items: center; gap: 10px; margin-bottom: 14px; }
+.result-title { font-size: 1em; font-weight: bold; color: #00ff88; }
+.file-list { display: flex; flex-direction: column; gap: 8px; }
+.file-item { background: #0d0d0d; border: 1px solid #1a1a1a; border-radius: 9px; padding: 12px 16px; display: flex; align-items: center; gap: 12px; }
+.file-icon { font-size: 1.6em; }
+.file-info { flex: 1; }
+.file-name { font-size: .88em; font-weight: bold; color: #ccc; }
+.file-desc { font-size: .74em; color: #444; margin-top: 2px; }
+.file-dl { color: #00ff88; text-decoration: none; font-size: .82em; border: 1px solid #00ff8840; padding: 4px 12px; border-radius: 5px; white-space: nowrap; }
+.file-dl:hover { background: #00ff8815; }
+.carpeta-info { background: #050505; border: 1px solid #1a1a1a; border-radius: 8px; padding: 10px 14px; font-size: .78em; color: #333; margin-top: 12px; font-family: monospace; }
+
+/* ── NEXUS chat bubble ── */
+.nexus-bubble { background: #0a1a0a; border-left: 3px solid #00ff88; border-radius: 0 10px 10px 0; padding: 12px 16px; margin-bottom: 14px; font-size: .88em; color: #aaa; display: none; }
+.nexus-bubble strong { color: #00ff88; }
+
+/* ── Motors ── */
+.apps-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px,1fr)); gap: 10px; }
+.app-btn { background: #0d0d0d; border: 2px solid #1a1a1a; border-radius: 10px; padding: 14px 10px; cursor: pointer; text-align: center; transition: all .15s; }
+.app-btn:hover:not(.off) { border-color: #00ccff60; transform: translateY(-2px); }
+.app-btn.off { opacity: .3; cursor: not-allowed; }
+.app-icon { font-size: 2em; margin-bottom: 6px; }
+.app-name { font-size: .82em; font-weight: bold; color: #ccc; }
+.app-fmt  { font-size: .65em; color: #333; margin-top: 2px; }
+.motor-msg { font-size: .8em; color: #00ccff; margin-top: 10px; min-height: 20px; }
+
+/* ── Generador de cajas ── */
+.tipos-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px,1fr)); gap: 8px; margin-bottom: 14px; }
+.tipo-btn { background: #0d0d0d; border: 2px solid #1a1a1a; border-radius: 10px; padding: 12px 8px; cursor: pointer; text-align: center; transition: all .15s; }
+.tipo-btn:hover { border-color: #ffaa0060; }
+.tipo-btn.sel { border-color: #ffaa00; background: #ffaa0010; }
+.tipo-icon { font-size: 1.6em; margin-bottom: 4px; }
+.tipo-name { font-size: .78em; font-weight: bold; color: #ccc; }
+.tipo-desc { font-size: .65em; color: #333; margin-top: 2px; line-height: 1.3; }
+.box-opts  { background: #0d0d0d; border: 1px solid #1a1a1a; border-radius: 10px; padding: 14px; display: none; }
+.lbl-gold  { color: #ffaa00 !important; }
+.btn-gold  { background: #ffaa0020; border: 1px solid #ffaa00; color: #ffaa00; }
+.btn-gold:hover { background: #ffaa0040; }
+</style>
+</head>
+<body>
+
+<div class="topbar">
+    <a href="/dashboard">← Panel</a>
+    <h1>🎨 NEXUS ESTUDIO</h1>
+    <span class="version">Lona · Taza · Cartoon · Láser · Vector</span>
+</div>
+
+<div class="content">
+
+<!-- Drop Zone -->
+<div class="card">
+    <div class="card-title">📁 Soltar archivo</div>
+    <div class="drop-zone" id="drop"
+         ondragover="dragOver(event)" ondragleave="dragLeave()" ondrop="dropFile(event)">
+        <input type="file" id="file-input" accept="image/*,.pdf,.svg,.dxf,.ai,.eps,.studio,.studio3"
+               onchange="onFileChange(event)">
+        <div class="dz-icon">📂</div>
+        <div class="dz-main">Arrastra, pega (Ctrl+V) o selecciona tu archivo</div>
+        <div class="dz-sub">Imágenes: JPG PNG BMP WEBP TIFF &nbsp;|&nbsp; Vectores: DXF SVG AI EPS &nbsp;|&nbsp; Silhouette: .studio .studio3</div>
+    </div>
+    <!-- Preview -->
+    <div class="preview-wrap" id="preview-wrap">
+        <img id="preview-img" src="" alt="preview">
+        <div class="preview-info" id="preview-info"></div>
+    </div>
+</div>
+
+<!-- NEXUS pregunta -->
+<div class="nexus-bubble" id="nexus-bubble">
+    <strong>NEXUS:</strong> <span id="nexus-msg">Archivo recibido. ¿Qué hacemos con esto?</span>
+</div>
+
+<div class="nexus-ask" id="nexus-ask">
+    <div class="q">¿Qué necesitas hacer con este archivo?</div>
+    <div class="modos-grid">
+        <div class="modo-btn" onclick="selModo(this,'lona')">
+            <div class="m-icon">🖼️</div>
+            <div class="m-name">Lona</div>
+            <div class="m-desc">Gran formato, plotter, impresora UV</div>
+        </div>
+        <div class="modo-btn" onclick="selModo(this,'taza')">
+            <div class="m-icon">☕</div>
+            <div class="m-name">Taza</div>
+            <div class="m-desc">Sublimacion 11oz, colores corregidos</div>
+        </div>
+        <div class="modo-btn" onclick="selModo(this,'cartoon')">
+            <div class="m-icon">🏰</div>
+            <div class="m-name">Cartoon</div>
+            <div class="m-desc">Disney / Anime — lona, invitaciones, taza</div>
+        </div>
+        <div class="modo-btn" onclick="selModo(this,'lineal')">
+            <div class="m-icon">✏️</div>
+            <div class="m-name">Lineal Láser</div>
+            <div class="m-desc">Bordes vectoriales — DXF para Aspire/RDW</div>
+        </div>
+        <div class="modo-btn" onclick="selModo(this,'raster_laser')">
+            <div class="m-icon">⬛</div>
+            <div class="m-name">Raster Láser</div>
+            <div class="m-desc">Grabado tono, dithering optimizado</div>
+        </div>
+        <div class="modo-btn" onclick="selModo(this,'vectorizar')">
+            <div class="m-icon">📐</div>
+            <div class="m-name">Vectorizar</div>
+            <div class="m-desc">SVG + DXF desde cualquier bitmap</div>
+        </div>
+        <div class="modo-btn" onclick="selModo(this,'corte_vector')">
+            <div class="m-icon">⚡</div>
+            <div class="m-name">Corte Láser</div>
+            <div class="m-desc">DXF/SVG optimizado — kerf + encastres + Silhouette</div>
+        </div>
+    </div>
+
+    <!-- Opciones contextuales -->
+    <div class="opts-panel" id="opts-corte_vector">
+        <div class="row" style="margin-bottom:12px">
+            <div>
+                <label>Material de corte</label>
+                <select class="fi" id="opt-mat">
+                    <option value="mdf_27">MDF 2.7mm (kerf 0.20mm)</option>
+                    <option value="mdf_3" selected>MDF 3mm (kerf 0.22mm)</option>
+                    <option value="triplay">Triplay 4mm (kerf 0.25mm)</option>
+                    <option value="acrilico">Acrílico 3mm (kerf 0.18mm)</option>
+                    <option value="carton">Cartón 2mm (kerf 0.15mm)</option>
+                    <option value="cuero">Cuero 2mm (kerf 0.20mm)</option>
+                    <option value="madera_5">Madera 5mm (kerf 0.30mm)</option>
+                </select>
+            </div>
+            <div>
+                <label>Grosor original del diseño (mm)</label>
+                <input class="fi" type="number" id="opt-grosor-orig" value="3" min="1" max="20" step="0.1">
+            </div>
+        </div>
+        <div class="row" style="margin-bottom:12px">
+            <div>
+                <label>Ancho final (mm) — 0 = conservar</label>
+                <input class="fi" type="number" id="opt-cv-w" value="0" min="0" step="1">
+            </div>
+            <div>
+                <label>Alto final (mm) — 0 = conservar</label>
+                <input class="fi" type="number" id="opt-cv-h" value="0" min="0" step="1">
+            </div>
+        </div>
+        <div style="display:flex;align-items:center;gap:10px;font-size:.82em;color:#666">
+            <input type="checkbox" id="opt-kerf" checked style="accent-color:#00ff88">
+            <label for="opt-kerf">Aplicar compensación de kerf automática</label>
+        </div>
+        <div style="margin-top:10px;font-size:.75em;color:#333;line-height:1.6">
+            Salida: <strong style="color:#00ff88">DXF</strong> para Aspire/RDWorks/LightBurn &nbsp;·&nbsp;
+            <strong style="color:#00ff88">SVG</strong> para CorelDRAW &nbsp;·&nbsp;
+            <strong style="color:#00ff88">SVG</strong> para Silhouette Cameo
+        </div>
+    </div>
+
+    <div class="opts-panel" id="opts-lona">
+        <div class="row">
+            <div>
+                <label>Ancho (cm)</label>
+                <input class="fi" type="number" id="opt-lona-w" value="100" min="10" max="500">
+            </div>
+            <div>
+                <label>Alto (cm)</label>
+                <input class="fi" type="number" id="opt-lona-h" value="60" min="10" max="500">
+            </div>
+            <div>
+                <label>DPI salida</label>
+                <select class="fi" id="opt-lona-dpi">
+                    <option value="72">72 dpi (vista web)</option>
+                    <option value="100">100 dpi (lona lejana)</option>
+                    <option value="150" selected>150 dpi (lona estandar)</option>
+                    <option value="300">300 dpi (alta calidad)</option>
+                </select>
+            </div>
+        </div>
+    </div>
+    <div class="opts-panel" id="opts-cartoon">
+        <label>Estilo</label>
+        <select class="fi" id="opt-cartoon-estilo">
+            <option value="disney">Disney (colores vivos)</option>
+            <option value="anime">Anime / Manga</option>
+            <option value="acuarela">Acuarela</option>
+        </select>
+    </div>
+    <div class="opts-panel" id="opts-lineal">
+        <label>Grosor de linea (1 = fino, 3 = grueso)</label>
+        <input class="fi" type="range" id="opt-lineal-grosor" min="1" max="3" value="1"
+               oninput="document.getElementById('lineal-grosor-val').textContent=this.value">
+        <span id="lineal-grosor-val" style="font-size:.8em;color:#555">1</span>
+    </div>
+
+    <div style="margin-top:16px;display:flex;gap:10px;flex-wrap:wrap">
+        <button class="btn" id="btn-procesar" onclick="procesar()" disabled>⚡ Procesar</button>
+        <button class="btn btn-sec" onclick="limpiar()">↺ Otro archivo</button>
+    </div>
+</div>
+
+<!-- Progress -->
+<div class="prog-wrap" id="prog-wrap">
+    <div class="prog-bar-bg"><div class="prog-bar" id="prog-bar"></div></div>
+    <div class="prog-msg" id="prog-msg">Procesando...</div>
+</div>
+
+<!-- Resultado -->
+<div class="card result-panel" id="result-panel">
+    <div class="result-header">
+        <span style="font-size:1.5em">✅</span>
+        <div class="result-title" id="result-title">Archivos listos</div>
+    </div>
+    <div class="file-list" id="file-list"></div>
+    <div class="carpeta-info" id="carpeta-info">📂 Carpeta de salida: C:\nexus\out\</div>
+    <div style="margin-top:14px;display:flex;gap:10px;flex-wrap:wrap">
+        <button class="btn btn-sec" onclick="procesarOtroModo()">🔄 Otro modo</button>
+        <button class="btn btn-danger" onclick="limpiar()">↺ Nueva imagen</button>
+    </div>
+</div>
+
+</div><!-- /content -->
+
+<script>
+const TIPO_ICONS = { 'PDF': '📄', 'SVG': '📐', 'DXF': '⚙️', 'PNG': '🖼️', 'JPG': '🖼️' };
+
+let _file = null, _modo = null, _previewUrl = null;
+
+// ── Drag & Drop ──────────────────────────────────────────────────────────────
+function dragOver(e) { e.preventDefault(); document.getElementById('drop').classList.add('drag'); }
+function dragLeave() { document.getElementById('drop').classList.remove('drag'); }
+function dropFile(e) { e.preventDefault(); dragLeave(); const f = e.dataTransfer.files[0]; if(f) setFile(f); }
+function onFileChange(e) { if(e.target.files[0]) setFile(e.target.files[0]); }
+
+// Pegar desde portapapeles
+document.addEventListener('paste', e => {
+    const items = e.clipboardData?.items;
+    if(!items) return;
+    for(const item of items) {
+        if(item.type.startsWith('image/')) { setFile(item.getAsFile()); break; }
+    }
+});
+
+function setFile(f) {
+    _file = f;
+    const drop = document.getElementById('drop');
+    drop.classList.add('ready');
+    drop.querySelector('.dz-icon').textContent = '🖼️';
+    drop.querySelector('.dz-main').innerHTML = `<span class="dz-filename">${f.name}</span>`;
+    drop.querySelector('.dz-sub').textContent = `${(f.size/1024).toFixed(0)} KB — ${f.type||'archivo'}`;
+
+    // Preview si es imagen
+    if(f.type.startsWith('image/')) {
+        _previewUrl = URL.createObjectURL(f);
+        document.getElementById('preview-img').src = _previewUrl;
+        const pw = document.getElementById('preview-wrap');
+        pw.style.display = 'block';
+        // Leer dimensiones
+        const tmp = new window.Image();
+        tmp.onload = () => {
+            document.getElementById('preview-info').textContent = `${tmp.naturalWidth} × ${tmp.naturalHeight} px`;
+        };
+        tmp.src = _previewUrl;
+    }
+
+    // Mostrar pregunta NEXUS
+    document.getElementById('nexus-bubble').style.display = 'block';
+    document.getElementById('nexus-msg').textContent = `"${f.name}" recibido. ¿Qué hacemos con esto?`;
+    document.getElementById('nexus-ask').style.display = 'block';
+    document.getElementById('result-panel').style.display = 'none';
+    _modo = null;
+    document.getElementById('btn-procesar').disabled = true;
+    document.querySelectorAll('.modo-btn').forEach(b => b.classList.remove('sel'));
+    document.querySelectorAll('.opts-panel').forEach(p => p.style.display = 'none');
+}
+
+function selModo(el, modo) {
+    document.querySelectorAll('.modo-btn').forEach(b => b.classList.remove('sel'));
+    el.classList.add('sel');
+    _modo = modo;
+    document.querySelectorAll('.opts-panel').forEach(p => p.style.display = 'none');
+    const op = document.getElementById('opts-' + modo);
+    if(op) op.style.display = 'block';
+    document.getElementById('btn-procesar').disabled = false;
+}
+
+// ── Procesar ─────────────────────────────────────────────────────────────────
+async function procesar() {
+    if(!_file || !_modo) return;
+
+    const btn = document.getElementById('btn-procesar');
+    btn.disabled = true;
+
+    const msgs = {
+        lona:        'Optimizando para gran formato...',
+        taza:        'Preparando para sublimacion...',
+        cartoon:     'Aplicando estilo cartoon...',
+        lineal:      'Generando vectores para laser...',
+        raster_laser:'Optimizando raster para laser...',
+        vectorizar:  'Vectorizando imagen...',
+    };
+    mostrarProg(msgs[_modo] || 'Procesando...');
+
+    const fd = new FormData();
+    fd.append('archivo', _file);
+    fd.append('modo', _modo);
+
+    // Opciones segun modo
+    const opciones = {};
+    if(_modo === 'lona') {
+        opciones.ancho_cm = parseFloat(document.getElementById('opt-lona-w').value) || 100;
+        opciones.alto_cm  = parseFloat(document.getElementById('opt-lona-h').value) || 60;
+        opciones.dpi      = parseInt(document.getElementById('opt-lona-dpi').value)  || 150;
+    } else if(_modo === 'cartoon') {
+        opciones.estilo = document.getElementById('opt-cartoon-estilo').value;
+    } else if(_modo === 'lineal') {
+        opciones.grosor = parseInt(document.getElementById('opt-lineal-grosor').value) || 1;
+    } else if(_modo === 'corte_vector') {
+        opciones.material    = document.getElementById('opt-mat').value;
+        opciones.grosor_orig = parseFloat(document.getElementById('opt-grosor-orig').value) || 3;
+        opciones.ancho_mm    = parseFloat(document.getElementById('opt-cv-w').value) || 0;
+        opciones.alto_mm     = parseFloat(document.getElementById('opt-cv-h').value) || 0;
+        opciones.kerf        = document.getElementById('opt-kerf').checked;
+    }
+    fd.append('opciones', JSON.stringify(opciones));
+
+    try {
+        const r = await fetch('/api/estudio/procesar', { method: 'POST', body: fd });
+        const d = await r.json();
+        ocultarProg();
+        if(!d.ok) { alert('Error: ' + d.error); btn.disabled = false; return; }
+        mostrarResultado(d);
+    } catch(e) {
+        ocultarProg();
+        alert('Error de conexion: ' + e.message);
+        btn.disabled = false;
+    }
+}
+
+function mostrarProg(msg) {
+    const pw = document.getElementById('prog-wrap');
+    pw.style.display = 'block';
+    document.getElementById('prog-msg').textContent = msg;
+    // Animacion
+    let w = 0;
+    window._progInterval = setInterval(() => {
+        w = Math.min(w + Math.random() * 8, 90);
+        document.getElementById('prog-bar').style.width = w + '%';
+    }, 300);
+}
+
+function ocultarProg() {
+    clearInterval(window._progInterval);
+    document.getElementById('prog-bar').style.width = '100%';
+    setTimeout(() => {
+        document.getElementById('prog-wrap').style.display = 'none';
+        document.getElementById('prog-bar').style.width = '0%';
+    }, 400);
+}
+
+function mostrarResultado(d) {
+    document.getElementById('result-title').textContent = d.nombre || 'Archivos listos';
+    const list = document.getElementById('file-list');
+    list.innerHTML = '';
+    (d.salida || []).forEach(f => {
+        const ext = f.tipo.split(' ')[0].toUpperCase();
+        const icon = TIPO_ICONS[ext] || '📄';
+        list.innerHTML += `
+        <div class="file-item">
+            <div class="file-icon">${icon}</div>
+            <div class="file-info">
+                <div class="file-name">${f.filename}</div>
+                <div class="file-desc">${f.tipo} — ${f.desc}</div>
+            </div>
+            <a class="file-dl" href="${f.url}" download="${f.filename}">⬇ Descargar</a>
+        </div>`;
+    });
+    document.getElementById('carpeta-info').textContent = '📂 Carpeta de salida: ' + (d.carpeta || 'C:\\nexus\\out\\');
+    document.getElementById('result-panel').style.display = 'block';
+    document.getElementById('result-panel').scrollIntoView({ behavior: 'smooth' });
+    document.getElementById('btn-procesar').disabled = false;
+}
+
+function procesarOtroModo() {
+    _modo = null;
+    document.querySelectorAll('.modo-btn').forEach(b => b.classList.remove('sel'));
+    document.querySelectorAll('.opts-panel').forEach(p => p.style.display = 'none');
+    document.getElementById('btn-procesar').disabled = true;
+    document.getElementById('result-panel').style.display = 'none';
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function limpiar() {
+    _file = null; _modo = null; _previewUrl = null;
+    document.getElementById('file-input').value = '';
+    const drop = document.getElementById('drop');
+    drop.classList.remove('ready','drag');
+    drop.querySelector('.dz-icon').textContent = '📂';
+    drop.querySelector('.dz-main').textContent = 'Arrastra o pega tu archivo aqui';
+    drop.querySelector('.dz-sub').textContent = 'JPG · PNG · PDF · SVG · DXF · BMP · WEBP · TIFF';
+    document.getElementById('preview-wrap').style.display = 'none';
+    document.getElementById('nexus-bubble').style.display = 'none';
+    document.getElementById('nexus-ask').style.display = 'none';
+    document.getElementById('result-panel').style.display = 'none';
+    document.querySelectorAll('.opts-panel').forEach(p => p.style.display = 'none');
+}
+
+// ── MOTORS ────────────────────────────────────────────────────────────────────
+async function cargarApps() {
+    try {
+        const r = await fetch('/api/estudio/apps');
+        const d = await r.json();
+        if (!d.ok) return;
+        const grid = document.getElementById('apps-grid');
+        grid.innerHTML = '';
+        d.apps.forEach(a => {
+            const div = document.createElement('div');
+            div.className = 'app-btn' + (a.disponible ? '' : ' off');
+            div.title = a.disponible ? ('Abrir ' + a.nombre) : 'No instalado';
+            div.innerHTML = `<div class="app-icon">${a.icono}</div>
+                <div class="app-name">${a.nombre}</div>
+                <div class="app-fmt">${a.formatos.slice(0,4).join(' ')}</div>`;
+            if (a.disponible) div.onclick = () => abrirApp(a.id);
+            grid.appendChild(div);
+        });
+        // Boton carpeta
+        const carpeta = document.createElement('div');
+        carpeta.className = 'app-btn';
+        carpeta.title = 'Abrir carpeta de salida';
+        carpeta.innerHTML = `<div class="app-icon">📂</div><div class="app-name">Carpeta out</div><div class="app-fmt">explorer</div>`;
+        carpeta.onclick = () => abrirApp('carpeta');
+        grid.appendChild(carpeta);
+    } catch(e) { console.warn('motors:', e); }
+}
+
+async function abrirApp(appId) {
+    const msg = document.getElementById('motor-msg');
+    msg.textContent = 'Abriendo...';
+    // Si hay archivo procesado reciente, enviarlo
+    const archivo = window._ultimoArchivo || '';
+    try {
+        const r = await fetch('/api/estudio/abrir', {
+            method: 'POST',
+            headers: {'Content-Type':'application/json'},
+            body: JSON.stringify({app: appId, archivo})
+        });
+        const d = await r.json();
+        msg.textContent = d.mensaje || (d.ok ? 'OK' : d.error);
+        setTimeout(() => { msg.textContent = ''; }, 4000);
+    } catch(e) {
+        msg.textContent = 'Error de conexion';
+    }
+}
+
+// ── GENERADOR DE CAJAS ────────────────────────────────────────────────────────
+let _tipoCaja = 'ClosedBox';
+
+async function cargarTiposCaja() {
+    try {
+        const r = await fetch('/api/estudio/tipos_caja');
+        const d = await r.json();
+        if (!d.ok) return;
+        const grid = document.getElementById('tipos-grid');
+        grid.innerHTML = '';
+        d.tipos.forEach(t => {
+            const div = document.createElement('div');
+            div.className = 'tipo-btn' + (t.id === _tipoCaja ? ' sel' : '');
+            div.innerHTML = `<div class="tipo-icon">${t.icono}</div>
+                <div class="tipo-name">${t.nombre}</div>
+                <div class="tipo-desc">${t.desc}</div>`;
+            div.onclick = () => {
+                _tipoCaja = t.id;
+                document.querySelectorAll('.tipo-btn').forEach(b => b.classList.remove('sel'));
+                div.classList.add('sel');
+                document.getElementById('box-opts').style.display = 'block';
+            };
+            grid.appendChild(div);
+        });
+    } catch(e) { console.warn('cajas:', e); }
+}
+
+async function generarCaja() {
+    const btn = document.getElementById('btn-gen-caja');
+    btn.disabled = true;
+    btn.textContent = 'Generando...';
+    const payload = {
+        tipo:     _tipoCaja,
+        ancho:    parseFloat(document.getElementById('box-x').value) || 200,
+        alto:     parseFloat(document.getElementById('box-y').value) || 150,
+        prof:     parseFloat(document.getElementById('box-h').value) || 80,
+        material: document.getElementById('box-mat').value,
+        grosor:   parseFloat(document.getElementById('box-t').value) || 0,
+    };
+    try {
+        const r = await fetch('/api/estudio/generar_caja', {
+            method: 'POST',
+            headers: {'Content-Type':'application/json'},
+            body: JSON.stringify(payload)
+        });
+        const d = await r.json();
+        btn.disabled = false;
+        btn.textContent = 'Generar caja';
+        if (d.ok) {
+            // Guardar ultimo archivo para motores
+            if (d.salida && d.salida.length) {
+                const dxf = d.salida.find(f => f.tipo === 'DXF');
+                window._ultimoArchivo = dxf
+                    ? 'C:\\nexus\\out\\' + dxf.filename
+                    : 'C:\\nexus\\out\\' + d.salida[0].filename;
+            }
+            mostrarResultado(d);
+        } else {
+            alert('Error: ' + (d.error || 'desconocido'));
+        }
+    } catch(e) {
+        btn.disabled = false;
+        btn.textContent = 'Generar caja';
+        alert('Error de conexion: ' + e.message);
+    }
+}
+
+// Arrancar motores y cajas al cargar
+window.addEventListener('DOMContentLoaded', () => {
+    cargarApps();
+    cargarTiposCaja();
+});
+</script>
+
+<!-- ── MOTORS ──────────────────────────────────────────────────────────────── -->
+<div class="card" style="margin-top:28px">
+    <div class="card-title" style="color:#00ccff">🚀 Motores — Abrir en app</div>
+    <p style="font-size:.8em;color:#333;margin-bottom:14px">
+        Abre directamente en tu software instalado. Si ya procesaste un archivo,
+        se enviará automaticamente.
+    </p>
+    <div class="apps-grid" id="apps-grid">
+        <div style="color:#333;font-size:.8em">Cargando apps...</div>
+    </div>
+    <div class="motor-msg" id="motor-msg"></div>
+</div>
+
+<!-- ── GENERADOR DE CAJAS ──────────────────────────────────────────────────── -->
+<div class="card" style="margin-top:0">
+    <div class="card-title" style="color:#ffaa00">📦 Generador de Cajas</div>
+    <p style="font-size:.8em;color:#333;margin-bottom:14px">
+        Genera patrones de corte laser para cajas MDF/acrílico. Finger joints ajustados
+        al material y compensacion de kerf incluida.
+    </p>
+    <div class="tipos-grid" id="tipos-grid">
+        <div style="color:#333;font-size:.8em">Cargando tipos...</div>
+    </div>
+    <div class="box-opts" id="box-opts">
+        <div class="row" style="margin-bottom:10px">
+            <div>
+                <label class="lbl-gold">Ancho X (mm)</label>
+                <input class="fi" type="number" id="box-x" value="200" min="20" max="1200" step="1">
+            </div>
+            <div>
+                <label class="lbl-gold">Largo Y (mm)</label>
+                <input class="fi" type="number" id="box-y" value="150" min="20" max="1200" step="1">
+            </div>
+            <div>
+                <label class="lbl-gold">Altura H (mm)</label>
+                <input class="fi" type="number" id="box-h" value="80" min="10" max="600" step="1">
+            </div>
+        </div>
+        <div class="row" style="margin-bottom:14px">
+            <div>
+                <label class="lbl-gold">Material</label>
+                <select class="fi" id="box-mat">
+                    <option value="mdf_27">MDF 2.7mm</option>
+                    <option value="mdf_3" selected>MDF 3mm</option>
+                    <option value="triplay">Triplay 4mm</option>
+                    <option value="acrilico">Acrílico 3mm</option>
+                    <option value="carton">Cartón 2mm</option>
+                    <option value="cuero">Cuero 2mm</option>
+                    <option value="madera_5">Madera 5mm</option>
+                </select>
+            </div>
+            <div>
+                <label class="lbl-gold">Grosor personalizado (mm) — 0 = auto</label>
+                <input class="fi" type="number" id="box-t" value="0" min="0" max="20" step="0.1">
+            </div>
+        </div>
+        <button class="btn btn-gold" id="btn-gen-caja" onclick="generarCaja()">📦 Generar caja</button>
+    </div>
+</div>
+
+</body>
+</html>

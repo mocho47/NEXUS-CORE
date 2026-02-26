@@ -52,12 +52,8 @@ def nexus_status():
 
 @app.get("/", response_class=HTMLResponse)
 async def home(request: Request):
-    pendientes = orders_mgr.get_pending()
-    return templates.TemplateResponse("index.html", {
-        "request": request,
-        "pedidos": pendientes,
-        "total_pendientes": len(pendientes)
-    })
+    from fastapi.responses import RedirectResponse
+    return RedirectResponse(url="/dashboard")
 
 @app.get("/dashboard", response_class=HTMLResponse)
 async def dashboard_view(request: Request):
@@ -547,6 +543,113 @@ async def api_precios_update(update: PrecioUpdate):
                 json.dump(precios, f, ensure_ascii=False, indent=2)
             return {"ok": True}
         return {"ok": False, "error": "Servicio o campo no encontrado"}
+    except Exception as e:
+        return {"ok": False, "error": str(e)}
+
+# ── PÁGINAS EXTRA ─────────────────────────────────────────────────────────────
+
+@app.get("/milens", response_class=HTMLResponse)
+async def milens_view(request: Request):
+    return templates.TemplateResponse("milens.html", {"request": request})
+
+# ── ESTUDIO (módulo independiente) ───────────────────────────────────────────
+@app.get("/estudio", response_class=HTMLResponse)
+async def estudio_view(request: Request):
+    return templates.TemplateResponse("estudio.html", {"request": request})
+
+@app.post("/api/estudio/procesar", response_class=JSONResponse)
+async def api_estudio_procesar(
+    archivo: UploadFile = File(...),
+    modo: str = Form("vectorizar"),
+    opciones: str = Form("{}")
+):
+    try:
+        import json as _json
+        data = await archivo.read()
+        opts = _json.loads(opciones) if opciones else {}
+        ext = (archivo.filename or "").rsplit(".", 1)[-1].lower()
+
+        # Archivos vectoriales → motor especializado
+        if modo == "corte_vector" or ext in ("dxf", "svg", "ai", "eps"):
+            from nexus_studio_vector import procesar_vector
+            return procesar_vector(
+                data, ext,
+                material_key    = opts.get("material", "mdf_3"),
+                ancho_mm        = float(opts.get("ancho_mm", 0)),
+                alto_mm         = float(opts.get("alto_mm", 0)),
+                grosor_origen_mm= float(opts.get("grosor_orig", 3.0)),
+                aplicar_kerf    = bool(opts.get("kerf", True)),
+            )
+        # Imágenes → motor de imagen
+        from nexus_estudio import procesar
+        return procesar(data, modo, opts)
+    except Exception as e:
+        return {"ok": False, "error": str(e)}
+
+@app.get("/api/estudio/materiales", response_class=JSONResponse)
+async def api_estudio_materiales():
+    from nexus_studio_vector import get_materiales
+    return get_materiales()
+
+# Servir carpeta out/ para descargas
+from fastapi.staticfiles import StaticFiles as _SF
+import os as _os
+_out_dir = _os.path.join(_os.path.dirname(_os.path.abspath(__file__)), "out")
+_os.makedirs(_out_dir, exist_ok=True)
+app.mount("/out", _SF(directory=_out_dir), name="out")
+
+# ── CARTOONIZER (acceso directo legacy) ──────────────────────────────────────
+@app.get("/cartoonizer", response_class=HTMLResponse)
+async def cartoonizer_view(request: Request):
+    return templates.TemplateResponse("cartoonizer.html", {"request": request})
+
+@app.get("/atf", response_class=HTMLResponse)
+async def atf_view():
+    path = os.path.join(BASE_DIR, "WEB_ATF", "index.html")
+    if os.path.exists(path):
+        with open(path, "r", encoding="utf-8") as f:
+            return HTMLResponse(content=f.read())
+    return HTMLResponse(content="""<!DOCTYPE html><html lang="es"><head><meta charset="UTF-8"><title>ATF - Actualiza Tus Faros</title>
+    <script src="https://cdn.tailwindcss.com"></script></head>
+    <body class="bg-gray-900 text-white flex items-center justify-center h-screen">
+    <div class="text-center"><h1 class="text-4xl font-bold text-yellow-400 mb-4">💡 Actualiza Tus Faros</h1>
+    <p class="text-gray-400">Módulo en construcción — agrega tu contenido en WEB_ATF/index.html</p>
+    <a href="/dashboard" class="mt-6 inline-block bg-yellow-500 text-black px-6 py-2 rounded">← Volver</a></div></body></html>""")
+
+@app.get("/canbusfix", response_class=HTMLResponse)
+async def canbusfix_view():
+    path = os.path.join(BASE_DIR, "WEB_CANBUSFIX", "index.html")
+    with open(path, "r", encoding="utf-8") as f:
+        return HTMLResponse(content=f.read())
+
+@app.get("/demo", response_class=HTMLResponse)
+async def demo_view(request: Request):
+    return templates.TemplateResponse("demo.html", {"request": request})
+
+@app.get("/licencias", response_class=HTMLResponse)
+async def licencias_view(request: Request):
+    return templates.TemplateResponse("licencias.html", {"request": request})
+
+@app.post("/api/milens/cotizar", response_class=JSONResponse)
+async def api_milens_cotizar(data: dict):
+    try:
+        from nexus_milens import cotizar_caja
+        return cotizar_caja(data.get("largo",10), data.get("ancho",10), data.get("alto",5), data.get("material","MDF 2.7mm"))
+    except Exception as e:
+        return {"error": str(e)}
+
+# ── VOZ ───────────────────────────────────────────────────────────────────────
+
+class HablarRequest(BaseModel):
+    texto: str = ""
+
+@app.post("/api/hablar", response_class=JSONResponse)
+async def api_hablar(req: HablarRequest):
+    try:
+        import threading
+        from nexus_voice import hablar
+        threading.Thread(target=hablar, args=(req.texto,), daemon=True).start()
+        return {"ok": True}
     except Exception as e:
         return {"ok": False, "error": str(e)}
 
@@ -1499,6 +1602,106 @@ async def api_setup_check():
         return {"configurado": False}
     except Exception:
         return {"configurado": False}
+
+
+# ── ESTUDIO: MOTORS (lanzador de apps) ───────────────────────────────────────
+@app.get("/api/estudio/apps", response_class=JSONResponse)
+async def api_estudio_apps():
+    """Lista de apps instaladas y detectadas."""
+    try:
+        from nexus_motors import apps_disponibles
+        return {"ok": True, "apps": apps_disponibles()}
+    except Exception as e:
+        return {"ok": False, "error": str(e)}
+
+class AbrirAppReq(BaseModel):
+    app: str
+    archivo: str = ""
+
+@app.get("/api/estudio/macros_corel", response_class=JSONResponse)
+async def api_macros_corel_lista():
+    """Lista de macros VBA predefinidos para CorelDRAW."""
+    try:
+        from nexus_motors import macros_disponibles
+        return {"ok": True, "macros": macros_disponibles()}
+    except Exception as e:
+        return {"ok": False, "error": str(e)}
+
+@app.post("/api/estudio/instalar_macros", response_class=JSONResponse)
+async def api_instalar_macros_corel():
+    """Instala/actualiza todos los macros NEXUS en el directorio GMS de CorelDRAW."""
+    try:
+        from nexus_motors import instalar_macros_nexus
+        return instalar_macros_nexus()
+    except Exception as e:
+        return {"ok": False, "error": str(e)}
+
+class EjecutarMacroReq(BaseModel):
+    modulo: str
+    sub:    str
+    args:   list = []
+
+@app.post("/api/estudio/ejecutar_macro", response_class=JSONResponse)
+async def api_ejecutar_macro_corel(req: EjecutarMacroReq):
+    """Ejecuta un macro en CorelDRAW (CorelDRAW debe estar abierto)."""
+    try:
+        from nexus_motors import ejecutar_macro_corel_com
+        return ejecutar_macro_corel_com(req.modulo, req.sub, *req.args)
+    except Exception as e:
+        return {"ok": False, "error": str(e)}
+
+class EscribirMacroReq(BaseModel):
+    nombre: str
+    codigo: str
+
+@app.post("/api/estudio/escribir_macro", response_class=JSONResponse)
+async def api_escribir_macro_corel(req: EscribirMacroReq):
+    """Escribe un macro VBA personalizado en el directorio GMS de CorelDRAW."""
+    try:
+        from nexus_motors import escribir_macro_corel
+        return escribir_macro_corel(req.nombre, req.codigo)
+    except Exception as e:
+        return {"ok": False, "error": str(e)}
+
+@app.post("/api/estudio/abrir", response_class=JSONResponse)
+async def api_estudio_abrir(req: AbrirAppReq):
+    """Abre una app externa, opcionalmente con un archivo."""
+    try:
+        from nexus_motors import abrir_en_app, abrir_carpeta_out
+        if req.app == "carpeta":
+            return abrir_carpeta_out()
+        archivo = req.archivo if req.archivo else None
+        return abrir_en_app(req.app, archivo)
+    except Exception as e:
+        return {"ok": False, "error": str(e)}
+
+# ── ESTUDIO: GENERADOR DE CAJAS ───────────────────────────────────────────────
+@app.get("/api/estudio/tipos_caja", response_class=JSONResponse)
+async def api_estudio_tipos_caja():
+    """Lista de tipos de caja disponibles."""
+    try:
+        from nexus_boxes_gen import tipos_caja
+        return {"ok": True, "tipos": tipos_caja()}
+    except Exception as e:
+        return {"ok": False, "error": str(e)}
+
+class GenerarCajaReq(BaseModel):
+    tipo:        str   = "ClosedBox"
+    ancho:       float = 200
+    alto:        float = 150
+    prof:        float = 80
+    material:    str   = "mdf_3"
+    grosor:      float = 0   # 0 = usar el del material
+
+@app.post("/api/estudio/generar_caja", response_class=JSONResponse)
+async def api_estudio_generar_caja(req: GenerarCajaReq):
+    """Genera una caja parametrica con boxes.py."""
+    try:
+        from nexus_boxes_gen import generar_caja
+        grosor = req.grosor if req.grosor > 0 else None
+        return generar_caja(req.tipo, req.ancho, req.alto, req.prof, req.material, grosor)
+    except Exception as e:
+        return {"ok": False, "error": str(e)}
 
 
 if __name__ == "__main__":
