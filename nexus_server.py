@@ -1704,6 +1704,74 @@ async def api_estudio_generar_caja(req: GenerarCajaReq):
         return {"ok": False, "error": str(e)}
 
 
+# ── HEALTH / AUTO-DIAGNÓSTICO ────────────────────────────────────────────────
+@app.get("/api/health/check", response_class=JSONResponse)
+async def api_health_check():
+    """Check rápido: servidor, disco, alertas. Sin llamadas externas."""
+    try:
+        from nexus_health import check_disco, check_archivos, check_apps, check_env
+        disco  = check_disco()
+        archivos = check_archivos()
+        apps   = check_apps()
+        env    = check_env()
+        alertas = []
+        if disco["alerta"]:
+            alertas.append(f"Disco bajo: {disco['libre_gb']}GB libres")
+        faltantes = [f for f, ok in archivos.items() if not ok]
+        if faltantes:
+            alertas.append(f"Archivos faltantes: {len(faltantes)}")
+        deps_env = [k for k, v in env.items() if not v and k in ("GROQ_API_KEY","SUPABASE_URL")]
+        if deps_env:
+            alertas.append(f"Env vars faltantes: {', '.join(deps_env)}")
+        return {
+            "ok": True,
+            "estado": "OK" if not alertas else "ALERTA",
+            "alertas": alertas,
+            "disco": disco,
+            "apps": {k: v["ok"] for k, v in apps.items()},
+        }
+    except Exception as e:
+        return {"ok": False, "error": str(e)}
+
+@app.get("/api/health/reporte", response_class=JSONResponse)
+async def api_health_reporte():
+    """Reporte completo con todas las verificaciones (tarda ~5s)."""
+    try:
+        from nexus_health import reporte_completo
+        return reporte_completo()
+    except Exception as e:
+        return {"ok": False, "error": str(e)}
+
+@app.get("/api/health/diagnostico", response_class=JSONResponse)
+async def api_health_diagnostico():
+    """Reporte completo + diagnóstico asistido por LLM."""
+    try:
+        from nexus_health import reporte_completo, diagnostico_llm
+        r = reporte_completo()
+        r["diagnostico_llm"] = diagnostico_llm(r)
+        return r
+    except Exception as e:
+        return {"ok": False, "error": str(e)}
+
+@app.post("/api/health/reparar", response_class=JSONResponse)
+async def api_health_reparar():
+    """Intenta instalar dependencias faltantes automáticamente."""
+    try:
+        from nexus_health import check_dependencias, instalar_faltantes
+        deps = check_dependencias()
+        faltantes = [
+            pkg["nombre"]
+            for grupo in deps.values()
+            for pkg in grupo if not pkg["ok"]
+        ]
+        if not faltantes:
+            return {"ok": True, "mensaje": "No hay dependencias faltantes", "instalados": []}
+        resultados = instalar_faltantes(faltantes)
+        return {"ok": True, "instalados": resultados}
+    except Exception as e:
+        return {"ok": False, "error": str(e)}
+
+
 if __name__ == "__main__":
     from nexus_autopilot import autopilot as _ap
     _ap.iniciar()

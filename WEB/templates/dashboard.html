@@ -111,6 +111,17 @@
     <div class="tab"         onclick="go('autoventas')">🚀 AutoVentas</div>
     <div class="tab"         onclick="go('paranormal')">🔮 Paranormal</div>
     <div class="tab"         onclick="go('comandos_tab')">📋 Comandos</div>
+    <div class="tab"         onclick="go('teens')">👾 Teens</div>
+    <div class="tab"         onclick="go('subliminal')">🎧 Subliminal</div>
+    <div class="tab"         onclick="go('social')">📲 Social</div>
+    <div class="tab"         onclick="go('historial')">📂 Historial</div>
+    <div class="tab"         onclick="go('sistema')">🖥️ Sistema</div>
+    <div class="tab"         onclick="go('milens')">✂️ Milens</div>
+    <div class="tab"         onclick="window.location='/estudio'">🎨 Estudio</div>
+    <div class="tab"         onclick="window.location='/canbusfix'">🚗 Canbusfix</div>
+    <div class="tab"         onclick="window.location='/atf'">💡 ATF</div>
+    <div class="tab"         onclick="go('demo')">🎯 Demo</div>
+    <div class="tab"         onclick="go('licencias')">🔑 Licencias</div>
     <div class="tab"         onclick="go('config')">⚙️ Config</div>
     <div class="tab"         onclick="window.location='/admin'">🔐 Admin</div>
 </div>
@@ -341,12 +352,215 @@
     </div>
 </div>
 
+<!-- ░░ TEENS ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░ -->
+<div class="panel" id="panel-teens">
+    <!-- Acceso rápido al panel completo -->
+    <div class="card" style="text-align:center;padding:20px">
+        <div style="font-size:2.5em;margin-bottom:10px">👾</div>
+        <div style="font-size:1.1em;font-weight:bold;color:#00ff88;margin-bottom:6px">NEXUS Teens</div>
+        <div style="color:#555;font-size:.82em;margin-bottom:16px">Misiones · Aptitudes · Gamificación · Tutor IA · Marketing Viral</div>
+        <button class="btn" onclick="window.open('/teens','_blank')" style="font-size:.95em;padding:12px 28px;margin-bottom:10px">
+            👾 Abrir panel Teens completo
+        </button>
+        <div style="color:#333;font-size:.75em">Se abre en nueva pestaña</div>
+    </div>
+    <!-- Registro rápido -->
+    <div class="card">
+        <div class="card-title">➕ Registrar teen</div>
+        <div class="form-row" style="margin-bottom:10px">
+            <input class="fi" type="text" id="tn-nombre" placeholder="Nombre">
+            <input class="fi" type="number" id="tn-edad" placeholder="Edad" value="15" style="max-width:80px">
+            <button class="btn" onclick="crearTeen()">Registrar</button>
+        </div>
+        <div id="tn-resultado" class="empty">—</div>
+    </div>
+    <!-- Leaderboard -->
+    <div class="card">
+        <div class="card-title">🏆 Top teens esta semana</div>
+        <div id="tn-leaderboard" class="loading">Cargando...</div>
+    </div>
+</div>
+
+<!-- ░░ SUBLIMINAL ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░ -->
+<div class="panel" id="panel-subliminal">
+    <div class="card">
+        <div class="card-title">🎧 Audio Subliminal — Persuasión Ética</div>
+        <p style="color:#888;font-size:.85em;margin-bottom:12px">Genera mensajes positivos con audio binaural para ambiente de negocio.</p>
+        <div class="form-row" style="margin-bottom:10px">
+            <input class="fi-lg" type="text" id="sub-msg" placeholder="Mensaje positivo (ej: Somos los mejores en faros)">
+            <select class="fi" id="sub-tipo">
+                <option value="ventas">Ventas</option>
+                <option value="confianza">Confianza</option>
+                <option value="urgencia">Urgencia</option>
+            </select>
+            <button class="btn" onclick="genSubliminal()">Generar</button>
+        </div>
+        <div id="sub-resultado" class="empty">Sin pistas generadas</div>
+    </div>
+    <div class="card">
+        <div class="card-title">🎵 Pistas disponibles</div>
+        <div id="sub-pistas" class="loading">Cargando...</div>
+    </div>
+</div>
+
+<!-- ░░ SOCIAL ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░ -->
+<div class="panel" id="panel-social">
+    <div class="card">
+        <div class="card-title">📲 Generador de Contenido Social</div>
+        <div class="form-row" style="margin-bottom:10px">
+            <select class="fi" id="soc-canal">
+                <option value="instagram">Instagram</option>
+                <option value="tiktok">TikTok</option>
+                <option value="facebook">Facebook</option>
+                <option value="whatsapp">WhatsApp</option>
+            </select>
+            <select class="fi" id="soc-tipo">
+                <option value="retrofit_premium">Retrofit Premium</option>
+                <option value="laser_caja">Caja Laser</option>
+                <option value="promo">Promoción</option>
+                <option value="testimonio">Testimonio</option>
+            </select>
+            <button class="btn" onclick="genPost()">Generar post</button>
+        </div>
+        <div id="soc-resultado" class="empty">Selecciona canal y tipo</div>
+    </div>
+    <div class="card">
+        <div class="card-title">⚡ Hooks virales</div>
+        <div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:10px">
+            <button class="btn btn-sm" onclick="hooksVirales('instagram')">📸 IG</button>
+            <button class="btn btn-sm" onclick="hooksVirales('tiktok')">🎵 TikTok</button>
+            <button class="btn btn-sm" onclick="hooksVirales('facebook')">👥 FB</button>
+            <button class="btn btn-sm" onclick="hooksVirales('whatsapp')">💬 WA</button>
+        </div>
+        <div id="soc-hooks" class="empty">Selecciona plataforma</div>
+    </div>
+</div>
+
+<!-- ░░ HISTORIAL ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░ -->
+<div class="panel" id="panel-historial">
+    <div class="card">
+        <div class="card-title">📂 Historial de Pedidos</div>
+        <div id="hist-lista" class="loading">Cargando...</div>
+    </div>
+</div>
+
+<!-- ░░ SISTEMA ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░ -->
+<div class="panel" id="panel-sistema">
+
+    <!-- NEXUS Health Widget -->
+    <div class="card" id="health-card">
+        <div class="card-title" style="display:flex;justify-content:space-between;align-items:center">
+            <span>🩺 NEXUS Health</span>
+            <span id="health-badge" style="font-size:.75em;padding:3px 10px;border-radius:20px;background:#1a1a1a;color:#555">chequeando...</span>
+        </div>
+        <div id="health-alertas" style="margin-bottom:10px"></div>
+        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-bottom:12px" id="health-apps"></div>
+        <div id="health-disco" style="font-size:.75em;color:#444;margin-bottom:12px"></div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+            <button class="btn btn-sm" onclick="healthCheck()">🔄 Verificar</button>
+            <button class="btn btn-sm" onclick="healthReporte()">📋 Reporte completo</button>
+            <button class="btn btn-sm" onclick="healthDiagnostico()" style="color:#ffaa00;border-color:#ffaa0060">🤖 Diagnosticar con IA</button>
+            <button class="btn btn-sm btn-danger" onclick="healthReparar()">🔧 Auto-reparar</button>
+        </div>
+        <div id="health-output" style="margin-top:10px;background:#050505;border:1px solid #1a1a1a;border-radius:8px;padding:10px;font-size:.78em;color:#666;display:none;white-space:pre-wrap;max-height:200px;overflow-y:auto"></div>
+    </div>
+
+    <div class="card">
+        <div class="card-title">🖥️ Estado del Sistema</div>
+        <div id="sis-info" class="loading">Cargando...</div>
+    </div>
+    <div class="card">
+        <div class="card-title">⚡ Comandos rápidos por módulo</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+            <button class="btn btn-sm" onclick="cmdSistema('pedidos')">📋 Estado pedidos</button>
+            <button class="btn btn-sm" onclick="cmdSistema('stock')">📦 Estado stock</button>
+            <button class="btn btn-sm" onclick="cmdSistema('clientes')">👥 Total clientes</button>
+            <button class="btn btn-sm" onclick="cmdSistema('finanzas')">💰 Resumen financiero</button>
+            <button class="btn btn-sm" onclick="cmdSistema('marketing')">📣 Estado marketing</button>
+            <button class="btn btn-sm" onclick="cmdSistema('autopilot')">🤖 Estado autopilot</button>
+            <button class="btn btn-sm" onclick="cmdSistema('backup')">💾 Ejecutar backup</button>
+            <button class="btn btn-sm" onclick="cmdSistema('voz')">🎙️ Test de voz</button>
+        </div>
+        <div id="sis-cmd" style="margin-top:10px;background:#050505;border:1px solid #1a1a1a;border-radius:8px;padding:12px;font-size:.85rem;color:#666;min-height:60px">
+            Selecciona un comando...
+        </div>
+    </div>
+    <div class="card">
+        <div class="card-title">🤖 Autopilot</div>
+        <div id="sis-autopilot" class="loading">Cargando...</div>
+        <div style="display:flex;gap:8px;margin-top:10px">
+            <button class="btn" onclick="autopilotToggle(true)">▶ Activar</button>
+            <button class="btn btn-link" onclick="autopilotToggle(false)">⏹ Detener</button>
+        </div>
+    </div>
+</div>
+
+<!-- ░░ MILENS ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░ -->
+<div class="panel" id="panel-milens">
+    <div class="card">
+        <div class="card-title">✂️ Creaciones Milens — Cotizador de Cajas</div>
+        <div class="form-row" style="margin-bottom:10px">
+            <input class="fi" type="number" id="ml-largo" placeholder="Largo (cm)" value="20">
+            <input class="fi" type="number" id="ml-ancho" placeholder="Ancho (cm)" value="15">
+            <input class="fi" type="number" id="ml-alto"  placeholder="Alto (cm)"  value="10">
+            <select class="fi" id="ml-mat">
+                <option>MDF 2.7mm</option>
+                <option>MDF 3mm</option>
+                <option>Triplay 4mm</option>
+                <option>Acrílico 3mm</option>
+            </select>
+            <button class="btn" onclick="milensCotar()">Calcular</button>
+        </div>
+        <div id="ml-resultado" class="empty">Ingresa dimensiones y presiona Calcular</div>
+    </div>
+    <div class="card">
+        <div class="card-title">🔗 Herramientas Milens</div>
+        <a class="link-ext" href="/cartoonizer" target="_blank">🎨 Cartoonizer / Dibujo Lineal</a>
+        <a class="link-ext" href="/galeria" target="_blank">🖼️ Galería de diseños</a>
+        <a class="link-ext" href="/cotizar" target="_blank">💲 Cotizador completo</a>
+    </div>
+</div>
+
+<!-- ░░ DEMO ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░ -->
+<div class="panel" id="panel-demo">
+    <div class="card">
+        <div class="card-title">🎯 Demo — Acceso de Prueba</div>
+        <p style="color:#888;font-size:0.86em;margin-bottom:14px">Genera un acceso demo temporal para mostrar NEXUS a clientes potenciales.</p>
+        <div class="form-row">
+            <input class="fi" type="text"   id="dm-nombre"  placeholder="Nombre del cliente">
+            <input class="fi" type="number" id="dm-horas"   placeholder="Horas (24 por defecto)" value="24">
+            <button class="btn" onclick="crearDemo()">Generar acceso demo</button>
+        </div>
+        <div id="dm-resultado" class="empty" style="margin-top:12px">Sin demo activo</div>
+    </div>
+    <div class="card">
+        <div class="card-title">📋 Demos activos</div>
+        <div id="dm-lista" class="loading">Cargando...</div>
+    </div>
+</div>
+
+<!-- ░░ LICENCIAS ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░ -->
+<div class="panel" id="panel-licencias">
+    <div class="card">
+        <div class="card-title">🔑 Licencia NEXUS</div>
+        <div id="lic-info" class="loading">Cargando...</div>
+    </div>
+    <div class="card">
+        <div class="card-title">🖥️ Huella del equipo</div>
+        <div id="lic-huella" style="font-family:monospace;font-size:0.8em;color:#00ff88;word-break:break-all"></div>
+    </div>
+</div>
+
 </div><!-- /content -->
 
 <script>
 // ─── Tab navigation ────────────────────────────────────────────────────────
+// TAB_NAMES debe coincidir 1:1 con los elementos .tab en el DOM (incluye window.location tabs)
 const TAB_NAMES = ['inicio','pedidos','clientes','stock','cotizar','agenda','marketing',
-                   'oido','autoventas','paranormal','comandos_tab','config'];
+                   '_finanzas','_galeria',
+                   'oido','autoventas','paranormal','comandos_tab',
+                   'teens','subliminal','social','historial','sistema',
+                   'milens','_estudio','_canbusfix','_atf','demo','licencias','config','_admin'];
 const loaded = { inicio: true };
 
 function go(name) {
@@ -363,6 +577,13 @@ function go(name) {
             oido:         iniciarOido,
             autoventas:   cargarAutoventas,
             paranormal:   cargarParEstado,
+            demo:         cargarDemo,
+            licencias:    cargarLicencias,
+            teens:        cargarTeens,
+            subliminal:   cargarSubliminal,
+            social:       ()=>{},
+            historial:    cargarHistorial,
+            sistema:      cargarSistema,
         };
         (loaders[name] || (()=>{}))();
     }
@@ -397,18 +618,21 @@ if(window.speechSynthesis && window.speechSynthesis.onvoiceschanged !== undefine
 let oidMicVivo=false, oidEsperando=false, oidHablando=false, oidMic=null;
 const OID_CHIPS = ['Pedidos','Stock','Clientes','Ventas','Sistema','Marketing','Hora','Ayuda'];
 
-// Habla NEXUS (hombre mexicano) + pausa mic mientras habla
+// Habla NEXUS — usa Edge TTS JorgeNeural vía servidor
+let _speechCooldown = false;
 function nexusHablar(txt, pitch=1.05, rate=0.93){
     return new Promise(res=>{
-        if(!window.speechSynthesis||!txt){res();return;}
+        if(!txt){res();return;}
         oidHablando=true;
-        window.speechSynthesis.cancel();
-        const u=new SpeechSynthesisUtterance(txt);
-        const v=getVozNexus(); if(v) u.voice=v;
-        u.lang='es-MX'; u.pitch=pitch; u.rate=rate; u.volume=1.0;
-        u.onend=()=>{ oidHablando=false; res(); };
-        u.onerror=()=>{ oidHablando=false; res(); };
-        window.speechSynthesis.speak(u);
+        _speechCooldown=true;
+        const duracion = txt.length*65+1200;
+        fetch('/api/hablar',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({texto:txt})})
+            .then(()=>{
+                setTimeout(()=>{ oidHablando=false; res(); }, duracion);
+                // Cooldown extra para evitar que el mic capture el eco
+                setTimeout(()=>{ _speechCooldown=false; }, duracion+800);
+            })
+            .catch(()=>{ oidHablando=false; _speechCooldown=false; res(); });
     });
 }
 
@@ -439,6 +663,8 @@ function iniciarOido(){
         if(!final) return;
         document.getElementById('oid-interim').textContent='';
 
+        // Ignorar si estamos en cooldown post-voz (evita eco del parlante)
+        if(_speechCooldown) return;
         // Limpiar eco de NEXUS: ignora si la frase es solo "mande"
         const t=final.toLowerCase().trim().replace(/manden?/g,'').trim();
         if(!t) return;
@@ -499,9 +725,110 @@ function oidBurbuja(quien, txt, derecha){
     chat.scrollTop=chat.scrollHeight;
 }
 
+// ═══════════════════════════════════════════════════════
+// NAVEGACIÓN WEB POR VOZ
+// ═══════════════════════════════════════════════════════
+const SITIOS = {
+    'youtube':      'https://youtube.com',
+    'instagram':    'https://instagram.com',
+    'facebook':     'https://facebook.com',
+    'tiktok':       'https://tiktok.com',
+    'whatsapp':     'https://web.whatsapp.com',
+    'google':       'https://google.com',
+    'gmail':        'https://mail.google.com',
+    'twitter':      'https://twitter.com',
+    'x':            'https://x.com',
+    'maps':         'https://maps.google.com',
+    'spotify':      'https://open.spotify.com',
+    'netflix':      'https://netflix.com',
+    'mercadolibre': 'https://mercadolibre.com.mx',
+    'amazon':       'https://amazon.com.mx',
+    'canva':        'https://canva.com',
+    'chatgpt':      'https://chat.openai.com',
+    'claude':       'https://claude.ai',
+    'nexus':        'http://localhost:8000/dashboard',
+    'estudio':      'http://localhost:8000/estudio',
+    'cartoonizer':  'http://localhost:8000/estudio',
+    'cartoon':      'http://localhost:8000/estudio',
+    'milens':       'http://localhost:8000/milens',
+    'atf':          'http://localhost:8000/atf',
+    'canbusfix':    'http://localhost:8000/canbusfix',
+    'teens':        'http://localhost:8000/teens',
+};
+
+// Abre URL real — evita bloqueo de popups creando link y clickeando
+function abrirURL(url, label) {
+    const a = document.createElement('a');
+    a.href = url; a.target = '_blank'; a.rel = 'noopener';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    // Notificación flotante con link por si el popup fue bloqueado
+    let nav = document.getElementById('nexus-nav-bar');
+    if(!nav){ nav=document.createElement('div'); nav.id='nexus-nav-bar';
+        nav.style.cssText='position:fixed;top:0;left:0;right:0;background:#00ff88;color:#000;'+
+            'padding:10px 16px;z-index:9999;display:flex;align-items:center;gap:12px;font-size:.9em;font-weight:bold';
+        document.body.appendChild(nav); }
+    nav.innerHTML = `🌐 Abriendo: <a href="${url}" target="_blank" style="color:#000;text-decoration:underline">${label}</a>
+        <span style="margin-left:auto;cursor:pointer;font-size:1.2em" onclick="this.parentElement.style.display='none'">✕</span>`;
+    nav.style.display='flex';
+    setTimeout(()=>{ if(nav) nav.style.display='none'; }, 8000);
+}
+
+function navegarPorVoz(texto) {
+    const t = texto.toLowerCase();
+
+    // "busca X en youtube/google"
+    let m = t.match(/busca(?:r)?\s+(.+?)\s+en\s+(youtube|google)/);
+    if(m){
+        const q = encodeURIComponent(m[1]);
+        const url = m[2]==='youtube'
+            ? `https://youtube.com/results?search_query=${q}`
+            : `https://google.com/search?q=${q}`;
+        abrirURL(url, `${m[1]} en ${m[2]}`);
+        return `Buscando "${m[1]}" en ${m[2]}.`;
+    }
+
+    // "pon X" / "reproduce X"
+    m = t.match(/(?:pon|reproduce|play)\s+(.+?)(?:\s+en youtube)?$/);
+    if(m){
+        const q = encodeURIComponent(m[1]);
+        abrirURL(`https://youtube.com/results?search_query=${q}`, m[1]+' — YouTube');
+        return `Reproduciendo "${m[1]}" en YouTube.`;
+    }
+
+    // "abre X" / "entra a X" / "ve a X"
+    m = t.match(/(?:abre|entra\s+a|ve\s+a|p[aá]gina\s+de|ir\s+a)\s+(.+)/);
+    if(m){
+        const sitio = m[1].trim().toLowerCase().replace(/[^a-z0-9]/g,'');
+        const url = SITIOS[sitio] || (sitio.includes('.')? `https://${sitio}` : `https://${sitio}.com`);
+        abrirURL(url, m[1]);
+        return `Abriendo ${m[1]}.`;
+    }
+
+    // "muéstrame videos de X"
+    m = t.match(/(?:mu[eé]strame|muestra)\s+(?:videos?\s+de\s+)?(.+)/);
+    if(m){
+        abrirURL(`https://youtube.com/results?search_query=${encodeURIComponent(m[1])}`, m[1]+' — YouTube');
+        return `Buscando videos de "${m[1]}".`;
+    }
+
+    return null;
+}
+
 async function oidConsultar(texto){
     oidSetDot('processing');
     oidSetStatus('Procesando...');
+
+    // Intentar navegación web primero
+    const navResp = navegarPorVoz(texto);
+    if(navResp){
+        oidBurbuja('NEXUS', navResp, false);
+        await nexusHablar(navResp);
+        oidSetDot('listening');
+        oidSetStatus('Escuchando — di "nexus"');
+        return;
+    }
     try{
         const r=await fetch('/api/asistente',{method:'POST',
             headers:{'Content-Type':'application/json'},
@@ -718,6 +1045,348 @@ function filtrar(id, q) {
 // ─── Init ───────────────────────────────────────────────────────────────────
 cargarKPIs();
 setInterval(cargarKPIs, 30000);
+
+// ─── Mic global: arranca automático, escucha "nexus" desde cualquier tab ────
+(function arrancarMicGlobal(){
+    const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if(!SR) return; // Solo Chrome/Edge
+    const mic = new SR();
+    mic.lang = 'es-MX';
+    mic.continuous = true;
+    mic.interimResults = false;
+
+    mic.onresult = e => {
+        if(_speechCooldown) return;
+        const t = e.results[e.results.length-1][0].transcript.toLowerCase().trim();
+        if(!t) return;
+
+        // Paranormal: detecta "te ordeno parar" o "para" SIN necesitar wake word
+        if(t.includes('ordeno parar') || t.includes('te ordeno') ||
+           t.includes('nexus para') || t.includes('para nexus')){
+            fetch('/api/paranormal/parar',{method:'POST',headers:{'Content-Type':'application/json'},body:'{}'})
+            .then(r=>r.json()).then(d=>{
+                nexusHablar(d.msg || 'Deteniendo modo paranormal.');
+            });
+            oidEsperando = false;
+            return;
+        }
+
+        if(oidHablando) return;
+
+        if(!oidEsperando){
+            if(t.includes('nexus') || t.includes('nexo')){
+                oidEsperando = true;
+                nexusHablar('Mande.').then(()=>{
+                    oidEsperando && setTimeout(()=>{ oidEsperando=false; }, 10000);
+                });
+            }
+        } else {
+            clearTimeout(window._globalOidTimeout);
+            oidEsperando = false;
+            const burbuja = document.getElementById('oid-chat');
+            if(burbuja) oidBurbuja('tú', t, true);
+            oidConsultar(t);
+        }
+    };
+
+    mic.onerror = () => setTimeout(()=>{ try{ mic.start(); }catch(e){} }, 1000);
+    mic.onend  = () => setTimeout(()=>{ try{ mic.start(); }catch(e){} }, 500);
+    try{ mic.start(); } catch(e){}
+})();
+
+// Voz de arranque (después de que el mic esté listo)
+setTimeout(()=>nexusHablar('Nexus en línea. Listo para operar.'), 2000);
+
+// ─── Milens ─────────────────────────────────────────────────────────────────
+function milensCotar() {
+    const largo = parseFloat(document.getElementById('ml-largo').value)||10;
+    const ancho = parseFloat(document.getElementById('ml-ancho').value)||10;
+    const alto  = parseFloat(document.getElementById('ml-alto').value)||5;
+    const mat   = document.getElementById('ml-mat').value;
+    fetch('/api/milens/cotizar',{method:'POST',headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({largo,ancho,alto,material:mat})})
+    .then(r=>r.json()).then(d=>{
+        if(d.error){document.getElementById('ml-resultado').textContent='Error: '+d.error;return;}
+        document.getElementById('ml-resultado').innerHTML=
+            `<div class="kpi-row">
+                <div class="kpi"><div class="num">$${d.precio}</div><div class="lbl">Precio est.</div></div>
+                <div class="kpi"><div class="num">${d.minutos}</div><div class="lbl">Minutos laser</div></div>
+                <div class="kpi"><div class="num">${d.material}</div><div class="lbl">Material</div></div>
+             </div>`;
+    });
+}
+
+// ─── Demo ────────────────────────────────────────────────────────────────────
+function crearDemo() {
+    const nombre = document.getElementById('dm-nombre').value.trim();
+    const horas  = parseInt(document.getElementById('dm-horas').value)||24;
+    if(!nombre){alert('Ingresa el nombre del cliente');return;}
+    document.getElementById('dm-resultado').innerHTML =
+        `<div style="color:#00ff88;padding:12px;background:#00ff8810;border-radius:8px">
+            <b>Demo generado para: ${nombre}</b><br>
+            Acceso válido por ${horas} horas<br>
+            URL: <code>http://localhost:8000/dashboard?demo=1</code>
+         </div>`;
+}
+function cargarDemo(){
+    document.getElementById('dm-lista').innerHTML='<div class="empty">Sin demos activos</div>';
+}
+
+// ─── Teens ───────────────────────────────────────────────────────────────────
+function crearTeen() {
+    const nombre=document.getElementById('tn-nombre').value.trim();
+    const edad=parseInt(document.getElementById('tn-edad').value)||15;
+    if(!nombre){alert('Ingresa un nombre');return;}
+    fetch('/api/teens/usuario',{method:'POST',headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({nombre,edad,user_id:'teen_'+Date.now()})})
+    .then(r=>r.json()).then(d=>{
+        document.getElementById('tn-resultado').innerHTML=
+            `<div style="color:#00ff88;padding:8px">✓ ${nombre} registrado. Misiones asignadas.</div>`;
+        cargarTeens();
+    }).catch(()=>{});
+}
+function cargarTeens() {
+    fetch('/api/teens/leaderboard').then(r=>r.json()).then(d=>{
+        const el=document.getElementById('tn-leaderboard');
+        if(!d||!d.length){el.innerHTML='<div class="empty">Sin datos aún</div>';return;}
+        el.innerHTML='<table><thead><tr><th>#</th><th>Nombre</th><th>XP</th><th>Nivel</th></tr></thead><tbody>'+
+            d.slice(0,10).map((u,i)=>`<tr><td style="color:#00ff88">${i+1}</td><td>${u.nombre||u.user_id}</td>
+            <td>${u.xp||0}</td><td>${u.nivel||1}</td></tr>`).join('')+'</tbody></table>';
+    }).catch(()=>{document.getElementById('tn-leaderboard').innerHTML='<div class="empty">Sin datos</div>';});
+}
+
+// ─── Subliminal ──────────────────────────────────────────────────────────────
+function genSubliminal() {
+    const msg=document.getElementById('sub-msg').value.trim();
+    const tipo=document.getElementById('sub-tipo').value;
+    if(!msg){alert('Escribe un mensaje');return;}
+    document.getElementById('sub-resultado').innerHTML='<div class="loading">Generando...</div>';
+    fetch('/api/subliminal/generar',{method:'POST',headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({mensaje:msg,tipo})})
+    .then(r=>r.json()).then(d=>{
+        document.getElementById('sub-resultado').innerHTML=
+            d.ok ? `<div style="color:#00ff88;padding:8px">✓ Pista generada: ${d.archivo||'ok'}</div>`
+                 : `<div style="color:#ff8888">Error: ${d.error||'desconocido'}</div>`;
+        cargarSubliminal();
+    }).catch(e=>{document.getElementById('sub-resultado').innerHTML='<div style="color:#ff8888">Error: '+e.message+'</div>';});
+}
+function cargarSubliminal() {
+    fetch('/api/subliminal/pistas').then(r=>r.json()).then(d=>{
+        const el=document.getElementById('sub-pistas');
+        if(!d||!d.length){el.innerHTML='<div class="empty">Sin pistas</div>';return;}
+        el.innerHTML=d.map(p=>`<div style="padding:6px 0;border-bottom:1px solid #111;font-size:.84em">
+            🎵 ${p.nombre||p} <span style="color:#444;font-size:.8em">${p.tipo||''}</span></div>`).join('');
+    }).catch(()=>{document.getElementById('sub-pistas').innerHTML='<div class="empty">Sin pistas</div>';});
+}
+
+// ─── Social ──────────────────────────────────────────────────────────────────
+function genPost() {
+    const canal=document.getElementById('soc-canal').value;
+    const tipo=document.getElementById('soc-tipo').value;
+    document.getElementById('soc-resultado').innerHTML='<div class="loading">Generando...</div>';
+    fetch('/api/generar_copy',{method:'POST',headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({canal,tipo,contexto:tipo})})
+    .then(r=>r.json()).then(d=>{
+        const txt=d.copy||d.contenido||d.resultado||JSON.stringify(d);
+        document.getElementById('soc-resultado').innerHTML=
+            `<div style="background:#050505;border:1px solid #1a1a1a;border-radius:8px;padding:12px;white-space:pre-wrap;font-size:.84em;color:#ccc">${txt}</div>
+             <button class="btn btn-sm" style="margin-top:8px" onclick="navigator.clipboard.writeText(\`${txt.replace(/`/g,"'")}\`)">📋 Copiar</button>`;
+    }).catch(e=>{document.getElementById('soc-resultado').innerHTML='Error: '+e.message;});
+}
+function hooksVirales(canal) {
+    fetch('/api/autoventas/hooks/'+canal).then(r=>r.json()).then(d=>{
+        const hooks=d.hooks||d||[];
+        document.getElementById('soc-hooks').innerHTML=
+            (Array.isArray(hooks)?hooks:[]).slice(0,5).map(h=>
+                `<div style="padding:6px 0;border-bottom:1px solid #111;font-size:.84em;color:#ccc">💬 ${h}</div>`
+            ).join('') || '<div class="empty">Sin hooks para '+canal+'</div>';
+    }).catch(()=>{document.getElementById('soc-hooks').innerHTML='<div class="empty">Error cargando hooks</div>';});
+}
+
+// ─── Historial ────────────────────────────────────────────────────────────────
+function cargarHistorial() {
+    fetch('/api/pedidos').then(r=>r.json()).then(data=>{
+        const el=document.getElementById('hist-lista');
+        if(!data.length){el.innerHTML='<div class="empty">Sin pedidos</div>';return;}
+        el.innerHTML='<table><thead><tr><th>#</th><th>Cliente</th><th>Producto</th><th>Estado</th><th>Entrega</th></tr></thead><tbody>'+
+            data.map(p=>`<tr>
+                <td style="color:#444">${p.id||''}</td>
+                <td><b>${p.cliente}</b></td>
+                <td style="color:#777;font-size:.82em">${(p.producto||'').substring(0,40)}</td>
+                <td><span class="badge ${p.status==='PENDIENTE'?'b-pen':p.status==='LISTO'?'b-ok':'b-done'}">${p.status}</span></td>
+                <td style="color:#555;font-size:.82em">${(p.deadline||'').substring(0,16)}</td>
+            </tr>`).join('')+'</tbody></table>';
+    });
+}
+
+// ─── Sistema ─────────────────────────────────────────────────────────────────
+function cargarSistema() {
+    fetch('/api/system').then(r=>r.json()).then(d=>{
+        document.getElementById('sis-info').innerHTML=`
+        <div class="kpi-row">
+            <div class="kpi"><div class="num" style="font-size:1em">${d.cpu_percent||'—'}%</div><div class="lbl">CPU</div></div>
+            <div class="kpi"><div class="num" style="font-size:1em">${d.mem_percent||'—'}%</div><div class="lbl">RAM</div></div>
+            <div class="kpi"><div class="num" style="font-size:.75em">${d.os||d.platform||'Windows'}</div><div class="lbl">OS</div></div>
+        </div>`;
+    }).catch(()=>{document.getElementById('sis-info').innerHTML='<div class="empty">Sin datos de sistema</div>';});
+    fetch('/api/autopilot/estado').then(r=>r.json()).then(d=>{
+        document.getElementById('sis-autopilot').innerHTML=
+            `Estado: <b style="color:${d.activo?'#00ff88':'#444'}">${d.activo?'Activo':'Detenido'}</b>
+             <br><small style="color:#444">${d.ultima_tarea||'Sin tareas recientes'}</small>`;
+    }).catch(()=>{document.getElementById('sis-autopilot').innerHTML='<div class="empty">Sin datos</div>';});
+}
+// ── NEXUS HEALTH ─────────────────────────────────────────────────────────────
+async function healthCheck() {
+    document.getElementById('health-badge').textContent = 'verificando...';
+    document.getElementById('health-badge').style.background = '#1a1a1a';
+    document.getElementById('health-badge').style.color = '#555';
+    try {
+        const r = await fetch('/api/health/check').then(x=>x.json());
+        const badge = document.getElementById('health-badge');
+        const alertasEl = document.getElementById('health-alertas');
+        const appsEl = document.getElementById('health-apps');
+        const discoEl = document.getElementById('health-disco');
+
+        // Badge estado
+        if (r.estado === 'OK') {
+            badge.textContent = '✓ OK';
+            badge.style.background = '#00ff8820';
+            badge.style.color = '#00ff88';
+        } else {
+            badge.textContent = '⚠ ' + r.estado;
+            badge.style.background = '#ffaa0020';
+            badge.style.color = '#ffaa00';
+        }
+
+        // Alertas
+        alertasEl.innerHTML = (r.alertas||[]).map(a =>
+            `<div style="font-size:.75em;color:#ff8844;padding:3px 0">⚠ ${a}</div>`
+        ).join('');
+
+        // Apps
+        appsEl.innerHTML = Object.entries(r.apps||{}).map(([nombre,ok]) =>
+            `<div style="background:#0d0d0d;border:1px solid ${ok?'#00ff8830':'#ff444430'};border-radius:6px;padding:5px 8px;font-size:.72em;color:${ok?'#00ff88':'#ff4444'};text-align:center">
+                ${ok?'✓':'✗'} ${nombre.split(' ')[0]}
+            </div>`
+        ).join('');
+
+        // Disco
+        if (r.disco) {
+            const pct = Math.round(r.disco.usado_gb / r.disco.total_gb * 100);
+            discoEl.innerHTML = `Disco: ${r.disco.libre_gb}GB libres / ${r.disco.total_gb}GB &nbsp;|&nbsp; Carpeta out: ${r.disco.out_archivos} archivos (${r.disco.out_mb}MB)`;
+        }
+    } catch(e) {
+        document.getElementById('health-badge').textContent = '✗ Sin servidor';
+        document.getElementById('health-badge').style.color = '#ff4444';
+    }
+}
+
+async function healthReporte() {
+    const out = document.getElementById('health-output');
+    out.style.display = 'block';
+    out.style.color = '#555';
+    out.textContent = 'Generando reporte completo (~5s)...';
+    try {
+        const r = await fetch('/api/health/reporte').then(x=>x.json());
+        let txt = `Estado: ${r.estado} (${r.duracion_s}s)\n`;
+        if (r.alertas?.length) txt += `\nALERTAS:\n${r.alertas.map(a=>'  • '+a).join('\n')}\n`;
+        txt += `\nDependencias:\n`;
+        for (const [grupo, items] of Object.entries(r.dependencias||{})) {
+            const faltantes = items.filter(i=>!i.ok).map(i=>i.nombre);
+            if (faltantes.length) txt += `  [FALTA] ${grupo}: ${faltantes.join(', ')}\n`;
+            else txt += `  [OK] ${grupo}\n`;
+        }
+        txt += `\nArchivos críticos:\n`;
+        for (const [f, ok] of Object.entries(r.archivos||{})) {
+            if (!ok) txt += `  [FALTA] ${f}\n`;
+        }
+        out.textContent = txt;
+        out.style.color = '#aaa';
+    } catch(e) { out.textContent = 'Error: '+e.message; }
+}
+
+async function healthDiagnostico() {
+    const out = document.getElementById('health-output');
+    out.style.display = 'block';
+    out.style.color = '#ffaa00';
+    out.textContent = 'Analizando con IA... (puede tardar ~10s)';
+    try {
+        const r = await fetch('/api/health/diagnostico').then(x=>x.json());
+        out.textContent = r.diagnostico_llm || 'Sin diagnóstico disponible';
+        out.style.color = '#ffaa00';
+    } catch(e) { out.textContent = 'Error: '+e.message; }
+}
+
+async function healthReparar() {
+    const out = document.getElementById('health-output');
+    out.style.display = 'block';
+    out.style.color = '#00ccff';
+    out.textContent = 'Buscando e instalando dependencias faltantes...';
+    try {
+        const r = await fetch('/api/health/reparar', {method:'POST'}).then(x=>x.json());
+        if (!r.instalados?.length) {
+            out.textContent = 'Todo en orden, no hay nada que reparar.';
+        } else {
+            out.textContent = r.instalados.map(i =>
+                `${i.ok?'✓':'✗'} ${i.dep} (${i.pkg})${i.msg?' → '+i.msg:''}`
+            ).join('\n');
+        }
+    } catch(e) { out.textContent = 'Error: '+e.message; }
+}
+
+// Auto-check al abrir panel Sistema
+document.addEventListener('DOMContentLoaded', () => {
+    setTimeout(healthCheck, 2000); // check inicial 2s después de cargar
+});
+
+async function cmdSistema(modulo) {
+    const el=document.getElementById('sis-cmd');
+    el.style.color='#555'; el.textContent='Consultando '+modulo+'...';
+    const cmds={
+        pedidos:'cuántos pedidos tengo pendientes',
+        stock:'cómo está el stock de materiales',
+        clientes:'cuántos clientes activos tenemos',
+        finanzas:'dame el resumen financiero del mes',
+        marketing:'estado del módulo de marketing',
+        autopilot:'estado del autopilot',
+        backup:'ejecuta backup ahora',
+        voz:'test de voz del sistema'
+    };
+    if(modulo==='voz'){nexusHablar('Sistema de voz operativo. Jorge Neural activo.');el.textContent='Voz: Jorge Neural ✓';return;}
+    if(modulo==='backup'){
+        fetch('/api/backup',{method:'POST',headers:{'Content-Type':'application/json'},body:'{}'})
+        .then(r=>r.json()).then(d=>{el.style.color='#00ff88';el.textContent='Backup: '+(d.ok?'Completado ✓':JSON.stringify(d));});
+        return;
+    }
+    try{
+        const r=await fetch('/api/asistente',{method:'POST',headers:{'Content-Type':'application/json'},
+            body:JSON.stringify({texto:cmds[modulo]||modulo,session_id:'sistema'})}).then(x=>x.json());
+        const resp=r.respuesta||JSON.stringify(r);
+        el.style.color='#b0ffda'; el.textContent=resp;
+        nexusHablar(resp.substring(0,180));
+    }catch(e){el.style.color='#ff8888';el.textContent='Error: '+e.message;}
+}
+function autopilotToggle(activo) {
+    fetch('/api/agent/autopilot',{method:'POST',headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({tipo:'general',activo})})
+    .then(r=>r.json()).then(()=>cargarSistema());
+}
+
+// ─── Licencias ───────────────────────────────────────────────────────────────
+function cargarLicencias() {
+    fetch('/api/licencia/info').then(r=>r.json()).then(d=>{
+        const el=document.getElementById('lic-info');
+        if(d.error){el.innerHTML='<div class="empty">'+d.error+'</div>';return;}
+        el.innerHTML=`<div class="kpi-row">
+            <div class="kpi"><div class="num" style="font-size:1em">${d.estado||'Activa'}</div><div class="lbl">Estado</div></div>
+            <div class="kpi"><div class="num" style="font-size:1em">${d.plan||'Pro'}</div><div class="lbl">Plan</div></div>
+            <div class="kpi"><div class="num" style="font-size:0.8em">${d.vence||'—'}</div><div class="lbl">Vence</div></div>
+        </div>`;
+    }).catch(()=>{document.getElementById('lic-info').innerHTML='<div class="empty">Sin datos de licencia</div>';});
+    fetch('/api/licencia/huella').then(r=>r.json()).then(d=>{
+        document.getElementById('lic-huella').textContent = d.huella||d.fingerprint||JSON.stringify(d);
+    });
+}
 </script>
 
 <!-- ── NEXUS AMBIENT AUDIO ──────────────────────────────────────────────── -->
