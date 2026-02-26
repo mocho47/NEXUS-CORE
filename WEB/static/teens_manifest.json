@@ -1,0 +1,26 @@
+{
+  "name": "NEXUS Teens",
+  "short_name": "Teens",
+  "description": "Tu espacio de crecimiento — escuela, negocio, emociones y más",
+  "start_url": "/teens",
+  "display": "standalone",
+  "background_color": "#0a0a0a",
+  "theme_color": "#ff6b9d",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "/static/uploads/teens_icon_192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/static/uploads/teens_icon_512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "categories": ["education", "productivity", "lifestyle"],
+  "lang": "es-MX"
+}

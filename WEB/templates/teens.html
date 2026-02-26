@@ -7,6 +7,8 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="mobile-web-app-capable" content="yes">
+    <link rel="manifest" href="/static/teens_manifest.json">
+    <meta name="theme-color" content="#ff6b9d">
     <title>NEXUS Teens</title>
     <style>
         :root {
@@ -407,7 +409,8 @@
                    max-width:240px; width:100%; }
         .pin-key { background:var(--bg3); border:1px solid var(--border); border-radius:12px;
                    padding:14px; font-size:1.1em; font-weight:700; cursor:pointer;
-                   text-align:center; transition:all 0.15s; user-select:none; }
+                   text-align:center; transition:all 0.15s; user-select:none;
+                   touch-action:manipulation; -webkit-tap-highlight-color:transparent; }
         .pin-key:hover { border-color:var(--purple); background:#0d0d1a; }
         .pin-key.del { color:var(--dim); }
         .pin-error { color:#ff4444; font-size:0.78em; margin-top:10px; height:16px; text-align:center; }
