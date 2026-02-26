@@ -9,12 +9,18 @@ from pathlib import Path
 _OUT = Path(__file__).parent / "out"
 _OUT.mkdir(exist_ok=True)
 
-# Ruta al ejecutable boxes
-def _boxes_cmd():
-    """Localiza el comando boxes (instalado via pip)."""
-    # Primero intentar como modulo Python
-    python = sys.executable
-    return python, "-m", "boxes"
+# Ruta al ejecutable boxes.exe (instalado via pip install festi/boxes)
+def _boxes_exe() -> str:
+    """Localiza el ejecutable boxes.exe instalado por pip."""
+    scripts = os.path.join(os.path.dirname(sys.executable), "Scripts", "boxes.exe")
+    if os.path.isfile(scripts):
+        return scripts
+    # Fallback: PATH
+    import shutil
+    found = shutil.which("boxes")
+    if found:
+        return found
+    return ""
 
 # ── Tipos de caja disponibles ─────────────────────────────────────────────────
 TIPOS_CAJA = [
@@ -23,56 +29,57 @@ TIPOS_CAJA = [
         "nombre": "Caja cerrada",
         "icono": "📦",
         "desc": "Caja rectangular con tapa fija",
-        "params": ["x", "y", "h", "thickness"],
-    },
-    {
-        "id": "RoundedBox",
-        "nombre": "Caja esquinas redondeadas",
-        "icono": "🎁",
-        "desc": "Caja con bordes curvos, elegante",
-        "params": ["x", "y", "h", "thickness", "radius"],
+        "extra_args": [],
     },
     {
         "id": "ABox",
-        "nombre": "Caja con bisagra",
+        "nombre": "Caja tipo A",
         "icono": "💼",
-        "desc": "Tapa articulada con bisagra MDF",
-        "params": ["x", "y", "h", "thickness"],
+        "desc": "Caja simple abierta, tipo tray",
+        "extra_args": [],
     },
     {
-        "id": "TrayLayout",
-        "nombre": "Bandeja / Charola",
-        "icono": "🗃️",
-        "desc": "Bandeja abierta sin tapa",
-        "params": ["x", "y", "h", "thickness"],
+        "id": "HingeBox",
+        "nombre": "Caja con bisagra",
+        "icono": "🗝️",
+        "desc": "Tapa con bisagra de gabinete",
+        "extra_args": [],
     },
     {
-        "id": "SlottedBox",
-        "nombre": "Caja con ranuras",
-        "icono": "🪵",
-        "desc": "Caja ensamble por ranuras sin pegamento",
-        "params": ["x", "y", "h", "thickness"],
-    },
-    {
-        "id": "NutBox",
-        "nombre": "Caja con tuercas",
-        "icono": "🔩",
-        "desc": "Ensamble con tornillos y tuercas",
-        "params": ["x", "y", "h", "thickness"],
-    },
-    {
-        "id": "WallMounted",
-        "nombre": "Caja para pared",
-        "icono": "🖼️",
-        "desc": "Organizador para montaje en pared",
-        "params": ["x", "y", "h", "thickness"],
+        "id": "IntegratedHingeBox",
+        "nombre": "Bisagra integrada",
+        "icono": "📿",
+        "desc": "Tapa articulada sin herraje metálico",
+        "extra_args": [],
     },
     {
         "id": "DisplayCase",
         "nombre": "Vitrina / Display",
         "icono": "🏆",
-        "desc": "Caja exhibidora con frente transparente",
-        "params": ["x", "y", "h", "thickness"],
+        "desc": "Exhibidor acrilico transparente",
+        "extra_args": [],
+    },
+    {
+        "id": "DividerTray",
+        "nombre": "Bandeja con divisiones",
+        "icono": "🗃️",
+        "desc": "Charola con filas y columnas para organizar",
+        "extra_args": ["--sx_override", "--sy_override"],  # usa --sx --sy en vez de --x --y
+        "_use_sx_sy": True,
+    },
+    {
+        "id": "ElectronicsBox",
+        "nombre": "Caja electronica",
+        "icono": "🔩",
+        "desc": "Caja con tapa de tornillos y barrenos",
+        "extra_args": [],
+    },
+    {
+        "id": "Crate",
+        "nombre": "Caja tipo caja de madera",
+        "icono": "🪵",
+        "desc": "Crate con asas, apilable",
+        "extra_args": [],
     },
 ]
 
@@ -114,12 +121,23 @@ def generar_caja(
     tmp_dir = Path(tempfile.mkdtemp())
     svg_tmp = tmp_dir / f"caja_{uid}.svg"
 
-    # ── Construir comando boxes.py ─────────────────────────────────────────
-    python = sys.executable
+    # ── Construir comando boxes.exe ────────────────────────────────────────
+    exe = _boxes_exe()
+    if not exe:
+        return {"ok": False, "error": "boxes.exe no encontrado. Ejecuta: pip install git+https://github.com/florianfesti/boxes.git"}
+
+    # extra_args del tipo (si aplica)
+    tipo_info = next((t2 for t2 in TIPOS_CAJA if t2["id"] == tipo), {})
+    use_sx_sy = tipo_info.get("_use_sx_sy", False)
+
+    if use_sx_sy:
+        xy_args = [f"--sx={ancho}", f"--sy={alto}"]
+    else:
+        xy_args = [f"--x={ancho}", f"--y={alto}"]
+
     cmd = [
-        python, "-m", "boxes", tipo,
-        f"--x={ancho}",
-        f"--y={alto}",
+        exe, tipo,
+    ] + xy_args + [
         f"--h={prof}",
         f"--thickness={t}",
         f"--burn={burn:.3f}",
@@ -132,17 +150,12 @@ def generar_caja(
             cmd, capture_output=True, text=True, timeout=30
         )
         if result.returncode != 0:
-            # boxes.py a veces imprime el SVG a stdout
-            svg_content = result.stdout.strip()
-            if svg_content.startswith("<?xml") or svg_content.startswith("<svg"):
-                svg_tmp.write_text(svg_content, encoding="utf-8")
-            else:
-                return {
-                    "ok": False,
-                    "error": f"boxes.py error: {result.stderr[:400] or result.stdout[:400]}"
-                }
+            return {
+                "ok": False,
+                "error": f"boxes error: {result.stderr[:400] or result.stdout[:400]}"
+            }
     except FileNotFoundError:
-        return {"ok": False, "error": "boxes.py no está instalado. Ejecuta: pip install boxes"}
+        return {"ok": False, "error": "boxes.exe no encontrado"}
     except subprocess.TimeoutExpired:
         return {"ok": False, "error": "Timeout al generar caja"}
     except Exception as e:
