@@ -145,6 +145,18 @@ def generar_caja(
         f"--output={str(svg_tmp)}",
     ]
 
+    # También generar lbrn2 para LightBurn (si está disponible)
+    lbrn_tmp = tmp_dir / f"caja_{uid}.lbrn2"
+    cmd_lbrn = [
+        exe, tipo,
+    ] + xy_args + [
+        f"--h={prof}",
+        f"--thickness={t}",
+        f"--burn={burn:.3f}",
+        "--format=lbrn2",
+        f"--output={str(lbrn_tmp)}",
+    ]
+
     try:
         result = subprocess.run(
             cmd, capture_output=True, text=True, timeout=30
@@ -192,10 +204,25 @@ def generar_caja(
     except Exception:
         pass
 
+    # LightBurn lbrn2
+    try:
+        subprocess.run(cmd_lbrn, capture_output=True, timeout=20)
+        if lbrn_tmp.exists():
+            lbrn_out = _OUT / f"{nombre_base}.lbrn2"
+            shutil.copy(str(lbrn_tmp), str(lbrn_out))
+            salida.append({
+                "filename": lbrn_out.name,
+                "url": f"/out/{lbrn_out.name}",
+                "tipo": "LBRN2",
+                "desc": "Para LightBurn (laser directo)",
+            })
+    except Exception:
+        pass
+
     # PDF imprimible
     try:
         pdf_path = _svg_a_pdf(svg_out, _OUT / f"{nombre_base}.pdf")
-        if pdf_path and pdf_path.exists():
+        if pdf_path and pdf_path.exists() and pdf_path.stat().st_size > 100:
             salida.append({
                 "filename": pdf_path.name,
                 "url": f"/out/{pdf_path.name}",
@@ -217,56 +244,32 @@ def generar_caja(
 
 
 def _svg_a_dxf(svg_path: Path, dxf_out: Path) -> Path | None:
-    """Convierte SVG a DXF usando ezdxf."""
+    """Convierte SVG a DXF usando svgpathtools (soporta <path> de boxes.py)."""
     try:
+        from svgpathtools import svg2paths
         import ezdxf
-        from xml.etree import ElementTree as ET
-        import re, math
 
+        paths, attrs = svg2paths(str(svg_path))
         doc = ezdxf.new(dxfversion="R2010")
         msp = doc.modelspace()
         doc.layers.add("CORTE", color=1)
 
-        tree = ET.parse(str(svg_path))
-        root = tree.getroot()
-        ns = {"svg": "http://www.w3.org/2000/svg"}
-
-        def _to_mm(val: str, default=0.0) -> float:
-            """Parsea valor SVG a mm (asume unidades px a 96dpi → /3.7795)."""
-            if not val:
-                return default
-            val = val.strip()
-            if val.endswith("mm"):
-                return float(val[:-2])
-            if val.endswith("px"):
-                return float(val[:-2]) / 3.7795
-            try:
-                return float(val) / 3.7795
-            except Exception:
-                return default
-
-        # Extraer todos los <line> y <polyline> y <rect>
-        for el in root.iter():
-            tag = el.tag.split("}")[-1] if "}" in el.tag else el.tag
-            if tag == "line":
-                x1 = _to_mm(el.get("x1","0"))
-                y1 = _to_mm(el.get("y1","0"))
-                x2 = _to_mm(el.get("x2","0"))
-                y2 = _to_mm(el.get("y2","0"))
-                msp.add_line((x1,-y1),(x2,-y2), dxfattribs={"layer":"CORTE"})
-            elif tag == "rect":
-                x  = _to_mm(el.get("x","0"))
-                y  = _to_mm(el.get("y","0"))
-                w  = _to_mm(el.get("width","0"))
-                h  = _to_mm(el.get("height","0"))
-                pts = [(x,-y),(x+w,-y),(x+w,-y-h),(x,-y-h),(x,-y)]
-                msp.add_lwpolyline(pts, close=True, dxfattribs={"layer":"CORTE"})
-            elif tag == "polyline":
-                pts_str = el.get("points","")
-                nums = [float(v)/3.7795 for v in re.split(r"[\s,]+", pts_str.strip()) if v]
-                if len(nums) >= 4:
-                    pts = [(nums[i],-nums[i+1]) for i in range(0, len(nums)-1, 2)]
-                    msp.add_lwpolyline(pts, dxfattribs={"layer":"CORTE"})
+        for path in paths:
+            pts = []
+            for segment in path:
+                for t in [i / 20.0 for i in range(21)]:
+                    try:
+                        pt = segment.point(t)
+                        pts.append((pt.real, -pt.imag))
+                    except Exception:
+                        pass
+            if len(pts) >= 2:
+                # Eliminar duplicados consecutivos
+                dedup = [pts[0]]
+                for p in pts[1:]:
+                    if abs(p[0]-dedup[-1][0]) > 0.001 or abs(p[1]-dedup[-1][1]) > 0.001:
+                        dedup.append(p)
+                msp.add_lwpolyline(dedup, dxfattribs={"layer": "CORTE"})
 
         doc.saveas(str(dxf_out))
         return dxf_out
