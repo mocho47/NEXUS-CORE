@@ -158,6 +158,26 @@ def _process_message(token: str, chat_id_allowed: str, msg: dict):
             "/stock — Items con stock bajo\n"
             "/listo &lt;cliente&gt; — Marcar pedido como listo"
         )
+    elif text_lower == "/health" or text_lower == "/estado":
+        try:
+            from nexus_health import reporte_completo
+            r = reporte_completo()
+            estado = r.get("estado", "?")
+            alertas = r.get("alertas", [])
+            disco = r.get("disco", {})
+            apps = r.get("apps", {})
+            emoji = "🟢" if estado == "OK" else "🟡" if estado == "ALERTA" else "🔴"
+            txt = f"{emoji} <b>NEXUS Health: {estado}</b>\n\n"
+            if alertas:
+                txt += "⚠️ <b>Alertas:</b>\n" + "\n".join(f"  • {a}" for a in alertas) + "\n\n"
+            txt += f"💾 Disco: {disco.get('libre_gb','?')}GB libres\n"
+            txt += f"📂 Carpeta out: {disco.get('out_archivos','?')} archivos\n\n"
+            for nombre, info in apps.items():
+                ok = info.get("ok", False) if isinstance(info, dict) else info
+                txt += f"{'✅' if ok else '❌'} {nombre}\n"
+            _send_message(token, chat_id, txt)
+        except Exception as e:
+            _send_message(token, chat_id, f"❌ Error en health check: {e}")
     elif text_lower == "/resumen":
         reply = _build_resumen()
     elif text_lower == "/pedidos":

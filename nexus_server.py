@@ -1775,4 +1775,14 @@ async def api_health_reparar():
 if __name__ == "__main__":
     from nexus_autopilot import autopilot as _ap
     _ap.iniciar()
+    # Arrancar bot de Telegram
+    try:
+        from dotenv import load_dotenv
+        load_dotenv()
+        from nexus_telegram import NexusBot
+        _bot = NexusBot()
+        _bot.start()
+        _bot.send("🟢 <b>NEXUS iniciado</b>\nServidor activo en puerto 8000.")
+    except Exception as _e:
+        print(f"[Telegram] No se pudo iniciar bot: {_e}")
     uvicorn.run(app, host="0.0.0.0", port=8000)
