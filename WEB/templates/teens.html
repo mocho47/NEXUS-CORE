@@ -245,6 +245,185 @@
                           height: 16px; background: #fff; border-radius: 50%; transition: left 0.2s; }
         .toggle.on::after { left: 21px; }
 
+        /* ── NEGOCIO MODULE ── */
+        .ruta-paso {
+            display: flex; flex-direction: column; align-items: center; gap: 4px;
+            padding: 10px 14px; border-radius: 12px; cursor: pointer;
+            border: 1px solid var(--border); font-size: 1.3em;
+            transition: all 0.2s; flex-shrink: 0; min-width: 64px;
+        }
+        .ruta-paso span { font-size: 0.5em; color: var(--dim); font-weight: 700; letter-spacing: 1px; text-transform: uppercase; }
+        .ruta-paso:hover, .ruta-paso.activo { border-color: var(--green); background: #0d1a0d; }
+        .ruta-paso.completo { border-color: var(--cyan); background: #0a1a1a; }
+        .ruta-paso.completo::after { content: '✓'; position: absolute; font-size: 0.4em; color: var(--cyan); }
+        .ruta-conector { align-self: center; color: #333; font-size: 1em; padding: 0 4px; flex-shrink: 0; }
+
+        .modulo-card { background: var(--bg2); border: 1px solid var(--border);
+                       border-radius: 14px; padding: 16px; margin-bottom: 12px;
+                       animation: fadeSlide 0.25s ease; }
+        @keyframes fadeSlide { from { opacity:0; transform:translateY(8px) } to { opacity:1; transform:translateY(0) } }
+        .modulo-titulo { font-size: 1em; font-weight: 800; margin-bottom: 6px; }
+        .modulo-intro { font-size: 0.84em; color: var(--dim); line-height: 1.6; margin-bottom: 14px; }
+        .modulo-concepto { background: var(--bg3); border-left: 3px solid var(--green);
+                           border-radius: 0 10px 10px 0; padding: 10px 12px;
+                           font-size: 0.83em; line-height: 1.6; margin-bottom: 12px; }
+        .modulo-ejercicio { border: 1px dashed #2a3a2a; border-radius: 10px;
+                            padding: 12px; margin-bottom: 12px; }
+        .modulo-ejercicio-titulo { font-size: 0.74em; color: var(--green); font-weight: 800;
+                                   text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px; }
+        .modulo-ejercicio textarea, .modulo-ejercicio input {
+            width: 100%; margin-top: 6px; border-radius: 8px;
+            background: var(--bg); border-color: #2a3a2a; resize: none;
+        }
+        .modulo-btn-listo { width: 100%; padding: 12px; border-radius: 10px;
+                            background: var(--green); color: #000; font-weight: 900;
+                            font-size: 0.9em; border: none; cursor: pointer;
+                            transition: background 0.2s; }
+        .modulo-btn-listo:hover { background: #00e07a; }
+
+        .tip-ahorro { border: 1px solid var(--border); border-radius: 10px;
+                      margin-bottom: 8px; overflow: hidden; cursor: pointer; }
+        .tip-header { padding: 12px 14px; font-size: 0.86em; font-weight: 700;
+                      display: flex; align-items: center; gap: 8px; }
+        .tip-body { display: none; padding: 0 14px 12px; font-size: 0.82em;
+                    color: var(--dim); line-height: 1.6; border-top: 1px solid var(--border); }
+        .tip-ahorro.abierto .tip-body { display: block; }
+        .tip-ahorro.abierto { border-color: var(--green); }
+
+        /* ── MODO ESCUCHA (emocional) ── */
+        .tutor-chat.modo-escucha { background: #0a0f1a; border-color: #1a2a4a; }
+        .modo-escucha-badge {
+            display: none; align-items: center; gap: 6px;
+            font-size: 0.74em; color: #4ecdc4; padding: 6px 10px;
+            background: #0a1a1a; border-radius: 8px; margin-bottom: 8px;
+            border: 1px solid #0d2a2a;
+        }
+        .modo-escucha-badge.visible { display: flex; }
+        .tutor-input-row.modo-escucha button { background: #4ecdc4; color: #000; border-color: #4ecdc4; }
+
+        /* ── INSPIRACIÓN ── */
+        .inspiracion-card {
+            background: linear-gradient(135deg, #0d0d1a, #1a0d0d);
+            border: 1px solid #2a1a3a; border-radius: 14px;
+            padding: 16px; margin-bottom: 12px; cursor: pointer;
+            transition: border-color 0.2s;
+        }
+        .inspiracion-card:hover { border-color: var(--purple); }
+        .inspiracion-emoji { font-size: 2em; margin-bottom: 8px; }
+        .inspiracion-texto { font-size: 0.86em; line-height: 1.6; color: #ccc; margin-bottom: 10px; }
+        .inspiracion-reflexion {
+            font-size: 0.78em; color: var(--purple); font-style: italic;
+            border-left: 2px solid var(--purple); padding-left: 10px;
+        }
+        .inspiracion-nav { display: flex; justify-content: center; gap: 6px; margin-top: 10px; }
+        .inspiracion-dot { width: 6px; height: 6px; border-radius: 50%;
+                           background: #333; cursor: pointer; transition: background 0.2s; }
+        .inspiracion-dot.activo { background: var(--purple); }
+
+        /* ── ESPACIO PARA MÍ ── */
+        .espacio-card {
+            background: linear-gradient(135deg, #0a0a14, #140a14);
+            border: 1px solid #2a1a3a; border-radius: 14px; padding: 16px; margin-bottom: 12px;
+        }
+        .espacio-textarea {
+            width: 100%; min-height: 110px; background: #0a0a0a;
+            border: 1px solid #1a1a2a; color: #ddd; border-radius: 10px;
+            padding: 12px; font-family: inherit; font-size: 0.86em;
+            line-height: 1.6; resize: none; transition: border-color 0.2s;
+        }
+        .espacio-textarea:focus { outline: none; border-color: var(--purple); }
+        .espacio-textarea::placeholder { color: #333; }
+        .espacio-respuesta {
+            display: none; margin-top: 12px; padding: 12px;
+            background: #0d0d1a; border-radius: 10px; border-left: 3px solid var(--purple);
+            font-size: 0.84em; line-height: 1.6; color: #bbb;
+        }
+
+        /* ── MI CABEZA (panel-yo) ── */
+        .yo-section-title { font-size:0.72em; text-transform:uppercase; letter-spacing:1.5px;
+                            font-weight:900; margin-bottom:10px; display:flex; align-items:center; gap:8px; }
+        /* emociones */
+        .emo-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:8px; }
+        .emo-btn  { background:var(--bg3); border:1px solid var(--border); border-radius:12px;
+                    padding:10px 4px; text-align:center; cursor:pointer; transition:all 0.2s; }
+        .emo-btn:hover, .emo-btn.sel { border-color:var(--cyan); background:#0a1a1a; }
+        .emo-btn .e-ico  { font-size:1.6em; }
+        .emo-btn .e-nom  { font-size:0.64em; color:var(--dim); margin-top:3px; }
+        .emo-panel { display:none; margin-top:12px; padding:12px;
+                     background:var(--bg3); border-radius:10px; border-left:3px solid var(--cyan); }
+        .emo-panel.visible { display:block; animation: fadeSlide 0.2s ease; }
+        .emo-senal  { font-size:0.84em; color:#ccc; line-height:1.6; margin-bottom:8px; }
+        .emo-pregunta { font-size:0.8em; color:var(--cyan); font-style:italic; }
+        /* lo que nadie dice */
+        .nadie-item { border:1px solid var(--border); border-radius:10px;
+                      margin-bottom:8px; overflow:hidden; cursor:pointer; transition:border-color 0.2s; }
+        .nadie-item:hover { border-color:var(--purple); }
+        .nadie-header { padding:12px 14px; font-size:0.86em; font-weight:700; }
+        .nadie-body { display:none; padding:0 14px 12px; font-size:0.82em; color:var(--dim);
+                      line-height:1.7; border-top:1px solid var(--border); }
+        .nadie-item.abierto .nadie-body { display:block; }
+        .nadie-item.abierto { border-color:var(--purple); }
+        /* identidad */
+        .yo-prompt { margin-bottom:12px; }
+        .yo-prompt label { display:block; font-size:0.78em; color:var(--purple); font-weight:700;
+                           margin-bottom:5px; }
+        .yo-prompt textarea { width:100%; resize:none; background:var(--bg);
+                              border:1px solid #2a1a3a; border-radius:8px; padding:10px;
+                              color:var(--txt); font-family:inherit; font-size:0.84em;
+                              line-height:1.5; transition:border-color 0.2s; }
+        .yo-prompt textarea:focus { outline:none; border-color:var(--purple); }
+        /* tribu */
+        .tribu-persona { background:var(--bg3); border:1px solid var(--border);
+                         border-radius:10px; padding:12px; margin-bottom:8px; }
+        .tribu-persona input { width:100%; background:var(--bg); border:1px solid #2a2a3a;
+                               border-radius:6px; padding:7px 10px; color:var(--txt);
+                               font-family:inherit; font-size:0.84em; margin-bottom:8px; }
+        .tribu-check { display:flex; gap:6px; flex-wrap:wrap; }
+        .tribu-check label { font-size:0.76em; color:var(--dim); display:flex;
+                             align-items:center; gap:4px; cursor:pointer; }
+        /* brecha */
+        .brecha-wrap { display:flex; gap:10px; margin-bottom:12px; }
+        .brecha-lado { flex:1; background:var(--bg3); border-radius:10px; padding:12px; }
+        .brecha-lado label { font-size:0.72em; color:var(--dim); display:block; margin-bottom:6px; font-weight:700; text-transform:uppercase; letter-spacing:1px; }
+        .brecha-lado textarea { width:100%; resize:none; background:var(--bg);
+                                border:1px solid #2a2a3a; border-radius:8px; padding:8px;
+                                color:var(--txt); font-family:inherit; font-size:0.82em; }
+        .brecha-slider { width:100%; accent-color:var(--purple); }
+        /* pensando hoy */
+        .pensando-entry { padding:10px 0; border-bottom:1px solid #0f0f0f; font-size:0.83em; }
+        .pensando-entry:last-child { border-bottom:none; }
+        .pensando-fecha { font-size:0.7em; color:var(--dim); margin-bottom:2px; }
+        /* DIARIO / BÓVEDA */
+        .boveda-lock { display:flex; flex-direction:column; align-items:center;
+                       padding:24px 16px; }
+        .boveda-icon { font-size:2.5em; margin-bottom:8px; }
+        .boveda-titulo { font-size:1em; font-weight:900; color:var(--txt); margin-bottom:2px; }
+        .boveda-sub { font-size:0.78em; color:var(--dim); margin-bottom:20px; }
+        .pin-display { display:flex; gap:10px; margin-bottom:20px; }
+        .pin-dot { width:12px; height:12px; border-radius:50%;
+                   border:2px solid #444; transition:background 0.15s; }
+        .pin-dot.lleno { background:var(--purple); border-color:var(--purple); }
+        .pin-pad { display:grid; grid-template-columns:repeat(3,1fr); gap:8px;
+                   max-width:240px; width:100%; }
+        .pin-key { background:var(--bg3); border:1px solid var(--border); border-radius:12px;
+                   padding:14px; font-size:1.1em; font-weight:700; cursor:pointer;
+                   text-align:center; transition:all 0.15s; user-select:none; }
+        .pin-key:hover { border-color:var(--purple); background:#0d0d1a; }
+        .pin-key.del { color:var(--dim); }
+        .pin-error { color:#ff4444; font-size:0.78em; margin-top:10px; height:16px; text-align:center; }
+        .diario-entry { background:var(--bg3); border:1px solid var(--border);
+                        border-radius:10px; padding:12px; margin-bottom:8px; cursor:pointer;
+                        transition:border-color 0.2s; }
+        .diario-entry:hover { border-color:var(--purple); }
+        .diario-entry .d-fecha { font-size:0.7em; color:var(--dim); margin-bottom:3px; }
+        .diario-entry .d-preview { font-size:0.82em; color:#aaa; white-space:nowrap;
+                                   overflow:hidden; text-overflow:ellipsis; }
+        .diario-new-area { width:100%; min-height:120px; resize:none; background:var(--bg);
+                           border:1px solid #2a1a3a; border-radius:10px; padding:12px;
+                           color:var(--txt); font-family:inherit; font-size:0.86em;
+                           line-height:1.6; }
+        .diario-new-area:focus { outline:none; border-color:var(--purple); }
+
         /* Scrollbar teen style */
         .content::-webkit-scrollbar { width: 3px; }
         .content::-webkit-scrollbar-track { background: transparent; }
@@ -276,6 +455,8 @@
         <div class="tab" onclick="go('aptitudes')">⚡ Aptitudes</div>
         <div class="tab" onclick="go('viral')">📱 Viral</div>
         <div class="tab" onclick="go('tutor')">🤖 Tutor</div>
+        <div class="tab" onclick="go('negocio')">🚀 Mi Negocio</div>
+        <div class="tab" onclick="go('yo')">🧠 Mi Cabeza</div>
         <div class="tab" onclick="go('badges')">🏆 Logros</div>
         <div class="tab" onclick="go('ranking')">👑 Ranking</div>
         <div class="tab" onclick="go('familia')">🤝 Familia</div>
@@ -297,6 +478,18 @@
                 <div class="stat"><div class="num" style="color:var(--orange)" id="s-racha">0</div><div class="lbl">Racha</div></div>
                 <div class="stat"><div class="num" style="color:var(--pink)" id="s-badges">0</div><div class="lbl">Badges</div></div>
             </div>
+        </div>
+
+        <!-- Inspiración del día -->
+        <div class="inspiracion-card" id="insp-card" onclick="siguienteInspiracion()">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+                <span style="font-size:0.7em;color:var(--dim);text-transform:uppercase;letter-spacing:1px">💫 Historia real</span>
+                <span style="font-size:0.7em;color:#333">toca para la siguiente →</span>
+            </div>
+            <div class="inspiracion-emoji" id="insp-emoji">✨</div>
+            <div class="inspiracion-texto" id="insp-texto">Cargando...</div>
+            <div class="inspiracion-reflexion" id="insp-reflexion"></div>
+            <div class="inspiracion-nav" id="insp-nav"></div>
         </div>
 
         <!-- Misión del día -->
@@ -396,24 +589,242 @@
     <div class="panel" id="panel-tutor">
         <div class="card">
             <div class="card-title" style="color:var(--green)">🤖 Tutor NEXUS — Pregunta lo que quieras</div>
-            <div class="tutor-chat" id="tutor-chat">
-                <div class="msg nexus">¡Hey! Soy tu tutor NEXUS 🤖<br>Puedo explicarte cualquier tema, enseñarte a usar herramientas digitales o ayudarte con tu contenido.<br><br>¿Qué quieres aprender hoy? 🚀</div>
+            <div class="modo-escucha-badge" id="modo-escucha-badge">
+                <span>💙</span> <span>Modo escucha — aquí estoy, sin juicios</span>
+                <button onclick="salirModoEscucha()" style="margin-left:auto;background:none;border:none;color:var(--dim);cursor:pointer;font-size:0.9em">✕</button>
             </div>
-            <div class="tutor-input-row">
-                <input type="text" id="tutor-input" placeholder="Pregunta algo..." onkeydown="if(e.key==='Enter')enviarTutor(event)">
-                <button onclick="enviarTutor(event)">Enviar</button>
+            <div class="tutor-chat" id="tutor-chat">
+                <div class="msg nexus">¡Qué onda! Soy tu acompañante de NEXUS.<br>Puedo ayudarte con la escuela, tu negocio, lo que sea. No te voy a decir qué hacer — te doy opciones y tú decides.<br><br>¿Qué traes hoy?</div>
+            </div>
+            <div class="tutor-input-row" id="tutor-input-row">
+                <button id="tutor-mic-btn" onclick="tutor_activarVoz()" title="Habla"
+                    style="background:none;border:1px solid #2a2a3a;color:var(--dim);border-radius:8px;padding:0 10px;cursor:pointer;font-size:1.1em;transition:all 0.2s">🎤</button>
+                <input type="text" id="tutor-input" placeholder="Pregunta lo que quieras..." onkeydown="if(event.key==='Enter')enviarTutor(event)">
+                <button id="tutor-send-btn" onclick="enviarTutor(event)">Enviar</button>
             </div>
         </div>
         <div class="card">
-            <div class="card-title" style="color:var(--cyan)">💡 Preguntas rápidas</div>
+            <div class="card-title" style="color:var(--cyan)">📚 Escuela</div>
+            <div style="display:flex;flex-wrap:wrap;gap:7px;margin-bottom:10px">
+                <button class="btn btn-outline" style="font-size:0.78em" onclick="preguntaRapida('No entiendo para qué sirve la derivada en matemáticas, explícame con algo de la vida real')">¿Para qué sirve la derivada?</button>
+                <button class="btn btn-outline" style="font-size:0.78em" onclick="preguntaRapida('Tengo que hacer un ensayo pero no sé por dónde empezar, ayúdame a organizar mis ideas')">Cómo hacer un ensayo</button>
+                <button class="btn btn-outline" style="font-size:0.78em" onclick="preguntaRapida('¿Cómo puedo estudiar mejor sin aburrirme? Tengo examen en 3 días')">Estudiar sin aburrirme</button>
+                <button class="btn btn-outline" style="font-size:0.78em" onclick="preguntaRapida('¿Cómo organizo mi semana para no dejarme todo al último?')">Organizar mi semana</button>
+            </div>
+            <div class="card-title" style="color:var(--pink)">💡 Negocio & Lana</div>
             <div style="display:flex;flex-wrap:wrap;gap:7px">
-                <button class="btn btn-outline" style="font-size:0.78em" onclick="preguntaRapida('¿Cómo hago un buen gancho para TikTok?')">Gancho TikTok</button>
-                <button class="btn btn-outline" style="font-size:0.78em" onclick="preguntaRapida('¿Cómo puedo ganar mi primer dinero con mis habilidades?')">Primer dinero</button>
-                <button class="btn btn-outline" style="font-size:0.78em" onclick="preguntaRapida('¿Qué herramientas de IA puedo usar gratis?')">IA gratis</button>
-                <button class="btn btn-outline" style="font-size:0.78em" onclick="preguntaRapida('¿Cómo consigo más seguidores reales?')">Más seguidores</button>
-                <button class="btn btn-outline" style="font-size:0.78em" onclick="preguntaRapida('¿Cómo organizo mi tiempo siendo estudiante?')">Gestión tiempo</button>
+                <button class="btn btn-outline" style="font-size:0.78em" onclick="preguntaRapida('Tengo una idea de negocio pero no sé si es buena, ¿cómo sé si vale la pena?')">¿Mi idea vale?</button>
+                <button class="btn btn-outline" style="font-size:0.78em" onclick="preguntaRapida('¿Cómo puedo ganar mi primer dinero con lo que sé hacer?')">Primer dinero</button>
+                <button class="btn btn-outline" style="font-size:0.78em" onclick="preguntaRapida('¿Cómo ahorro parte de lo que gano sin que se me vaya en gastar?')">Ahorrar chido</button>
+                <button class="btn btn-outline" style="font-size:0.78em" onclick="preguntaRapida('¿Cómo hago un gancho para que la gente se quede viendo mi contenido en TikTok o Instagram?')">Gancho que engancha</button>
             </div>
         </div>
+    </div>
+
+    <!-- ░░ MI CABEZA ░░ -->
+    <div class="panel" id="panel-yo">
+
+        <!-- 1. EMOCIONES COMO SEÑALES -->
+        <div class="card">
+            <div class="yo-section-title" style="color:var(--cyan)">🌊 ¿Qué me está diciendo lo que siento?</div>
+            <div style="font-size:0.8em;color:var(--dim);margin-bottom:12px">Las emociones no son el problema — son información. Toca la que sientes ahora.</div>
+            <div class="emo-grid" id="emo-grid"></div>
+            <div class="emo-panel" id="emo-panel">
+                <div class="emo-senal" id="emo-senal"></div>
+                <div class="emo-pregunta" id="emo-pregunta"></div>
+                <button class="btn btn-outline" style="margin-top:10px;font-size:0.78em"
+                    onclick="llevarAlTutor()">💬 Hablar de esto con el tutor</button>
+            </div>
+        </div>
+
+        <!-- 2. LO QUE NADIE TE DICE -->
+        <div class="card">
+            <div class="yo-section-title" style="color:var(--purple)">📖 Lo que nadie te dice</div>
+            <div style="font-size:0.78em;color:var(--dim);margin-bottom:10px">Cómo funciona el mundo real — las reglas que no están en ningún libro de texto.</div>
+            <div id="nadie-lista"></div>
+        </div>
+
+        <!-- 3. ¿QUIÉN CREO QUE SOY? -->
+        <div class="card">
+            <div class="yo-section-title" style="color:var(--pink)">🪞 ¿Quién creo que soy?</div>
+            <div style="font-size:0.78em;color:var(--dim);margin-bottom:12px">No hay respuestas correctas. Solo tuyas. Se guarda en tu cel — nadie más lo ve.</div>
+            <div class="yo-prompt">
+                <label>¿Cómo te describirías tú misma sin mencionar la escuela ni tu familia?</label>
+                <textarea rows="3" id="yo-q1" placeholder="Soy alguien que..."></textarea>
+            </div>
+            <div class="yo-prompt">
+                <label>¿Qué harías todo el día si el dinero no fuera un problema?</label>
+                <textarea rows="3" id="yo-q2" placeholder="Estaría..."></textarea>
+            </div>
+            <div class="yo-prompt">
+                <label>¿Qué es lo que más te cuesta trabajo aceptar de ti misma?</label>
+                <textarea rows="3" id="yo-q3" placeholder="Me cuesta aceptar que..."></textarea>
+            </div>
+            <button class="btn btn-outline" style="width:100%;border-color:var(--pink);color:var(--pink)"
+                onclick="guardarIdentidad()">💾 Guardar mis respuestas</button>
+            <div id="yo-guardado" style="display:none;text-align:center;padding:8px;font-size:0.78em;color:var(--pink)">✓ Guardado — solo tuyo</div>
+        </div>
+
+        <!-- 4. TU TRIBU -->
+        <div class="card">
+            <div class="yo-section-title" style="color:var(--orange)">👥 Tu tribu — las 5 personas que más frecuentas</div>
+            <div style="font-size:0.78em;color:var(--dim);margin-bottom:4px">No para juzgarlas — para entender cómo te afectan. La persona promedio es el promedio de quien la rodea.</div>
+            <div style="font-size:0.72em;color:#333;margin-bottom:12px">✓ = sí &nbsp; ✗ = no</div>
+            <div id="tribu-personas"></div>
+            <button class="btn btn-outline" style="width:100%;margin-top:4px;border-color:var(--orange);color:var(--orange)"
+                onclick="analizarTribu()">🔍 Ver qué me dice esto</button>
+            <div id="tribu-analisis" style="display:none;margin-top:10px;padding:12px;background:var(--bg3);border-radius:10px;font-size:0.83em;line-height:1.6;color:#ccc;border-left:3px solid var(--orange)"></div>
+        </div>
+
+        <!-- 5. QUÉ ME DEJÓ PENSANDO HOY -->
+        <div class="card">
+            <div class="yo-section-title" style="color:var(--green)">📍 ¿Qué me dejó pensando hoy?</div>
+            <div style="font-size:0.78em;color:var(--dim);margin-bottom:10px">Una sola cosa. No tiene que ser importante. Solo lo que se quedó dando vueltas.</div>
+            <div style="display:flex;gap:8px">
+                <input type="text" id="pensando-input" placeholder="Hoy me quedé pensando en..." style="flex:1">
+                <button class="btn btn-outline" style="border-color:var(--green);color:var(--green)"
+                    onclick="guardarPensando()">+ Guardar</button>
+            </div>
+            <div id="pensando-historial" style="margin-top:12px"></div>
+        </div>
+
+        <!-- 6. LA BRECHA -->
+        <div class="card">
+            <div class="yo-section-title" style="color:var(--yellow)">🔦 La brecha — entre donde estoy y donde quiero estar</div>
+            <div style="font-size:0.78em;color:var(--dim);margin-bottom:12px">No es un plan. Es solo verlo honestamente. La brecha no es el problema — es la brújula.</div>
+            <div class="brecha-wrap">
+                <div class="brecha-lado">
+                    <label>Donde estoy hoy</label>
+                    <textarea rows="3" id="brecha-hoy" placeholder="Actualmente..."></textarea>
+                </div>
+                <div class="brecha-lado">
+                    <label>Donde quiero estar</label>
+                    <textarea rows="3" id="brecha-quiero" placeholder="Quisiera..."></textarea>
+                </div>
+            </div>
+            <div style="margin-bottom:8px">
+                <div style="display:flex;justify-content:space-between;font-size:0.72em;color:var(--dim);margin-bottom:4px">
+                    <span>Muy cerca</span><span>Muy lejos</span>
+                </div>
+                <input type="range" class="brecha-slider" id="brecha-dist" min="1" max="10" value="5">
+            </div>
+            <button class="btn btn-outline" style="width:100%;border-color:var(--yellow);color:var(--yellow)"
+                onclick="guardarBrecha()">Guardar mi brecha</button>
+            <div id="brecha-insight" style="display:none;margin-top:10px;padding:12px;background:var(--bg3);border-radius:10px;font-size:0.83em;line-height:1.6;color:#ccc;border-left:3px solid var(--yellow)"></div>
+        </div>
+
+        <!-- 7. MI DIARIO -->
+        <div class="card" style="padding:0;overflow:hidden">
+            <!-- PANTALLA DE BÓVEDA -->
+            <div id="boveda-lock-screen">
+                <div class="boveda-lock">
+                    <div class="boveda-icon">📔</div>
+                    <div class="boveda-titulo">Mi Diario</div>
+                    <div class="boveda-sub" id="boveda-sub-txt">Solo tú puedes leer esto</div>
+                    <div class="pin-display" id="pin-display">
+                        <div class="pin-dot" id="pd0"></div>
+                        <div class="pin-dot" id="pd1"></div>
+                        <div class="pin-dot" id="pd2"></div>
+                        <div class="pin-dot" id="pd3"></div>
+                    </div>
+                    <div class="pin-pad" id="pin-pad"></div>
+                    <div class="pin-error" id="pin-error"></div>
+                </div>
+            </div>
+            <!-- DIARIO ABIERTO -->
+            <div id="boveda-abierta" style="display:none;padding:14px">
+                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+                    <div style="font-weight:800;color:var(--purple)">📔 Mi Diario</div>
+                    <button onclick="cerrarBoveda()" style="background:none;border:none;color:var(--dim);cursor:pointer;font-size:0.8em">🔒 Cerrar</button>
+                </div>
+                <!-- Nueva entrada -->
+                <div style="margin-bottom:14px">
+                    <textarea class="diario-new-area" id="diario-nueva" placeholder="Escribe lo que quieras... este espacio es completamente tuyo." rows="4"></textarea>
+                    <button class="btn" style="width:100%;margin-top:8px;background:var(--purple);border-color:var(--purple);color:#000;font-weight:700"
+                        onclick="guardarEntradaDiario()">+ Guardar entrada</button>
+                </div>
+                <!-- Entradas guardadas -->
+                <div id="diario-entradas"></div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- ░░ NEGOCIO ░░ -->
+    <div class="panel" id="panel-negocio">
+
+        <!-- RUTA DEL EMPRENDEDOR -->
+        <div class="card" style="background:linear-gradient(135deg,#0d1a0d,#0a0a1a);border-color:#1e3a1e">
+            <div class="card-title" style="color:var(--green)">🗺️ Mi primer negocio — paso a paso</div>
+            <div style="display:flex;gap:0;overflow-x:auto;padding-bottom:8px" id="ruta-pasos">
+                <div class="ruta-paso" id="rp-0" onclick="abrirModulo(0)">💡<span>¿Y si?</span></div>
+                <div class="ruta-conector">→</div>
+                <div class="ruta-paso" id="rp-1" onclick="abrirModulo(1)">🎯<span>¿A quién?</span></div>
+                <div class="ruta-conector">→</div>
+                <div class="ruta-paso" id="rp-2" onclick="abrirModulo(2)">💰<span>¿Cuánto?</span></div>
+                <div class="ruta-conector">→</div>
+                <div class="ruta-paso" id="rp-3" onclick="abrirModulo(3)">📱<span>Que te vean</span></div>
+                <div class="ruta-conector">→</div>
+                <div class="ruta-paso" id="rp-4" onclick="abrirModulo(4)">🚀<span>¡Véndelo!</span></div>
+            </div>
+            <div style="font-size:0.76em;color:var(--dim);text-align:center;margin-top:6px" id="ruta-progreso-txt">Toca cualquier módulo para empezar</div>
+        </div>
+
+        <!-- MÓDULO ACTIVO (se carga dinámicamente) -->
+        <div id="modulo-contenido"></div>
+
+        <!-- CALCULADORA DE PRECIOS SIMPLE -->
+        <div class="card">
+            <div class="card-title" style="color:var(--yellow)">🧮 Calculadora: ¿Cuánto cobrar?</div>
+            <div style="font-size:0.8em;color:var(--dim);margin-bottom:10px">Sin complicaciones. Solo lo básico.</div>
+            <div style="display:flex;flex-direction:column;gap:8px">
+                <div style="display:flex;align-items:center;gap:8px">
+                    <span style="font-size:0.82em;color:var(--dim);min-width:130px">¿Cuánto te costó?</span>
+                    <input type="number" id="calc-costo" placeholder="$0" min="0" style="flex:1;text-align:right" oninput="calcularPrecio()">
+                </div>
+                <div style="display:flex;align-items:center;gap:8px">
+                    <span style="font-size:0.82em;color:var(--dim);min-width:130px">¿Cuánto quieres ganar?</span>
+                    <input type="number" id="calc-ganancia" placeholder="$0" min="0" style="flex:1;text-align:right" oninput="calcularPrecio()">
+                </div>
+                <div style="display:flex;align-items:center;gap:8px">
+                    <span style="font-size:0.82em;color:var(--dim);min-width:130px">Ahorro del negocio (10%)</span>
+                    <input type="number" id="calc-ahorro" placeholder="$0" style="flex:1;text-align:right;color:var(--cyan)" readonly>
+                </div>
+                <div style="background:var(--bg3);border-radius:10px;padding:12px;text-align:center;margin-top:4px">
+                    <div style="font-size:0.76em;color:var(--dim);margin-bottom:2px">Cobra</div>
+                    <div style="font-size:2em;font-weight:900;color:var(--green)" id="calc-resultado">$0</div>
+                    <div style="font-size:0.72em;color:var(--dim)" id="calc-desglose"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- TIPS DE AHORRO -->
+        <div class="card">
+            <div class="card-title" style="color:var(--cyan)">🐷 Ahorrar sin que duela</div>
+            <div id="tips-ahorro-lista">
+                <div class="tip-ahorro" onclick="this.classList.toggle('abierto')">
+                    <div class="tip-header">💸 La regla del 30/30/40</div>
+                    <div class="tip-body">De cada venta que hagas: <strong style="color:var(--green)">40%</strong> pa' tus costos (materiales, lo que usaste), <strong style="color:var(--cyan)">30%</strong> pa' ti (tu sueldo, merécelo), <strong style="color:var(--yellow)">30%</strong> al ahorro del negocio pa' cuando necesites crecer o haya un imprevisto.</div>
+                </div>
+                <div class="tip-ahorro" onclick="this.classList.toggle('abierto')">
+                    <div class="tip-header">📱 Herramientas gratis primero</div>
+                    <div class="tip-body">No le pagues a nada hasta que ya estés vendiendo bien. Canva gratis, WhatsApp Business gratis, Google Forms gratis, Instagram gratis. Cuando ya tengas flujo de lana, ahí sí inviertes en herramientas de paga.</div>
+                </div>
+                <div class="tip-ahorro" onclick="this.classList.toggle('abierto')">
+                    <div class="tip-header">🔄 Compra solo lo que ya vendiste</div>
+                    <div class="tip-body">El error clásico de los emprendedores nuevos: comprar mucho inventario antes de tener clientes. Primero vende, cobra anticipo si puedes, y con eso compras. Así nunca te quedas sin feria por tener mercancía parada.</div>
+                </div>
+                <div class="tip-ahorro" onclick="this.classList.toggle('abierto')">
+                    <div class="tip-header">📒 Anota todo, sí todo</div>
+                    <div class="tip-body">No necesitas un contador ni Excel fancy. Una libreta o el Notes del celu: cuánto entraste, cuánto saliste, qué sobró. Si no lo anotas no existe. Los negocios que quiebran casi siempre quiebran porque no sabían a dónde se iba la lana.</div>
+                </div>
+                <div class="tip-ahorro" onclick="this.classList.toggle('abierto')">
+                    <div class="tip-header">🎯 Un precio real incluye tu tiempo</div>
+                    <div class="tip-body">Mucha gente cobra solo los materiales y "regala" su tiempo. Tu tiempo vale. Si tardas 2 horas en algo, ponle precio a esas 2 horas aunque sea mínimo. Si no, estás trabajando gratis.</div>
+                </div>
+            </div>
+        </div>
+
     </div>
 
     <!-- ░░ BADGES ░░ -->
@@ -440,6 +851,22 @@
 
     <!-- ░░ FAMILIA — Bloque unificado Teen + Padres ░░ -->
     <div class="panel" id="panel-familia">
+
+        <!-- ESPACIO PARA MÍ -->
+        <div class="espacio-card">
+            <div style="font-size:0.76em;color:var(--purple);text-transform:uppercase;letter-spacing:1px;font-weight:800;margin-bottom:4px">🌙 Espacio para mí</div>
+            <div style="font-size:0.82em;color:var(--dim);margin-bottom:10px">Aquí nadie te juzga. Escribe lo que traes — puede ser cualquier cosa.</div>
+            <textarea class="espacio-textarea" id="espacio-texto"
+                placeholder="Lo que sea... lo que pesa, lo que emocionó, lo que no puedes decirle a nadie... esto es tuyo."
+                oninput="espacio_detectarEmocion(this.value)"></textarea>
+            <div style="display:flex;gap:8px;margin-top:8px;align-items:center">
+                <button class="btn btn-outline" style="flex:1;font-size:0.8em;border-color:var(--purple);color:var(--purple)"
+                    onclick="espacioEnviar()">💜 Soltar y que me responda</button>
+                <button class="btn btn-outline" style="font-size:0.8em" onclick="espacioGuardar()">🔒 Solo guardar</button>
+            </div>
+            <div class="espacio-respuesta" id="espacio-respuesta"></div>
+            <div style="font-size:0.7em;color:#1a1a2a;margin-top:8px;text-align:center">Solo tú ves esto · Privado</div>
+        </div>
 
         <!-- CHECK-IN DE HUMOR -->
         <div class="card" id="card-checkin">
@@ -906,18 +1333,25 @@ async function enviarTutor(e) {
     const msg   = input.value.trim();
     if (!msg) return;
     input.value = '';
+
+    // Detectar emoción ANTES de enviar
+    const em = detectarEmocion(msg);
+    if (em && !_modoEscucha) activarModoEscucha(em);
+
     appendMsg(msg, 'user');
     const typing = appendMsg('...', 'nexus');
     try {
         const r = await fetch('/api/teens/tutor', {
             method: 'POST',
             headers: {'Content-Type':'application/json'},
-            body: JSON.stringify({ mensaje: msg, user_id: USER_ID })
+            body: JSON.stringify({ mensaje: msg, user_id: USER_ID, emocion: _emocionActual, etapa: getEtapa() })
         });
         const d = await r.json();
         typing.textContent = d.respuesta || 'Sin respuesta del tutor';
+        // Leer en voz si modo escucha activo
+        if (_modoEscucha && window.NX) NX.hablar(d.respuesta);
     } catch(err) {
-        typing.textContent = 'No pude conectarme al tutor. ¿Tienes internet?';
+        typing.textContent = 'No pude conectarme. Pero aquí sigo — intenta de nuevo cuando puedas.';
     }
 }
 
@@ -1013,6 +1447,7 @@ async function guardarCP() {
 
 // ── TOAST ─────────────────────────────────────────────────────────────────
 let _toastTimeout;
+const showToast = (msg, dur) => mostrarToast(msg, dur);
 function mostrarToast(msg, dur = 2800) {
     const t = document.getElementById('toast');
     t.textContent = msg;
@@ -1434,10 +1869,701 @@ function go(panel) {
     if (panel === 'ranking')   cargarRanking();
     if (panel === 'misiones')  renderMisiones();
     if (panel === 'familia')   cargarFamilia();
+    if (panel === 'negocio')   iniciarNegocio();
+    if (panel === 'yo')        iniciarYo();
+}
+
+// ── INSPIRACIONES ────────────────────────────────────────────────────────
+const INSPIRACIONES = [
+    { emoji:'🎨', texto:'Una chava de 15 hacía llaveros de resina en su cuarto porque no tenía para comprarse cosas. A los 17 ya tenía lista de espera de 3 semanas y pagaba su propia ropa.', reflexion:'Empezó con lo que tenía, no esperó tener lo que le faltaba.' },
+    { emoji:'📱', texto:'Le iba pésimo en matemáticas. Pero cuando explicaba algo, la gente entendía. Abrió una cuenta de tutorías en TikTok. Ahora cobra por sesiones y sus excompañeros le escriben para pedirle ayuda.', reflexion:'La misma habilidad que en clase no se veía, en otro contexto brilló.' },
+    { emoji:'🔧', texto:'Reprobó segundo año. Se sentía el más tonto del salón. Aprendió solo a reparar celulares viendo YouTube. A los 20 abrió su propio local. Hoy contrata a otros.', reflexion:'La escuela mide una cosa. La vida mide muchas más.' },
+    { emoji:'🌱', texto:'Tenía días muy difíciles y casi no salía. Empezó a escribir lo que sentía en Instagram sin esperar likes. Ahora tiene una comunidad de miles que se sienten igual y le agradecen que exista.', reflexion:'Lo que cargas puede conectar con alguien que necesita exactamente eso.' },
+    { emoji:'📚', texto:'Odiaba leer — la obligaban y era peor. Un día encontró por accidente un libro que hablaba de algo que de verdad le importaba. Leyó 40 ese mismo año.', reflexion:'El problema no siempre eres tú. A veces es que no has encontrado lo tuyo.' },
+    { emoji:'💪', texto:'Su familia no tenía para la prepa privada. Estudió para el examen de UNAM con videos de YouTube gratis. Entró. Nadie se lo esperaba — menos ella.', reflexion:'El acceso a la información nunca fue tan igual para todos. Úsalo.' },
+    { emoji:'🛍️', texto:'Vendía ropa de segunda mano porque necesitaba dinero. Aprendió a fotografiarla bien, a escribir buenas descripciones. Hoy tiene su propia marca de ropa vintage.', reflexion:'No hay punto de partida demasiado pequeño.' },
+    { emoji:'🎵', texto:'Producía música en su celu con apps gratuitas. Le daba muchísima pena mostrarla. Un día la subió casi sin querer. Un productor la escuchó.', reflexion:'La pena y el talento no se llevan. El talento siempre gana si le das chance.' },
+    { emoji:'🍕', texto:'Empezó a vender comida a sus vecinos porque en casa no alcanzaba. Sin local, sin publicidad — solo WhatsApp. Hoy tiene pedidos todos los fines de semana y está juntando para su primer local.', reflexion:'Tu primer cliente siempre está más cerca de lo que crees.' },
+    { emoji:'💻', texto:'Le dijeron que la programación era para genios. Aprendió a hacer páginas web con tutoriales gratis. A los 17 ya cobraba por hacer sitios para negocios del barrio.', reflexion:'La mayoría de las cosas que parecen imposibles solo requieren tiempo y WiFi.' }
+];
+
+let _inspIdx = parseInt(localStorage.getItem('nexus_insp_idx') || '0') % INSPIRACIONES.length;
+
+function renderInspiracion() {
+    const ins = INSPIRACIONES[_inspIdx];
+    const el = id => document.getElementById(id);
+    if (!el('insp-emoji')) return;
+    el('insp-emoji').textContent  = ins.emoji;
+    el('insp-texto').textContent  = ins.texto;
+    el('insp-reflexion').textContent = ins.reflexion;
+    const nav = el('insp-nav');
+    nav.innerHTML = INSPIRACIONES.map((_, i) =>
+        `<div class="inspiracion-dot${i===_inspIdx?' activo':''}" onclick="irInspiracion(${i});event.stopPropagation()"></div>`
+    ).join('');
+}
+
+function siguienteInspiracion() {
+    _inspIdx = (_inspIdx + 1) % INSPIRACIONES.length;
+    localStorage.setItem('nexus_insp_idx', _inspIdx);
+    renderInspiracion();
+}
+
+function irInspiracion(i) {
+    _inspIdx = i;
+    localStorage.setItem('nexus_insp_idx', _inspIdx);
+    renderInspiracion();
+}
+
+// ── DETECCIÓN EMOCIONAL ───────────────────────────────────────────────────
+const _SEÑALES = {
+    tristeza:  ['triste','sola','solo','llorar','lloré','nadie','no le importo','invisible','me duele','vacío','vacía','sin ganas','me dejaron','me ignoraron'],
+    estres:    ['no puedo','harta','harto','ya no','para qué','pa qué','todo mal','no aguanto','agotada','agotado','demasiado','no me da tiempo','no me alcanza el tiempo','me tiene hasta la'],
+    ansiedad:  ['miedo','ansiosa','ansioso','nerviosa','nervioso','reprobar','me van a','pánico','no sé qué va a pasar','todo me sale mal','y si repruebo'],
+    enojo:     ['odio','asco','no es justo','me tiene harta','me tiene harto','coraje','rabia','me cae gordo','se me hace injusto','me choca'],
+    perdida:   ['no sé qué hacer','perdida','perdido','sin rumbo','pa qué estudio','para qué sirve','no tiene caso','qué caso tiene','no tiene sentido','no veo el punto']
+};
+
+let _emocionActual = '';
+let _modoEscucha   = false;
+
+function detectarEmocion(texto) {
+    const t = texto.toLowerCase();
+    for (const [emocion, palabras] of Object.entries(_SEÑALES)) {
+        if (palabras.some(p => t.includes(p))) return emocion;
+    }
+    return '';
+}
+
+function activarModoEscucha(emocion) {
+    if (_modoEscucha) return;
+    _modoEscucha   = true;
+    _emocionActual = emocion;
+    const chat  = document.getElementById('tutor-chat');
+    const badge = document.getElementById('modo-escucha-badge');
+    const btn   = document.getElementById('tutor-send-btn');
+    const inp   = document.getElementById('tutor-input');
+    if (chat)  chat.classList.add('modo-escucha');
+    if (badge) badge.classList.add('visible');
+    if (btn)   btn.textContent = 'Cuéntame';
+    if (inp)   inp.placeholder = 'Escribe lo que traes...';
+    document.getElementById('tutor-input-row')?.classList.add('modo-escucha');
+}
+
+function salirModoEscucha() {
+    _modoEscucha   = false;
+    _emocionActual = '';
+    const chat  = document.getElementById('tutor-chat');
+    const badge = document.getElementById('modo-escucha-badge');
+    const btn   = document.getElementById('tutor-send-btn');
+    const inp   = document.getElementById('tutor-input');
+    if (chat)  chat.classList.remove('modo-escucha');
+    if (badge) badge.classList.remove('visible');
+    if (btn)   btn.textContent = 'Enviar';
+    if (inp)   inp.placeholder = 'Pregunta lo que quieras...';
+    document.getElementById('tutor-input-row')?.classList.remove('modo-escucha');
+}
+
+// ── VOZ EN TUTOR ──────────────────────────────────────────────────────────
+let _tutorRec = null;
+function tutor_activarVoz() {
+    const Rec = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (!Rec) { showToast('Tu navegador no soporta voz 😅'); return; }
+    const btn = document.getElementById('tutor-mic-btn');
+    if (_tutorRec) { _tutorRec.stop(); _tutorRec = null; btn.textContent = '🎤'; return; }
+    _tutorRec = new Rec();
+    _tutorRec.lang = 'es-MX';
+    _tutorRec.interimResults = false;
+    _tutorRec.onresult = e => {
+        const txt = e.results[0][0].transcript;
+        document.getElementById('tutor-input').value = txt;
+        btn.textContent = '🎤';
+        _tutorRec = null;
+        // Auto-detectar emoción en lo hablado
+        const em = detectarEmocion(txt);
+        if (em) activarModoEscucha(em);
+        enviarTutor();
+    };
+    _tutorRec.onerror = () => { btn.textContent = '🎤'; _tutorRec = null; };
+    _tutorRec.onend  = () => { btn.textContent = '🎤'; _tutorRec = null; };
+    _tutorRec.start();
+    btn.textContent = '⏹️';
+}
+
+// ── ESPACIO PARA MÍ ───────────────────────────────────────────────────────
+let _espacioEmocion = '';
+
+function espacio_detectarEmocion(texto) {
+    _espacioEmocion = detectarEmocion(texto);
+    const btn = document.querySelector('[onclick="espacioEnviar()"]');
+    if (!btn) return;
+    if (_espacioEmocion) {
+        btn.style.borderColor = 'var(--cyan)';
+        btn.style.color = 'var(--cyan)';
+    } else {
+        btn.style.borderColor = 'var(--purple)';
+        btn.style.color = 'var(--purple)';
+    }
+}
+
+async function espacioEnviar() {
+    const txt = document.getElementById('espacio-texto')?.value?.trim();
+    if (!txt) return;
+    const resp = document.getElementById('espacio-respuesta');
+    resp.style.display = 'block';
+    resp.textContent = '...';
+    try {
+        const r = await fetch('/api/teens/tutor', {
+            method:'POST', headers:{'Content-Type':'application/json'},
+            body: JSON.stringify({ mensaje: txt, user_id: USER_ID, emocion: _espacioEmocion || 'espacio_seguro', etapa: getEtapa() })
+        });
+        const d = await r.json();
+        resp.textContent = d.respuesta || 'Aquí estoy.';
+    } catch { resp.textContent = 'Sin conexión por ahora — pero lo que escribiste importa.'; }
+}
+
+function espacioGuardar() {
+    const txt = document.getElementById('espacio-texto')?.value?.trim();
+    if (!txt) return;
+    const guardados = JSON.parse(localStorage.getItem('nexus_espacio_mio') || '[]');
+    guardados.push({ fecha: new Date().toLocaleDateString('es-MX'), texto: txt });
+    if (guardados.length > 30) guardados.shift();
+    localStorage.setItem('nexus_espacio_mio', JSON.stringify(guardados));
+    document.getElementById('espacio-texto').value = '';
+    showToast('🔒 Guardado — solo tú puedes ver esto');
+}
+
+// ── MI CABEZA ────────────────────────────────────────────────────────────
+
+// Etapa adaptativa
+function getEtapa() {
+    const edad = parseInt(localStorage.getItem('nexus_teens_edad') || '16');
+    if (edad <= 14) return 'secundaria';
+    if (edad <= 17) return 'prepa';
+    return 'adulto';
+}
+
+// 1. EMOCIONES COMO SEÑALES
+const EMOCIONES_SEÑAL = [
+    { emoji:'😤', nombre:'Enojo',      color:'#ff6b3c',
+      senal:'Algo cruzó un límite tuyo — real o percibido. Tu cerebro detectó algo injusto o una amenaza a lo que valoras. No estás exagerando, estás respondiendo a algo.',
+      pregunta:'¿Qué límite sientes que fue cruzado?' },
+    { emoji:'😰', nombre:'Ansiedad',   color:'#ffd166',
+      senal:'Tu cerebro intenta protegerte de algo incierto. No significa que el peligro sea real — tu mente se adelantó al futuro y no le gustó lo que vio. Eso es normal, no es debilidad.',
+      pregunta:'¿Qué resultado específico te da miedo?' },
+    { emoji:'😔', nombre:'Tristeza',   color:'#4ecdc4',
+      senal:'Perdiste algo que importaba — puede ser una persona, una expectativa, o una versión de ti misma. La tristeza no es debilidad, es la medida de cuánto importaba eso.',
+      pregunta:'¿Qué fue lo que perdiste, aunque sea de manera simbólica?' },
+    { emoji:'😐', nombre:'Aburrimiento', color:'#888',
+      senal:'Estás por debajo de tu potencial o en el lugar equivocado. El aburrimiento no es flojera — es una señal de que tu mente necesita más de lo que está recibiendo.',
+      pregunta:'¿Cuándo fue la última vez que algo te absorbió completamente?' },
+    { emoji:'😳', nombre:'Vergüenza',  color:'#c471ed',
+      senal:'Hay una brecha entre cómo quieres ser vista y cómo crees que te ven. Ojo: la vergüenza dice "yo estoy mal", la culpa dice "hice algo mal". Solo una de las dos es útil para cambiar.',
+      pregunta:'¿Es vergüenza ("soy") o culpa ("hice")? La diferencia importa.' },
+    { emoji:'😴', nombre:'Apatía',     color:'#555',
+      senal:'Puede ser cansancio real acumulado, o que nada de lo que te rodea te importa lo suficiente todavía. A veces es la señal de que necesitas descanso real, no distracción.',
+      pregunta:'¿Cuándo fue la última vez que algo te importó de verdad?' },
+    { emoji:'🤩', nombre:'Emoción',    color:'#00ff88',
+      senal:'Estás alineada con algo que importa para ti. Tu cerebro está recompensando algo. Vale la pena notar exactamente qué lo provocó — eso te dice algo real sobre ti.',
+      pregunta:'¿Qué lo provocó? Guarda ese dato — te va a servir.' },
+    { emoji:'😨', nombre:'Miedo',      color:'#ff4444',
+      senal:'Tu cerebro detectó algo que percibe como amenaza. El miedo no siempre indica peligro real — a veces es la primera reacción ante lo desconocido. Pero siempre trae información.',
+      pregunta:'Si lo peor que imaginas pasara, ¿podrías sobrevivirlo?' },
+];
+
+function renderEmociones() {
+    const grid = document.getElementById('emo-grid');
+    if (!grid) return;
+    grid.innerHTML = EMOCIONES_SEÑAL.map((e, i) => `
+        <div class="emo-btn" onclick="mostrarEmocion(${i})">
+            <div class="e-ico">${e.emoji}</div>
+            <div class="e-nom">${e.nombre}</div>
+        </div>`).join('');
+}
+
+function mostrarEmocion(i) {
+    const e = EMOCIONES_SEÑAL[i];
+    document.querySelectorAll('.emo-btn').forEach((b,j) =>
+        b.classList.toggle('sel', j===i));
+    const panel = document.getElementById('emo-panel');
+    document.getElementById('emo-senal').textContent    = e.senal;
+    document.getElementById('emo-pregunta').textContent = '→ ' + e.pregunta;
+    panel.classList.add('visible');
+    panel.style.borderColor = e.color;
+    // Guardar para el tutor
+    window._emoPendiente = e.nombre + ': ' + e.pregunta;
+}
+
+function llevarAlTutor() {
+    if (!window._emoPendiente) return;
+    document.getElementById('tutor-input').value = 'Siento ' + window._emoPendiente;
+    go('tutor');
+    setTimeout(() => enviarTutor(), 100);
+}
+
+// 2. LO QUE NADIE TE DICE
+const NADIE_DICE_TODOS = [
+    { titulo:'Los adultos también están improvisando', texto:'La mayoría de los adultos que ves seguros por fuera están adivinando por dentro. La diferencia es que llevan más tiempo practicando disimularlo. No tienen todas las respuestas — aprendieron a vivir con la incertidumbre. Eso también lo vas a aprender tú.' },
+    { titulo:'Equivocarte no es señal de que eres mala en algo', texto:'Es señal de que intentaste. El problema no eres tú — es cómo el sistema reacciona al error, como si fuera un defecto de fábrica. En realidad, el error es el mecanismo que usa el cerebro para aprender. Quien no se equivoca es quien no intenta.' },
+    { titulo:'No tienes que saber ya qué quieres ser', texto:'La pregunta "¿qué quieres ser de grande?" está mal formulada. La mayoría de los adultos tampoco lo saben — cambiaron de idea varias veces. Lo que importa no es tener la respuesta perfecta, es notar qué te genera curiosidad hoy.' },
+    { titulo:'Hacer lo correcto casi siempre cuesta más a corto plazo', texto:'La decisión correcta rara vez es la más cómoda. A veces significa decepcionar a alguien, perder algo, quedarte sola en una postura. El resultado no siempre llega rápido. Pero la dirección importa más que el resultado inmediato. A largo plazo, la diferencia se nota.' },
+    { titulo:'Nadie viene a hacer lo que te corresponde', texto:'Eso suena duro pero es lo más liberador que existe. Significa que tú tienes el control real. Nadie va a venir a organizar tu vida, tomar tus decisiones ni usar tu potencial por ti. Eso lo decides tú — y eso te da más poder del que parece.' },
+];
+const NADIE_DICE_SECUNDARIA = [
+    { titulo:'Los grupos de la escuela no son permanentes', texto:'La jerarquía social de tu salón desaparece casi completamente después de la secundaria. Quienes tienen el "poder social" ahora rara vez lo mantienen después. No construyas tu identidad alrededor de ese sistema — expira pronto.' },
+    { titulo:'Tus papás no tienen todas las respuestas', texto:'Y eso no significa que no te quieran. Significa que son personas normales haciendo lo mejor con lo que saben — y a veces lo que saben está desactualizado. Puedes quererlos y al mismo tiempo pensar diferente.' },
+];
+const NADIE_DICE_PREPA = [
+    { titulo:'La escuela premia la obediencia más que la inteligencia', texto:'El sistema escolar fue diseñado para producir personas que siguen instrucciones, no pensadores independientes. Eso no significa que la escuela no sirve — significa que si entiendes cómo funciona el juego, puedes jugarlo sin que te atrape.' },
+    { titulo:'El dinero funciona diferente de como crees', texto:'Nadie te enseña que el dinero no es solo para gastar o ahorrar — es una herramienta. La diferencia entre alguien que siempre tiene y alguien que nunca tiene no suele ser el sueldo. Es cómo manejan lo que entra. Aprenderlo temprano es ventaja real.' },
+    { titulo:'Muchas relaciones de prepa no sobreviven la salida', texto:'Y eso no es traición ni fracaso — es normal. La gente cambia cuando cambia su entorno. Las amistades que duran son las que se mantienen por elección, no por costumbre o por estar en el mismo edificio.' },
+];
+const NADIE_DICE_ADULTO = [
+    { titulo:'El trabajo formal no es la única opción', texto:'El modelo "estudia → trabaja para alguien → jubílate" fue diseñado para un mundo que ya no existe igual. Hoy hay más formas de generar valor e ingreso que en cualquier momento anterior de la historia. Explorarlas requiere más iniciativa — pero también más libertad.' },
+    { titulo:'Nadie te va a contratar solo por tu título', texto:'Te van a contratar — o pagarte — por lo que demuestras que puedes hacer. El título abre algunas puertas, pero lo que está detrás de esa puerta lo pones tú.' },
+];
+
+function renderNadie() {
+    const el = document.getElementById('nadie-lista');
+    if (!el) return;
+    const etapa = getEtapa();
+    let items = [...NADIE_DICE_TODOS];
+    if (etapa === 'secundaria') items = [...items, ...NADIE_DICE_SECUNDARIA];
+    else if (etapa === 'prepa') items = [...items, ...NADIE_DICE_PREPA];
+    else items = [...items, ...NADIE_DICE_ADULTO];
+    el.innerHTML = items.map(it => `
+        <div class="nadie-item" onclick="this.classList.toggle('abierto')">
+            <div class="nadie-header">📌 ${it.titulo}</div>
+            <div class="nadie-body">${it.texto}</div>
+        </div>`).join('');
+}
+
+// 3. IDENTIDAD
+function guardarIdentidad() {
+    const data = {
+        q1: document.getElementById('yo-q1')?.value || '',
+        q2: document.getElementById('yo-q2')?.value || '',
+        q3: document.getElementById('yo-q3')?.value || '',
+        fecha: new Date().toLocaleDateString('es-MX')
+    };
+    localStorage.setItem('nexus_identidad', JSON.stringify(data));
+    document.getElementById('yo-guardado').style.display = 'block';
+    setTimeout(() => document.getElementById('yo-guardado').style.display = 'none', 2500);
+}
+
+function cargarIdentidad() {
+    const data = JSON.parse(localStorage.getItem('nexus_identidad') || '{}');
+    if (data.q1) document.getElementById('yo-q1').value = data.q1;
+    if (data.q2) document.getElementById('yo-q2').value = data.q2;
+    if (data.q3) document.getElementById('yo-q3').value = data.q3;
+}
+
+// 4. TRIBU
+function renderTribu() {
+    const el = document.getElementById('tribu-personas');
+    if (!el) return;
+    const guardado = JSON.parse(localStorage.getItem('nexus_tribu') || '[]');
+    el.innerHTML = [0,1,2,3,4].map(i => {
+        const p = guardado[i] || {};
+        return `<div class="tribu-persona">
+            <input type="text" id="tribu-n${i}" placeholder="Nombre o apodo (persona ${i+1})" value="${p.nombre||''}">
+            <div class="tribu-check">
+                <label><input type="checkbox" id="tribu-${i}-impulsa" ${p.impulsa?'checked':''}> Me impulsa</label>
+                <label><input type="checkbox" id="tribu-${i}-frena"   ${p.frena  ?'checked':''}> Me frena</label>
+                <label><input type="checkbox" id="tribu-${i}-escucha" ${p.escucha?'checked':''}> Me escucha</label>
+                <label><input type="checkbox" id="tribu-${i}-drena"   ${p.drena  ?'checked':''}> Me drena</label>
+            </div>
+        </div>`;
+    }).join('');
+}
+
+function analizarTribu() {
+    const personas = [0,1,2,3,4].map(i => ({
+        nombre:  document.getElementById(`tribu-n${i}`)?.value || '',
+        impulsa: document.getElementById(`tribu-${i}-impulsa`)?.checked,
+        frena:   document.getElementById(`tribu-${i}-frena`)?.checked,
+        escucha: document.getElementById(`tribu-${i}-escucha`)?.checked,
+        drena:   document.getElementById(`tribu-${i}-drena`)?.checked,
+    }));
+    localStorage.setItem('nexus_tribu', JSON.stringify(personas));
+    const impulsan = personas.filter(p => p.impulsa && p.nombre).map(p => p.nombre);
+    const drenan   = personas.filter(p => p.drena   && p.nombre).map(p => p.nombre);
+    const escuchan = personas.filter(p => p.escucha  && p.nombre).map(p => p.nombre);
+    let texto = '';
+    if (impulsan.length)  texto += `Las personas que te impulsan (${impulsan.join(', ')}) son las que vale la pena proteger — el tiempo con ellas es inversión.\n\n`;
+    if (drenan.length)    texto += `Las que te drenan (${drenan.join(', ')}) no son necesariamente malas personas — pero el tiempo que les das tiene un costo real.\n\n`;
+    if (escuchan.length)  texto += `Las que te escuchan (${escuchan.join(', ')}) son más raras de lo que parece. Cuídalas.\n\n`;
+    if (!texto) texto = 'Completa los nombres y marca cómo te afecta cada persona para ver el análisis.';
+    else texto += 'Este es tu entorno más cercano. No tienes que cambiarlo de golpe — solo verlo con claridad ya cambia cómo te relacionas.';
+    const div = document.getElementById('tribu-analisis');
+    div.textContent = texto;
+    div.style.display = 'block';
+}
+
+// 5. QUÉ ME DEJÓ PENSANDO
+function guardarPensando() {
+    const inp = document.getElementById('pensando-input');
+    const txt = inp?.value?.trim();
+    if (!txt) return;
+    const hist = JSON.parse(localStorage.getItem('nexus_pensando') || '[]');
+    hist.unshift({ fecha: new Date().toLocaleDateString('es-MX'), texto: txt });
+    if (hist.length > 30) hist.pop();
+    localStorage.setItem('nexus_pensando', JSON.stringify(hist));
+    inp.value = '';
+    renderPensando();
+}
+
+function renderPensando() {
+    const el = document.getElementById('pensando-historial');
+    if (!el) return;
+    const hist = JSON.parse(localStorage.getItem('nexus_pensando') || '[]');
+    if (!hist.length) { el.innerHTML = '<div style="color:var(--dim);font-size:0.82em;text-align:center;padding:10px">Aún no hay entradas</div>'; return; }
+    el.innerHTML = hist.slice(0,7).map(h =>
+        `<div class="pensando-entry"><div class="pensando-fecha">${h.fecha}</div>${h.texto}</div>`
+    ).join('');
+}
+
+// 6. LA BRECHA
+const BRECHA_INSIGHTS = {
+    cerca:  'La brecha es pequeña — eso no significa que sea fácil. A veces el último trecho es el más difícil porque ya se puede ver la llegada.',
+    media:  'Una brecha así es normal y saludable. Significa que sabes a dónde vas y que todavía hay trabajo por hacer. La dirección importa más que la distancia.',
+    lejos:  'Una brecha grande no significa que estés perdida — significa que tienes un horizonte claro. Las personas que no saben a dónde van no pueden tener brecha grande porque no han definido el destino.',
+};
+
+function guardarBrecha() {
+    const hoy    = document.getElementById('brecha-hoy')?.value?.trim();
+    const quiero = document.getElementById('brecha-quiero')?.value?.trim();
+    const dist   = parseInt(document.getElementById('brecha-dist')?.value || '5');
+    if (!hoy || !quiero) { showToast('Escribe dónde estás y a dónde quieres ir'); return; }
+    localStorage.setItem('nexus_brecha', JSON.stringify({ hoy, quiero, dist, fecha: new Date().toLocaleDateString('es-MX') }));
+    const insight = dist <= 3 ? BRECHA_INSIGHTS.cerca : dist <= 6 ? BRECHA_INSIGHTS.media : BRECHA_INSIGHTS.lejos;
+    const div = document.getElementById('brecha-insight');
+    div.textContent = insight;
+    div.style.display = 'block';
+    showToast('🔦 Brecha guardada');
+}
+
+function cargarBrecha() {
+    const data = JSON.parse(localStorage.getItem('nexus_brecha') || '{}');
+    if (data.hoy)    document.getElementById('brecha-hoy').value    = data.hoy;
+    if (data.quiero) document.getElementById('brecha-quiero').value = data.quiero;
+    if (data.dist)   document.getElementById('brecha-dist').value   = data.dist;
+}
+
+// 7. BÓVEDA + DIARIO
+const _BOVEDA_KEY   = 'nexus_boveda_pin_hash';
+const _DIARIO_KEY   = 'nexus_diario_entries';
+let _pinBuffer = '';
+let _bovedaPin = '';
+let _bovedaAbierta = false;
+
+function _hashPin(pin) {
+    let h = 5381;
+    for (let i = 0; i < pin.length; i++) { h = ((h << 5) + h) + pin.charCodeAt(i); h = h & h; }
+    return (h >>> 0).toString(36);
+}
+function _xorEnc(texto, pin) {
+    try {
+        const r = texto.split('').map((c,i) =>
+            String.fromCharCode(c.charCodeAt(0) ^ pin.charCodeAt(i % pin.length))).join('');
+        return btoa(unescape(encodeURIComponent(r)));
+    } catch { return ''; }
+}
+function _xorDec(enc, pin) {
+    try {
+        const r = decodeURIComponent(escape(atob(enc)));
+        return r.split('').map((c,i) =>
+            String.fromCharCode(c.charCodeAt(0) ^ pin.charCodeAt(i % pin.length))).join('');
+    } catch { return null; }
+}
+
+function renderPinPad(modo) {
+    // modo: 'crear' | 'confirmar' | 'abrir'
+    const sub = { crear:'Crea tu PIN de 4 dígitos', confirmar:'Repite el PIN para confirmar', abrir:'Ingresa tu PIN' };
+    document.getElementById('boveda-sub-txt').textContent = sub[modo] || sub.abrir;
+    document.getElementById('pin-error').textContent = '';
+    _pinBuffer = '';
+    _actualizarDots();
+    const pad = document.getElementById('pin-pad');
+    const teclas = ['1','2','3','4','5','6','7','8','9','⌫','0','✓'];
+    pad.innerHTML = teclas.map(t =>
+        `<div class="pin-key${t==='⌫'?' del':''}" onclick="pinTecla('${t}')">${t}</div>`
+    ).join('');
+}
+
+function _actualizarDots() {
+    for (let i=0; i<4; i++) {
+        const d = document.getElementById('pd'+i);
+        if (d) d.classList.toggle('lleno', i < _pinBuffer.length);
+    }
+}
+
+let _pinModo = '', _pinTemp = '';
+function pinTecla(t) {
+    if (t === '⌫') { _pinBuffer = _pinBuffer.slice(0,-1); _actualizarDots(); return; }
+    if (t === '✓') { _confirmarPin(); return; }
+    if (_pinBuffer.length >= 4) return;
+    _pinBuffer += t;
+    _actualizarDots();
+    if (_pinBuffer.length === 4) setTimeout(_confirmarPin, 180);
+}
+
+function _confirmarPin() {
+    const pin = _pinBuffer;
+    _pinBuffer = '';
+    _actualizarDots();
+    const hashGuardado = localStorage.getItem(_BOVEDA_KEY);
+
+    if (!hashGuardado) {
+        // Primera vez — crear PIN
+        if (_pinModo === 'confirmar') {
+            if (_hashPin(pin) === _hashPin(_pinTemp)) {
+                localStorage.setItem(_BOVEDA_KEY, _hashPin(pin));
+                _bovedaPin = pin;
+                _abrirDiario();
+            } else {
+                document.getElementById('pin-error').textContent = 'Los PINs no coinciden — intenta de nuevo';
+                _pinModo = 'crear'; _pinTemp = '';
+                renderPinPad('crear');
+            }
+        } else {
+            _pinTemp = pin; _pinModo = 'confirmar';
+            renderPinPad('confirmar');
+        }
+    } else {
+        // Verificar PIN
+        if (_hashPin(pin) === hashGuardado) {
+            _bovedaPin = pin;
+            _abrirDiario();
+        } else {
+            document.getElementById('pin-error').textContent = 'PIN incorrecto';
+            setTimeout(() => { document.getElementById('pin-error').textContent = ''; }, 1500);
+        }
+    }
+}
+
+function _abrirDiario() {
+    document.getElementById('boveda-lock-screen').style.display = 'none';
+    document.getElementById('boveda-abierta').style.display     = 'block';
+    _bovedaAbierta = true;
+    renderEntradas();
+}
+
+function cerrarBoveda() {
+    document.getElementById('boveda-lock-screen').style.display = 'block';
+    document.getElementById('boveda-abierta').style.display     = 'none';
+    _bovedaAbierta = false;
+    _bovedaPin = '';
+    _pinModo = ''; _pinTemp = '';
+    renderPinPad(localStorage.getItem(_BOVEDA_KEY) ? 'abrir' : 'crear');
+}
+
+function guardarEntradaDiario() {
+    const txt = document.getElementById('diario-nueva')?.value?.trim();
+    if (!txt || !_bovedaPin) return;
+    const entradas = _cargarEntradas();
+    entradas.unshift({ fecha: new Date().toLocaleString('es-MX'), enc: _xorEnc(txt, _bovedaPin) });
+    if (entradas.length > 100) entradas.pop();
+    localStorage.setItem(_DIARIO_KEY, JSON.stringify(entradas.map(e => ({ fecha: e.fecha, enc: e.enc }))));
+    document.getElementById('diario-nueva').value = '';
+    renderEntradas();
+    showToast('📔 Entrada guardada');
+}
+
+function _cargarEntradas() {
+    return JSON.parse(localStorage.getItem(_DIARIO_KEY) || '[]');
+}
+
+function renderEntradas() {
+    const el = document.getElementById('diario-entradas');
+    if (!el || !_bovedaPin) return;
+    const entradas = _cargarEntradas();
+    if (!entradas.length) { el.innerHTML = '<div style="color:var(--dim);text-align:center;padding:16px;font-size:0.82em">Aún no hay entradas — escribe la primera</div>'; return; }
+    el.innerHTML = entradas.map((e,i) => {
+        const dec = _xorDec(e.enc, _bovedaPin);
+        const preview = dec ? dec.slice(0,60) + (dec.length>60?'…':'') : '(no se pudo leer)';
+        return `<div class="diario-entry" onclick="verEntrada(${i})">
+            <div class="d-fecha">${e.fecha}</div>
+            <div class="d-preview">${preview}</div>
+        </div>`;
+    }).join('');
+}
+
+function verEntrada(i) {
+    const entradas = _cargarEntradas();
+    const dec = _xorDec(entradas[i].enc, _bovedaPin);
+    if (!dec) { showToast('Error al leer la entrada'); return; }
+    const overlay = document.createElement('div');
+    overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.85);z-index:9000;display:flex;align-items:center;justify-content:center;padding:20px';
+    overlay.innerHTML = `<div style="background:#111118;border:1px solid #2a1a3a;border-radius:16px;padding:20px;max-width:400px;width:100%;max-height:80vh;overflow-y:auto">
+        <div style="font-size:0.72em;color:var(--dim);margin-bottom:8px">${entradas[i].fecha}</div>
+        <div style="font-size:0.88em;line-height:1.7;color:#ddd;white-space:pre-wrap">${dec}</div>
+        <button onclick="this.closest('div[style]').remove()" style="margin-top:16px;width:100%;padding:10px;background:none;border:1px solid #333;color:var(--dim);border-radius:8px;cursor:pointer">Cerrar</button>
+    </div>`;
+    document.body.appendChild(overlay);
+}
+
+// Inicializar panel-yo
+function iniciarYo() {
+    renderEmociones();
+    renderNadie();
+    cargarIdentidad();
+    renderTribu();
+    renderPensando();
+    cargarBrecha();
+    const tienePIN = !!localStorage.getItem(_BOVEDA_KEY);
+    _pinModo = tienePIN ? '' : 'crear';
+    renderPinPad(tienePIN ? 'abrir' : 'crear');
+    if (_bovedaAbierta) _abrirDiario();
+}
+
+// ── MÓDULO NEGOCIO ────────────────────────────────────────────────────────
+const MODULOS_NEGOCIO = [
+    {
+        emoji: '💡', titulo: '¿Y si lo hago yo?',
+        color: 'var(--green)',
+        intro: 'Todos tienen ideas — pero la mayoría no hace nada con ellas. La diferencia entre soñar y emprender es un paso ridículamente pequeño que casi nadie da.',
+        concepto: '📌 No necesitas la idea del siglo. Solo necesitas algo que resuelva un problemita real para alguien real. Puede ser algo que ya existe — pero que tú haces diferente, más barato, más rápido o con mejor onda.',
+        ejercicio_titulo: '✏️ Suéltalo — ¿qué harías si supieras que va a salir bien?',
+        ejercicio_placeholder: 'Lo que haría es...\nLe ayudaría a la gente que...\nLo que lo hace diferente es que yo...',
+        ejercicio_tipo: 'textarea',
+        completado_msg: '🔥 Eso es más que el 90% de la gente — ellos solo lo piensan, tú ya lo escribiste.'
+    },
+    {
+        emoji: '🎯', titulo: '¿A quién le vendería?',
+        color: 'var(--pink)',
+        intro: 'El error clásico: "le vendo a todo el mundo". Spoiler: así no le vendes a nadie. Entre más específica seas sobre quién es tu persona, más fácil es encontrarla y convencerla.',
+        concepto: '📌 Piensa en UNA persona concreta que conoces y que compraría lo que haces. ¿Cuántos años tiene? ¿Qué le preocupa? ¿Dónde pasa el tiempo — TikTok, el colegio, el gym? Esa es tu pista.',
+        ejercicio_titulo: '✏️ Describe a esa persona como si la conocieras',
+        ejercicio_placeholder: 'Es alguien de... años, le importa mucho...\nSu problema es que no tiene / no sabe / no puede...\nLo encuentro en... y le hablaría de...',
+        ejercicio_tipo: 'textarea',
+        completado_msg: '🎯 ¡Ahora sí! Ya sabes exactamente a quién buscar.'
+    },
+    {
+        emoji: '💰', titulo: '¿Cuánto cobro sin quedar mal?',
+        color: 'var(--yellow)',
+        intro: 'Cobrar barato pa que te compren más suena lógico — pero es la trampa más cara del emprendedor nuevo. Si cobras muy poco, la gente desconfía o tú acabas agotada ganando casi nada.',
+        concepto: '📌 Regla simple: Precio = lo que gastaste + el valor de tu tiempo + un cachito de ahorro. Tu tiempo vale aunque no lo veas. Si tardas 2 horas en algo, esas 2 horas tienen precio. Prueba la calculadora de abajo.',
+        ejercicio_titulo: '✏️ ¿Qué ofreces y cuánto cuesta hacerlo (sin contar tu tiempo)?',
+        ejercicio_placeholder: 'Ofrezco...\nGasto en materiales/insumos: $...\nTardo aproximadamente... horas\nActualmente cobro $... (o no he cobrado nada todavía)',
+        ejercicio_tipo: 'textarea',
+        completado_msg: '💰 Exacto. Ya tienes los números sobre la mesa — eso es poder.'
+    },
+    {
+        emoji: '📱', titulo: 'Que te vean (y quieran comprarte)',
+        color: 'var(--cyan)',
+        intro: 'Subir posts al azar no sirve. Pero tampoco necesitas ser influencer ni tener miles de seguidores. Solo necesitas que las personas correctas te vean en el momento correcto.',
+        concepto: '📌 Tres tipos de contenido que hacen el trabajo: 1) Enseña algo útil gratis → ganas confianza. 2) Muestra cómo lo haces → la gente se conecta contigo. 3) Ofrece directo con precio claro → ahí viene la venta. Rota los tres y repite.',
+        ejercicio_titulo: '✏️ Arma tus próximos 3 posts (uno de cada tipo)',
+        ejercicio_placeholder: 'Post que enseña: Voy a explicar cómo...\nPost detrás de cámaras: Voy a mostrar cuando yo...\nPost de oferta: Voy a decir que tengo... a $... y para pedirlo hay que...',
+        ejercicio_tipo: 'textarea',
+        completado_msg: '📱 ¡Tienes un plan de contenido real! Eso ya es más que la mayoría.'
+    },
+    {
+        emoji: '🚀', titulo: '¡Mi primera venta!',
+        color: 'var(--orange)',
+        intro: 'La primera venta no va a venir de un anuncio ni de tener miles de seguidores. Va a venir de alguien que ya te conoce. Y eso no es trampa — es estrategia.',
+        concepto: '📌 El camino más corto: piensa en 10 personas que ya te conocen y que podrían comprar o recomendar. No les mandes un story — escríbeles directo, cuéntales qué haces, pregúntales qué opinan. Aunque no compren, su feedback vale más que mil likes.',
+        ejercicio_titulo: '✏️ ¿A quién le vas a contar esta semana?',
+        ejercicio_placeholder: '1. ...\n2. ...\n3. ...\n(No tiene que ser tu mejor venta — solo el primer paso)',
+        ejercicio_tipo: 'textarea',
+        completado_msg: '🚀 ¡Arrancaste! El primer paso siempre es el más difícil y ya lo diste.'
+    }
+];
+
+let _moduloActual = -1;
+const _modulosCompletados = JSON.parse(localStorage.getItem('nexus_negocio_completados') || '[]');
+
+function iniciarNegocio() {
+    actualizarRuta();
+    if (_moduloActual === -1) {
+        document.getElementById('modulo-contenido').innerHTML =
+            `<div class="modulo-card" style="text-align:center;padding:24px">
+                <div style="font-size:2em;margin-bottom:8px">👆</div>
+                <div style="font-size:0.86em;color:var(--dim)">Elige un módulo arriba para empezar tu ruta de emprendedor</div>
+            </div>`;
+    }
+}
+
+function actualizarRuta() {
+    MODULOS_NEGOCIO.forEach((m, i) => {
+        const el = document.getElementById('rp-' + i);
+        if (!el) return;
+        el.classList.remove('activo', 'completo');
+        if (_modulosCompletados.includes(i)) el.classList.add('completo');
+        if (i === _moduloActual) el.classList.add('activo');
+    });
+    const tot = _modulosCompletados.length;
+    document.getElementById('ruta-progreso-txt').textContent =
+        tot === 0 ? 'Toca cualquier módulo para empezar' :
+        tot === MODULOS_NEGOCIO.length ? '🎉 ¡Completaste toda la ruta!' :
+        `Vas ${tot} de ${MODULOS_NEGOCIO.length} — sigue así`;
+}
+
+function abrirModulo(i) {
+    _moduloActual = i;
+    actualizarRuta();
+    const m = MODULOS_NEGOCIO[i];
+    const completado = _modulosCompletados.includes(i);
+    document.getElementById('modulo-contenido').innerHTML = `
+        <div class="modulo-card">
+            <div class="modulo-titulo" style="color:${m.color}">${m.emoji} ${m.titulo}</div>
+            <div style="font-size:0.7em;color:var(--dim);margin-top:-4px;margin-bottom:10px">Paso ${i+1} de ${MODULOS_NEGOCIO.length}</div>
+            <div class="modulo-intro">${m.intro}</div>
+            <div class="modulo-concepto">${m.concepto}</div>
+            <div class="modulo-ejercicio">
+                <div class="modulo-ejercicio-titulo">${m.ejercicio_titulo}</div>
+                <textarea id="ej-input-${i}" rows="4" placeholder="${m.ejercicio_placeholder}"
+                    style="width:100%;resize:none;background:var(--bg);border:1px solid #2a3a2a;color:var(--txt);border-radius:8px;padding:8px;font-family:inherit;font-size:0.84em"
+                >${localStorage.getItem('nexus_negocio_ej_'+i)||''}</textarea>
+            </div>
+            ${completado
+                ? `<div style="text-align:center;padding:10px;font-size:0.84em;color:var(--cyan)">✅ ${m.completado_msg}</div>`
+                : `<button class="modulo-btn-listo" onclick="completarModulo(${i})">✅ Listo, ya lo hice</button>`
+            }
+        </div>`;
+    document.getElementById('modulo-contenido').scrollIntoView({behavior:'smooth', block:'nearest'});
+}
+
+function completarModulo(i) {
+    const txt = document.getElementById('ej-input-' + i)?.value || '';
+    localStorage.setItem('nexus_negocio_ej_' + i, txt);
+    if (!_modulosCompletados.includes(i)) {
+        _modulosCompletados.push(i);
+        localStorage.setItem('nexus_negocio_completados', JSON.stringify(_modulosCompletados));
+    }
+    const m = MODULOS_NEGOCIO[i];
+    const cont = document.getElementById('modulo-contenido');
+    cont.querySelector('.modulo-btn-listo').outerHTML =
+        `<div style="text-align:center;padding:10px;font-size:0.84em;color:var(--cyan)">✅ ${m.completado_msg}</div>`;
+    actualizarRuta();
+    showToast(m.completado_msg);
+    // Sugerir siguiente módulo
+    if (i < MODULOS_NEGOCIO.length - 1) {
+        setTimeout(() => {
+            const sig = MODULOS_NEGOCIO[i+1];
+            showToast(`👉 Siguiente: ${sig.emoji} ${sig.titulo}`);
+        }, 2200);
+    }
+}
+
+function calcularPrecio() {
+    const costo   = parseFloat(document.getElementById('calc-costo')?.value)   || 0;
+    const ganancia= parseFloat(document.getElementById('calc-ganancia')?.value) || 0;
+    const subtotal = costo + ganancia;
+    const ahorro  = Math.round(subtotal * 0.1);
+    const total   = subtotal + ahorro;
+    if (document.getElementById('calc-ahorro'))
+        document.getElementById('calc-ahorro').value = '$' + ahorro;
+    if (document.getElementById('calc-resultado'))
+        document.getElementById('calc-resultado').textContent = '$' + total;
+    if (document.getElementById('calc-desglose') && total > 0)
+        document.getElementById('calc-desglose').textContent =
+            `Costo $${costo} + ganancia $${ganancia} + ahorro del negocio $${ahorro}`;
 }
 
 // ── INIT ─────────────────────────────────────────────────────────────────
 init();
+renderInspiracion();
 </script>
 
 <!-- ══════════════════════════════════════ NEXUS VOICE ENGINE ══════════ -->

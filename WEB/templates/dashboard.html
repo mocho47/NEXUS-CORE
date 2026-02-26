@@ -82,6 +82,55 @@
         .row-info:last-child { border-bottom: none; }
         .link-ext { color: #00ff88; text-decoration: none; padding: 8px 16px; border: 1px solid #00ff8844; border-radius: 6px; font-size: 0.86em; display: inline-block; margin: 4px; }
         .link-ext:hover { background: #00ff8818; }
+
+        /* ── TOUR ──────────────────────────────────────────────────────── */
+        .tour-overlay {
+            position: fixed; inset: 0; z-index: 9000;
+            background: rgba(0,0,0,0.72);
+            animation: tourFadeIn 0.25s ease;
+            pointer-events: none;
+        }
+        @keyframes tourFadeIn { from { opacity:0 } to { opacity:1 } }
+
+        .tour-spotlight {
+            position: fixed; z-index: 9001; border-radius: 10px;
+            box-shadow: 0 0 0 9999px rgba(0,0,0,0.72);
+            transition: all 0.35s cubic-bezier(.4,0,.2,1);
+            pointer-events: none;
+        }
+
+        .tour-tooltip {
+            position: fixed; z-index: 9002;
+            background: #1a1a1a; border: 1px solid #f0c040;
+            border-radius: 12px; padding: 18px 20px;
+            max-width: 320px; min-width: 240px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.6);
+            transition: all 0.35s cubic-bezier(.4,0,.2,1);
+            pointer-events: all;
+        }
+        .tour-tooltip .tt-badge {
+            font-size: 0.7em; color: #f0c040; font-weight: bold;
+            letter-spacing: 1px; text-transform: uppercase; margin-bottom: 6px;
+        }
+        .tour-tooltip .tt-title {
+            font-size: 1em; font-weight: 700; color: #fff; margin-bottom: 8px;
+        }
+        .tour-tooltip .tt-desc {
+            font-size: 0.84em; color: #aaa; line-height: 1.5; margin-bottom: 14px;
+        }
+        .tour-tooltip .tt-btns {
+            display: flex; gap: 8px; justify-content: flex-end; align-items: center;
+        }
+        .tour-tooltip .tt-btns button {
+            background: none; border: 1px solid #333; color: #888;
+            padding: 5px 12px; border-radius: 6px; cursor: pointer; font-size: 0.8em;
+            transition: all 0.15s;
+        }
+        .tour-tooltip .tt-btns button:hover { border-color: #f0c040; color: #f0c040; }
+        .tour-tooltip .tt-btns .tt-next {
+            background: #f0c040; border-color: #f0c040; color: #111; font-weight: 700;
+        }
+        .tour-tooltip .tt-btns .tt-next:hover { background: #ffd700; }
     </style>
 </head>
 <body>
@@ -91,7 +140,9 @@
     <span class="logo">&#9889; NEXUS</span>
     <span style="flex:1"></span>
     <span class="dot" id="dot">&#9679; Conectando...</span>
-    <div id="topbar-right" style="display:flex;align-items:center;gap:8px;margin-left:10px"></div>
+    <div id="topbar-right" style="display:flex;align-items:center;gap:8px;margin-left:10px">
+        <button class="btn btn-sm" onclick="iniciarTour()" style="background:#f0c040;color:#111;font-weight:700;border-color:#f0c040">🎯 Tour</button>
+    </div>
 </div>
 
 <!-- TABS -->
@@ -1386,6 +1437,122 @@ function cargarLicencias() {
     fetch('/api/licencia/huella').then(r=>r.json()).then(d=>{
         document.getElementById('lic-huella').textContent = d.huella||d.fingerprint||JSON.stringify(d);
     });
+}
+
+/* ── TOUR ─────────────────────────────────────────────────────────── */
+const TOUR_STEPS = [
+    { panel:'inicio',   sel:'.kpi-row',      title:'Vista general del día',
+      desc:'KPIs en tiempo real: pedidos activos, clientes registrados y nivel de stock — actualizados automáticamente.' },
+    { panel:'inicio',   sel:'#ini-pedidos',  title:'Pedidos pendientes',
+      desc:'Lista de trabajos por entregar con fecha límite. Desde aquí puedes cambiar el estado de cada pedido.' },
+    { panel:'pedidos',  sel:'#panel-pedidos form', title:'Captura de pedido',
+      desc:'Registra cliente, descripción del producto y fecha de entrega. El sistema actualiza los KPIs al instante.' },
+    { panel:'stock',    sel:'#panel-stock .card', title:'Inventario de materiales',
+      desc:'Control de materiales con alerta automática de stock bajo. Nunca más te quedas sin insumos sin saberlo.' },
+    { panel:'oido',     sel:'#panel-oido',   title:'Control por voz',
+      desc:'Di "nexus" para activar, luego tu comando. Opera el sistema completo sin tocar el teclado.' },
+    { panel:'sistema',  sel:'#health-card',  title:'Salud del sistema',
+      desc:'Monitoreo automático de conexiones, disco y módulos activos. NEXUS se autodiagnostica y repara.' },
+    { panel:'inicio',   sel:'.logo',         title:'¡Eso es NEXUS!',
+      desc:'Siempre corriendo en segundo plano. Accesible desde cualquier dispositivo en la misma red — o desde internet con túnel activo.' }
+];
+
+let _tourIdx = 0;
+let _tourOverlay = null;
+let _tourSpot    = null;
+let _tourTip     = null;
+let _tourKeyFn   = null;
+
+function iniciarTour() {
+    if (_tourOverlay) return;  // ya activo
+    _tourOverlay = document.createElement('div');
+    _tourOverlay.className = 'tour-overlay';
+    document.body.appendChild(_tourOverlay);
+
+    _tourSpot = document.createElement('div');
+    _tourSpot.className = 'tour-spotlight';
+    document.body.appendChild(_tourSpot);
+
+    _tourTip = document.createElement('div');
+    _tourTip.className = 'tour-tooltip';
+    document.body.appendChild(_tourTip);
+
+    _tourIdx = 0;
+    _tourMostrarPaso(0);
+
+    _tourKeyFn = (e) => {
+        if (e.key === 'Escape') _tourSalir();
+        else if (e.key === 'ArrowRight' || e.key === ' ') { e.preventDefault(); _tourSiguiente(); }
+        else if (e.key === 'ArrowLeft') _tourAnterior();
+    };
+    document.addEventListener('keydown', _tourKeyFn);
+}
+
+function _tourMostrarPaso(i) {
+    const step = TOUR_STEPS[i];
+    // Navegar al panel correcto
+    go(step.panel);
+
+    // Pequeño delay para que el panel se muestre antes de medir
+    setTimeout(() => {
+        const el = document.querySelector(step.sel);
+        if (el) _tourPosicionar(el);
+
+        const total = TOUR_STEPS.length;
+        const esUltimo = (i === total - 1);
+        _tourTip.innerHTML = `
+            <div class="tt-badge">Paso ${i+1} de ${total}</div>
+            <div class="tt-title">${step.title}</div>
+            <div class="tt-desc">${step.desc}</div>
+            <div class="tt-btns">
+                <button onclick="_tourSalir()">✕ Salir</button>
+                ${i > 0 ? '<button onclick="_tourAnterior()">← Anterior</button>' : ''}
+                <button class="tt-next" onclick="${esUltimo ? '_tourSalir()' : '_tourSiguiente()'}">
+                    ${esUltimo ? '🎉 ¡Listo!' : 'Siguiente →'}
+                </button>
+            </div>`;
+
+        // Posicionar tooltip (cálculo después de insertar contenido)
+        if (el) {
+            const r = el.getBoundingClientRect();
+            const tipH = _tourTip.offsetHeight || 160;
+            const tipW = _tourTip.offsetWidth  || 300;
+            const margin = 16;
+            let top = r.bottom + margin;
+            let left = r.left;
+            if (top + tipH > window.innerHeight - margin) top = r.top - tipH - margin;
+            if (left + tipW > window.innerWidth  - margin) left = window.innerWidth - tipW - margin;
+            if (left < margin) left = margin;
+            if (top  < margin) top  = margin;
+            _tourTip.style.top  = top  + 'px';
+            _tourTip.style.left = left + 'px';
+        }
+    }, 80);
+}
+
+function _tourPosicionar(el) {
+    const r = el.getBoundingClientRect();
+    const pad = 6;
+    _tourSpot.style.top    = (r.top  - pad) + 'px';
+    _tourSpot.style.left   = (r.left - pad) + 'px';
+    _tourSpot.style.width  = (r.width  + pad*2) + 'px';
+    _tourSpot.style.height = (r.height + pad*2) + 'px';
+}
+
+function _tourSiguiente() {
+    if (_tourIdx < TOUR_STEPS.length - 1) { _tourIdx++; _tourMostrarPaso(_tourIdx); }
+    else _tourSalir();
+}
+
+function _tourAnterior() {
+    if (_tourIdx > 0) { _tourIdx--; _tourMostrarPaso(_tourIdx); }
+}
+
+function _tourSalir() {
+    if (_tourOverlay) { _tourOverlay.remove(); _tourOverlay = null; }
+    if (_tourSpot)    { _tourSpot.remove();    _tourSpot    = null; }
+    if (_tourTip)     { _tourTip.remove();     _tourTip     = null; }
+    if (_tourKeyFn)   { document.removeEventListener('keydown', _tourKeyFn); _tourKeyFn = null; }
 }
 </script>
 
