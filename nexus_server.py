@@ -658,6 +658,19 @@ async def api_hablar(req: HablarRequest):
     except Exception as e:
         return {"ok": False, "error": str(e)}
 
+@app.post("/api/cast/hablar", response_class=JSONResponse)
+async def api_cast_hablar(req: HablarRequest):
+    """Habla por el Google Home Mini."""
+    if CLOUD_MODE:
+        return {"ok": False, "error": "Cast no disponible en modo nube"}
+    try:
+        import threading
+        from nexus_cast import hablar_en_mini
+        threading.Thread(target=hablar_en_mini, args=(req.texto,), daemon=True).start()
+        return {"ok": True}
+    except Exception as e:
+        return {"ok": False, "error": str(e)}
+
 # ── AGENT ─────────────────────────────────────────────────────────────────────
 
 class AgentRequest(BaseModel):

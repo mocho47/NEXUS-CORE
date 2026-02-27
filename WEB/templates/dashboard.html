@@ -727,9 +727,10 @@ function iniciarOido(){
                 oidSetDot('processing');
                 oidSetStatus('NEXUS activo — di el comando');
                 nexusHablar('Mande.').then(()=>{
-                    // Listo para recibir comando — el mic ya está corriendo
                     oidSetStatus('Escuchando tu comando...');
                 });
+                // Responder también en Google Home Mini
+                fetch('/api/cast/hablar', {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({texto:'Mande.'})}).catch(()=>{});
                 oidBurbuja('NEXUS','Mande.',false);
                 // Timeout de seguridad: si no llega comando en 10s, vuelve al modo escucha
                 clearTimeout(window._oidTimeout);

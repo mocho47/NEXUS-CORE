@@ -88,3 +88,38 @@ def get_caster() -> CastManager:
 
 if os.environ.get("NEXUS_NO_AUTOSTART", "0").strip().lower() not in ("1", "true", "yes"):
     caster = CastManager()
+
+
+# ── HABLAR EN MINI (método directo por IP — probado y funcional) ──────────────
+import asyncio
+import edge_tts
+
+MINI_IP    = "192.168.1.22"
+MINI_PORT  = 8009
+SERVER_IP  = "192.168.1.27"
+SERVER_PORT = 8000
+_AUDIO_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), "out", "nexus_cast.mp3")
+_AUDIO_URL  = f"http://{SERVER_IP}:{SERVER_PORT}/out/nexus_cast.mp3"
+
+async def _gen_audio(texto: str):
+    tts = edge_tts.Communicate(texto, voice="es-MX-JorgeNeural")
+    await tts.save(_AUDIO_PATH)
+
+def hablar_en_mini(texto: str) -> dict:
+    """Genera TTS con edge_tts y lo reproduce en el Google Home Mini."""
+    try:
+        asyncio.run(_gen_audio(texto))
+        cast = pychromecast.get_chromecast_from_host(
+            (MINI_IP, MINI_PORT, None, "Google Home Mini", "Mi Mini")
+        )
+        cast.wait()
+        cast.quit_app()
+        time.sleep(1.5)
+        mc = cast.media_controller
+        mc.play_media(_AUDIO_URL, "audio/mp3")
+        mc.block_until_active()
+        time.sleep(max(4, len(texto) * 0.07))
+        cast.disconnect()
+        return {"ok": True}
+    except Exception as e:
+        return {"ok": False, "error": str(e)}
