@@ -952,6 +952,10 @@ async def api_legal_estado():
 async def teens_view(request: Request):
     return templates.TemplateResponse("teens.html", {"request": request})
 
+@app.get("/teens/instalar", response_class=HTMLResponse)
+async def teens_instalar(request: Request):
+    return templates.TemplateResponse("teens_bienvenida.html", {"request": request})
+
 class TeensUserReq(BaseModel):
     user_id: str
     nombre:  str = "Teen"
