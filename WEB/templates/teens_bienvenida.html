@@ -86,7 +86,28 @@ h1 {
 .paso .txt strong { color: #ccc; display: block; margin-bottom: 2px; }
 .paso .txt span { color: #444; }
 .nota-footer { font-size: 0.7em; color: #282828; text-align: center; margin-top: 24px; }
+.os-tabs { display: flex; gap: 8px; margin-bottom: 18px; }
+.os-btn {
+    flex: 1; padding: 10px; border-radius: 10px; border: 1px solid #1a1a1a;
+    background: #111; color: #555; font-size: 0.85em; font-weight: 700;
+    cursor: pointer; transition: all 0.15s;
+}
+.os-btn.active { background: #1a1a2a; border-color: #c471ed; color: #c471ed; }
 </style>
+<script>
+function mostrarOS(os, btn) {
+    document.getElementById('inst-ios').style.display = os === 'ios' ? 'block' : 'none';
+    document.getElementById('inst-android').style.display = os === 'android' ? 'block' : 'none';
+    document.querySelectorAll('.os-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+}
+// Auto-detectar Android
+if (/android/i.test(navigator.userAgent)) {
+    window.addEventListener('DOMContentLoaded', () => {
+        document.querySelectorAll('.os-btn')[1].click();
+    });
+}
+</script>
 </head>
 <body>
 
@@ -125,27 +146,60 @@ h1 {
 
     <div class="divider">— instalar en tu cel —</div>
 
-    <p class="install-title">📲 Agrégala a tu pantalla de inicio:</p>
+    <div class="os-tabs">
+        <button class="os-btn active" onclick="mostrarOS('ios',this)">🍎 iPhone</button>
+        <button class="os-btn" onclick="mostrarOS('android',this)">🤖 Android</button>
+    </div>
 
-    <div class="paso">
-        <div class="num">1️⃣</div>
-        <div class="txt">
-            <strong>Abre en Safari</strong>
-            <span>Si estás en Chrome o desde Instagram/WhatsApp, copia el link y ábrelo en Safari.</span>
+    <!-- iOS -->
+    <div id="inst-ios">
+        <p class="install-title">Abre en Safari (no Chrome ni Instagram):</p>
+        <div class="paso">
+            <div class="num">1️⃣</div>
+            <div class="txt">
+                <strong>Abre en Safari</strong>
+                <span>Si llegaste desde Chrome o WhatsApp, copia el link y ábrelo en Safari — es necesario.</span>
+            </div>
+        </div>
+        <div class="paso">
+            <div class="num">2️⃣</div>
+            <div class="txt">
+                <strong>Toca el botón compartir ↑</strong>
+                <span>El ícono de cuadro con flecha arriba en la barra de Safari.</span>
+            </div>
+        </div>
+        <div class="paso">
+            <div class="num">3️⃣</div>
+            <div class="txt">
+                <strong>Toca "Agregar a pantalla de inicio"</strong>
+                <span>Baja en el menú hasta encontrarlo. Dale nombre y listo — queda como app.</span>
+            </div>
         </div>
     </div>
-    <div class="paso">
-        <div class="num">2️⃣</div>
-        <div class="txt">
-            <strong>Toca el botón compartir ↑</strong>
-            <span>El ícono de cuadro con flecha arriba en la barra de Safari.</span>
+
+    <!-- Android -->
+    <div id="inst-android" style="display:none">
+        <p class="install-title">Abre en Chrome — es automático:</p>
+        <div class="paso">
+            <div class="num">1️⃣</div>
+            <div class="txt">
+                <strong>Chrome muestra un banner abajo</strong>
+                <span>Dice "Agregar a pantalla de inicio" o "Instalar app" — tócalo.</span>
+            </div>
         </div>
-    </div>
-    <div class="paso">
-        <div class="num">3️⃣</div>
-        <div class="txt">
-            <strong>Toca "Agregar a pantalla de inicio"</strong>
-            <span>Baja en el menú hasta encontrarlo. Dale nombre y listo — queda como app.</span>
+        <div class="paso">
+            <div class="num">2️⃣</div>
+            <div class="txt">
+                <strong>Si no aparece el banner</strong>
+                <span>Toca los 3 puntos ⋮ arriba a la derecha → "Agregar a pantalla de inicio".</span>
+            </div>
+        </div>
+        <div class="paso">
+            <div class="num">3️⃣</div>
+            <div class="txt">
+                <strong>Confirma la instalación</strong>
+                <span>Toca "Instalar" o "Agregar" — el ícono aparece en tu home igual que cualquier app.</span>
+            </div>
         </div>
     </div>
 
