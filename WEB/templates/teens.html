@@ -2991,10 +2991,20 @@ const NX = (() => {
         if (!localStorage.getItem(OB_KEY)) {
             setTimeout(iniciarOnboarding, 700);
         } else {
-            const nom  = localStorage.getItem(NOMBRE_KEY) || '';
-            const hora = new Date().getHours();
-            const sal  = hora < 13 ? 'Buenos días' : hora < 19 ? 'Buenas tardes' : 'Buenas noches';
-            if (nom) setTimeout(() => hablar(`${sal}, ${nom}. ¿Qué conquistas hoy?`), 1400);
+            const nom      = localStorage.getItem(NOMBRE_KEY) || '';
+            const rolNom   = localStorage.getItem('_nexus_rol_nombre') || '';
+            const hora     = new Date().getHours();
+            const sal      = hora < 13 ? 'Buenos días' : hora < 19 ? 'Buenas tardes' : 'Buenas noches';
+            if (nom) {
+                const saludoRol = {
+                    papa: `${sal}, papá. ¿Cómo estamos hoy?`,
+                    mama: `${sal}, mamá. ¿Cómo estamos hoy?`,
+                    hijo: `${sal}, ${nom}. ¿Qué conquistas hoy?`,
+                    hija: `${sal}, ${nom}. ¿Qué conquistas hoy?`,
+                };
+                const msg = saludoRol[rolNom] || `${sal}, ${nom}. ¿Qué conquistas hoy?`;
+                setTimeout(() => hablar(msg), 1400);
+            }
         }
     }
 
@@ -3064,10 +3074,39 @@ window.addEventListener('DOMContentLoaded', () => setTimeout(NX.verificarOnboard
         _msRender();
     };
 
+    // Saludos de voz por rol
+    const _SALUDOS_VOZ = {
+        papa:  'Bienvenido, papá. Soy NEXUS, su asistente personal y amigo virtual de su hijo o hija. Estoy aquí para aportar de manera positiva en lo que ustedes elijan.',
+        mama:  'Bienvenida, mamá. Soy NEXUS, su asistente personal y amigo virtual de su hijo o hija. Estoy aquí para aportar de manera positiva en lo que ustedes elijan.',
+        hijo:  'Bienvenido. Soy NEXUS. No estoy aquí para decirte qué hacer — estoy aquí para que tú lo decidas mejor.',
+        hija:  'Bienvenida. Soy NEXUS. No estoy aquí para decirte qué hacer — estoy aquí para que tú lo decidas mejor.',
+        demo:  'Hola. Esto es un demo de NEXUS Teens. Explora todo sin registrarte.',
+        teen:  '¡Bienvenid@ a NEXUS Teens! Soy NEXUS, tu asistente.',
+    };
+
+    function _saludarConVoz() {
+        const clave = rolNombre || (modo === 'demo' ? 'demo' : rol);
+        const texto = _SALUDOS_VOZ[clave] || _SALUDOS_VOZ.teen;
+        // Espera a que speechSynthesis tenga voces listas
+        function intentar() {
+            const voces = window.speechSynthesis?.getVoices() || [];
+            if (voces.length) {
+                NX.hablar(texto);
+            } else {
+                window.speechSynthesis.onvoiceschanged = () => NX.hablar(texto);
+                setTimeout(() => NX.hablar(texto), 1200);
+            }
+        }
+        if (window.speechSynthesis) intentar();
+    }
+
     window.addEventListener('DOMContentLoaded', () => {
         setTimeout(() => {
             document.getElementById('manual-overlay').style.display = 'flex';
             _msRender();
+            // Solo saludar si es primera vez o demo
+            const yaVio = localStorage.getItem('nexus_manual_visto_' + rol);
+            if (!yaVio || modo === 'demo') setTimeout(_saludarConVoz, 600);
         }, 800);
     });
 })();
