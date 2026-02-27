@@ -44,29 +44,29 @@ h1 {
     font-size: 0.72em; color: #333; text-transform: uppercase;
     letter-spacing: 1.5px; margin-bottom: 12px; text-align: center;
 }
-.roles { display: flex; flex-direction: column; gap: 12px; margin-bottom: 14px; }
+.roles { display: flex; flex-direction: column; gap: 10px; margin-bottom: 14px; }
+.roles-row { display: flex; gap: 10px; }
 .card {
-    display: block; padding: 20px 20px 18px;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    flex: 1; padding: 18px 10px;
     border-radius: 16px; text-decoration: none; border: 1px solid;
     transition: transform 0.15s, opacity 0.15s; cursor: pointer;
-    -webkit-tap-highlight-color: transparent;
+    -webkit-tap-highlight-color: transparent; text-align: center;
 }
-.card:active { transform: scale(0.98); opacity: 0.88; }
-.card-emoji { font-size: 1.8em; display: block; margin-bottom: 8px; }
-.card-title { font-size: 1.1em; font-weight: 800; display: block; margin-bottom: 5px; }
+.card:active { transform: scale(0.96); opacity: 0.85; }
+.card-emoji { font-size: 2.2em; display: block; margin-bottom: 8px; }
+.card-title { font-size: 1em; font-weight: 800; display: block; }
 .card-desc { font-size: 0.78em; display: block; }
 .card-teen {
     background: linear-gradient(135deg, rgba(255,107,157,0.1), rgba(196,113,237,0.1));
     border-color: rgba(255,107,157,0.28);
 }
 .card-teen .card-title { color: #ff6b9d; }
-.card-teen .card-desc { color: #666; }
 .card-padre {
     background: linear-gradient(135deg, rgba(78,205,196,0.08), rgba(100,130,255,0.08));
     border-color: rgba(78,205,196,0.22);
 }
 .card-padre .card-title { color: #4ecdc4; }
-.card-padre .card-desc { color: #666; }
 .btn-demo {
     display: block; text-align: center; padding: 13px;
     border-radius: 12px; border: 1px dashed #222;
@@ -127,19 +127,29 @@ if (/android/i.test(navigator.userAgent)) {
         <span class="badge">🎯 Misiones</span>
     </div>
 
-    <p class="section-label">¿Cómo entras?</p>
+    <p class="section-label">¿Quién eres?</p>
 
     <div class="roles">
-        <a href="/teens?entrar=1" class="card card-teen">
-            <span class="card-emoji">🎮</span>
-            <span class="card-title">Soy teen</span>
-            <span class="card-desc">Tutor IA · Mi Negocio · Emociones · Diario privado · Aptitudes · Misiones</span>
-        </a>
-        <a href="/teens?rol=padre" class="card card-padre">
-            <span class="card-emoji">👨‍👩‍👧</span>
-            <span class="card-title">Soy papá o mamá</span>
-            <span class="card-desc">Conecta · Reconocimientos · Acuerdos · Seguimiento familiar</span>
-        </a>
+        <div class="roles-row">
+            <a href="/teens?rol=papa" class="card card-padre">
+                <span class="card-emoji">👨</span>
+                <span class="card-title">Papá</span>
+            </a>
+            <a href="/teens?rol=mama" class="card card-padre">
+                <span class="card-emoji">👩</span>
+                <span class="card-title">Mamá</span>
+            </a>
+        </div>
+        <div class="roles-row">
+            <a href="/teens?rol=hijo" class="card card-teen">
+                <span class="card-emoji">👦</span>
+                <span class="card-title">Hijo</span>
+            </a>
+            <a href="/teens?rol=hija" class="card card-teen">
+                <span class="card-emoji">👧</span>
+                <span class="card-title">Hija</span>
+            </a>
+        </div>
     </div>
 
     <a href="/teens?demo=1" class="btn-demo">▶ Ver demo rápido — sin registrarse</a>

@@ -534,7 +534,7 @@
 
         <!-- Slides padre -->
         <div class="manual-slide" id="ms-p0">
-          <h2 style="background:linear-gradient(135deg,#4ecdc4,#2196f3);-webkit-background-clip:text;-webkit-text-fill-color:transparent">Bienvenid@ 👨‍👩‍👧</h2>
+          <h2 style="background:linear-gradient(135deg,#4ecdc4,#2196f3);-webkit-background-clip:text;-webkit-text-fill-color:transparent" id="ms-saludo-padre">Bienvenid@ 👨‍👩‍👧</h2>
           <p class="ms-sub">NEXUS Teens es una herramienta de desarrollo para tu hij@. Esto es lo que necesitas saber.</p>
           <div class="ms-item"><span class="ms-icon">🔒</span><div class="ms-txt"><strong>Su privacidad es real</strong><span>El diario personal tiene PIN propio — ni tú ni nosotros podemos leerlo. Eso es intencional.</span></div></div>
           <div class="ms-item"><span class="ms-icon">🤖</span><div class="ms-txt"><strong>El Tutor tiene límites</strong><span>Nunca le da órdenes. Si detecta algo emocional, primero escucha. No reemplaza la conversación contigo.</span></div></div>
@@ -1138,11 +1138,18 @@
         history.replaceState({}, '', '/teens');
     }
 
-    // MODO PADRE
-    if (p.get('rol') === 'padre') {
-        localStorage.setItem('nexus_teens_onboarded', '1');
-        localStorage.setItem('nexus_teens_nombre', localStorage.getItem('nexus_teens_nombre') || 'Familia');
-        localStorage.setItem('_nexus_rol', 'padre');
+    // ROLES DE FAMILIA
+    const rol = p.get('rol');
+    if (rol && ['papa','mama','hijo','hija'].includes(rol)) {
+        const esPadre = rol === 'papa' || rol === 'mama';
+        localStorage.setItem('_nexus_rol', esPadre ? 'padre' : 'teen');
+        localStorage.setItem('_nexus_rol_nombre', rol); // papa/mama/hijo/hija
+        if (esPadre) {
+            localStorage.setItem('nexus_teens_onboarded', '1');
+            if (!localStorage.getItem('nexus_teens_nombre')) {
+                localStorage.setItem('nexus_teens_nombre', rol === 'papa' ? 'Papá' : 'Mamá');
+            }
+        }
         history.replaceState({}, '', '/teens');
     }
 
@@ -3000,7 +3007,15 @@ window.addEventListener('DOMContentLoaded', () => setTimeout(NX.verificarOnboard
 // ── MANUAL DE BIENVENIDA ────────────────────────────────────────────────────
 (function() {
     const rol = localStorage.getItem('_nexus_rol') || 'teen';
+    const rolNombre = localStorage.getItem('_nexus_rol_nombre') || '';
     const modo = localStorage.getItem('_nexus_modo');
+
+    // Personalizar saludo según rol específico
+    const saludos = { papa: 'Bienvenido, Papá 👨', mama: 'Bienvenida, Mamá 👩', hijo: 'Bienvenido ⚡', hija: 'Bienvenida ⚡' };
+    if (rolNombre && saludos[rolNombre]) {
+        const el = document.getElementById(rol === 'padre' ? 'ms-saludo-padre' : 'ms-t0');
+        if (el && el.tagName === 'H2') el.childNodes[0] && (el.innerHTML = saludos[rolNombre]);
+    }
     const yaVioManual = localStorage.getItem('nexus_manual_visto_' + rol);
     if (yaVioManual && modo !== 'demo') return;
 
