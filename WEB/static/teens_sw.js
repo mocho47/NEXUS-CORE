@@ -1,7 +1,7 @@
 // NEXUS Teens — Service Worker v1
 // Cachea la app para funcionar offline cuando la PC está apagada
 
-const CACHE = 'nexus-teens-v1';
+const CACHE = 'nexus-teens-v2';
 const SHELL = [
   '/teens',
   '/static/teens_manifest.json',

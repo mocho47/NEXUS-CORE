@@ -437,10 +437,128 @@
         @keyframes pulse { 0%,100% { opacity:1 } 50% { opacity:.5 } }
         .loading-pulse { animation: pulse 1.2s infinite; color: var(--dim); text-align: center;
                           padding: 20px; font-size: 0.84em; }
+
+        /* ── MANUAL / BIENVENIDA MODAL ── */
+        #manual-overlay {
+            position:fixed; inset:0; background:rgba(0,0,0,0.88);
+            z-index:9000; display:flex; align-items:flex-end;
+            justify-content:center; padding:0;
+            animation: fadeInOv 0.25s ease;
+        }
+        @keyframes fadeInOv { from{opacity:0} to{opacity:1} }
+        #manual-sheet {
+            background:#111; border-radius:20px 20px 0 0;
+            width:100%; max-width:480px; padding:28px 24px 40px;
+            max-height:88vh; overflow-y:auto;
+        }
+        .manual-slide { display:none; }
+        .manual-slide.active { display:block; }
+        .manual-slide h2 { font-size:1.4em; font-weight:900; margin-bottom:6px; }
+        .manual-slide .ms-sub { font-size:0.82em; color:#555; margin-bottom:22px; }
+        .ms-item { display:flex; gap:12px; margin-bottom:16px; align-items:flex-start; }
+        .ms-icon { font-size:1.5em; flex-shrink:0; }
+        .ms-txt strong { display:block; font-size:0.88em; color:#e0e0e0; margin-bottom:2px; }
+        .ms-txt span { font-size:0.78em; color:#555; line-height:1.5; display:block; }
+        .manual-nav { display:flex; justify-content:space-between; align-items:center; margin-top:24px; }
+        .manual-dots { display:flex; gap:6px; }
+        .mdot { width:6px; height:6px; border-radius:50%; background:#333; transition:background 0.2s; }
+        .mdot.on { background:#ff6b9d; }
+        .btn-mnav {
+            padding:10px 22px; border-radius:12px; border:none;
+            font-size:0.88em; font-weight:700; cursor:pointer;
+            transition:opacity 0.15s;
+        }
+        .btn-mnav:active { opacity:0.8; }
+        .btn-sig { background:linear-gradient(135deg,#ff6b9d,#c471ed); color:#000; }
+        .btn-ant { background:#1a1a1a; color:#888; }
+        .btn-empezar { background:linear-gradient(135deg,#4ecdc4,#2196f3); color:#000; font-weight:900; }
+
+        /* ── BADGE DEMO ── */
+        #demo-badge {
+            display:none; position:fixed; top:50px; right:12px; z-index:8000;
+            background:#f0c040; color:#000; font-size:0.65em; font-weight:900;
+            padding:3px 10px; border-radius:20px; letter-spacing:0.5px;
+        }
+
+        /* ── CODIGO FAMILIA ── */
+        .familia-code-box {
+            background:#0d0d1a; border:1px solid #1a1a3a; border-radius:14px;
+            padding:20px; text-align:center; margin-bottom:20px;
+        }
+        .familia-code { font-size:2em; font-weight:900; letter-spacing:8px;
+            color:#4ecdc4; font-family:monospace; margin:10px 0; }
+        .familia-join-row { display:flex; gap:10px; margin-top:16px; }
+        .familia-join-row input {
+            flex:1; background:#111; border:1px solid #222; border-radius:10px;
+            padding:12px; color:#e0e0e0; font-size:1em; text-transform:uppercase;
+            letter-spacing:4px; text-align:center; font-family:monospace;
+        }
     </style>
 </head>
 <body>
 <div class="app">
+
+    <!-- BADGE DEMO -->
+    <div id="demo-badge">● DEMO</div>
+
+    <!-- MANUAL DE BIENVENIDA -->
+    <div id="manual-overlay" style="display:none">
+      <div id="manual-sheet">
+        <!-- Slides teen -->
+        <div class="manual-slide" id="ms-t0">
+          <h2 style="background:linear-gradient(135deg,#ff6b9d,#c471ed);-webkit-background-clip:text;-webkit-text-fill-color:transparent">Hola, bienvenid@ ⚡</h2>
+          <p class="ms-sub">Esto es tuyo. Te mostramos qué hay en 4 pasos.</p>
+          <div class="ms-item"><span class="ms-icon">🤖</span><div class="ms-txt"><strong>Tutor IA</strong><span>Escríbele lo que sea — tarea, dudas, algo que te esté pasando. Nunca te dice qué hacer, siempre te da opciones.</span></div></div>
+          <div class="ms-item"><span class="ms-icon">🔒</span><div class="ms-txt"><strong>Diario privado</strong><span>Con PIN tuyo. Nadie más puede leerlo — ni tus papás, ni nosotros.</span></div></div>
+        </div>
+        <div class="manual-slide" id="ms-t1">
+          <h2 style="background:linear-gradient(135deg,#ff6b9d,#c471ed);-webkit-background-clip:text;-webkit-text-fill-color:transparent">Tu negocio 🚀</h2>
+          <p class="ms-sub">5 módulos para arrancar algo tuyo. Sin rollo de adultos.</p>
+          <div class="ms-item"><span class="ms-icon">💡</span><div class="ms-txt"><strong>¿Y si lo hago yo?</strong><span>Descubres qué podrías hacer o vender con lo que ya sabes.</span></div></div>
+          <div class="ms-item"><span class="ms-icon">💰</span><div class="ms-txt"><strong>¿Cuánto cobro?</strong><span>Aprende a poner precio sin quedar mal ni regalarte.</span></div></div>
+          <div class="ms-item"><span class="ms-icon">🚀</span><div class="ms-txt"><strong>¡Mi primera venta!</strong><span>El plan para dar el primer paso real.</span></div></div>
+        </div>
+        <div class="manual-slide" id="ms-t2">
+          <h2 style="background:linear-gradient(135deg,#ff6b9d,#c471ed);-webkit-background-clip:text;-webkit-text-fill-color:transparent">Tu cabeza 🧠</h2>
+          <p class="ms-sub">La parte más personal. Nadie la ve excepto tú.</p>
+          <div class="ms-item"><span class="ms-icon">😤</span><div class="ms-txt"><strong>Emociones como señales</strong><span>Cada emoción te dice algo útil — aquí lo descifras.</span></div></div>
+          <div class="ms-item"><span class="ms-icon">🪞</span><div class="ms-txt"><strong>¿Quién creo que soy?</strong><span>3 preguntas para conocerte mejor de lo que crees.</span></div></div>
+          <div class="ms-item"><span class="ms-icon">👥</span><div class="ms-txt"><strong>Tu tribu</strong><span>Analiza las 5 personas más cercanas a ti.</span></div></div>
+        </div>
+        <div class="manual-slide" id="ms-t3">
+          <h2 style="background:linear-gradient(135deg,#ff6b9d,#c471ed);-webkit-background-clip:text;-webkit-text-fill-color:transparent">Una cosa más 🤝</h2>
+          <p class="ms-sub">Puedes conectarte con tu familia — es opcional.</p>
+          <div class="ms-item"><span class="ms-icon">🔑</span><div class="ms-txt"><strong>Código de familia</strong><span>En la sección Familia, crea o únete con un código compartido. Cada quien mantiene su privacidad.</span></div></div>
+          <div class="ms-item"><span class="ms-icon">📱</span><div class="ms-txt"><strong>Sin internet, sin drama</strong><span>Si la conexión falla, tu diario y notas siguen ahí. Solo el Tutor necesita internet.</span></div></div>
+        </div>
+
+        <!-- Slides padre -->
+        <div class="manual-slide" id="ms-p0">
+          <h2 style="background:linear-gradient(135deg,#4ecdc4,#2196f3);-webkit-background-clip:text;-webkit-text-fill-color:transparent">Bienvenid@ 👨‍👩‍👧</h2>
+          <p class="ms-sub">NEXUS Teens es una herramienta de desarrollo para tu hij@. Esto es lo que necesitas saber.</p>
+          <div class="ms-item"><span class="ms-icon">🔒</span><div class="ms-txt"><strong>Su privacidad es real</strong><span>El diario personal tiene PIN propio — ni tú ni nosotros podemos leerlo. Eso es intencional.</span></div></div>
+          <div class="ms-item"><span class="ms-icon">🤖</span><div class="ms-txt"><strong>El Tutor tiene límites</strong><span>Nunca le da órdenes. Si detecta algo emocional, primero escucha. No reemplaza la conversación contigo.</span></div></div>
+        </div>
+        <div class="manual-slide" id="ms-p1">
+          <h2 style="background:linear-gradient(135deg,#4ecdc4,#2196f3);-webkit-background-clip:text;-webkit-text-fill-color:transparent">Tu panel familiar 🏠</h2>
+          <p class="ms-sub">Lo que SÍ puedes hacer como papá o mamá.</p>
+          <div class="ms-item"><span class="ms-icon">🔑</span><div class="ms-txt"><strong>Código de familia</strong><span>Comparte un código con tu hij@ para conectar los perfiles. Cada quien ve solo lo que decide compartir.</span></div></div>
+          <div class="ms-item"><span class="ms-icon">🌟</span><div class="ms-txt"><strong>Reconocimientos</strong><span>Puedes dejarle notas de reconocimiento que le aparecen a ell@.</span></div></div>
+          <div class="ms-item"><span class="ms-icon">📋</span><div class="ms-txt"><strong>Acuerdos</strong><span>Crea acuerdos en conjunto — ambos los ven y aceptan.</span></div></div>
+        </div>
+        <div class="manual-slide" id="ms-p2">
+          <h2 style="background:linear-gradient(135deg,#4ecdc4,#2196f3);-webkit-background-clip:text;-webkit-text-fill-color:transparent">Ya estás list@ ✅</h2>
+          <p class="ms-sub">Cuando quieras cambiar a la vista de tu hij@, cierra la app y vuelve a entrar eligiendo "Soy teen".</p>
+          <div class="ms-item"><span class="ms-icon">💡</span><div class="ms-txt"><strong>Tip</strong><span>No le preguntes qué escribió en el diario. La confianza es el punto de partida de todo lo demás.</span></div></div>
+        </div>
+
+        <div class="manual-nav">
+          <button class="btn-mnav btn-ant" id="ms-ant" onclick="_msNav(-1)">← Anterior</button>
+          <div class="manual-dots" id="ms-dots"></div>
+          <button class="btn-mnav btn-sig" id="ms-sig" onclick="_msNav(1)">Siguiente →</button>
+        </div>
+      </div>
+    </div>
 
     <!-- TOPBAR -->
     <div class="topbar">
@@ -858,7 +976,23 @@
     </div>
 
     <!-- ░░ FAMILIA — Bloque unificado Teen + Padres ░░ -->
-    <div class="panel" id="panel-familia">
+    <div class="panel" id="panel-familia" onanimationend="" style="">
+
+        <!-- CÓDIGO DE FAMILIA -->
+        <div class="familia-code-box">
+            <div style="font-size:0.72em;color:#4ecdc4;text-transform:uppercase;letter-spacing:1px;font-weight:800;margin-bottom:4px">🔑 Tu código familiar</div>
+            <div style="font-size:0.78em;color:#444;margin-bottom:4px">Compártelo con tu familia para conectar perfiles</div>
+            <div class="familia-code" id="mi-codigo-familia">——————</div>
+            <button class="btn btn-outline" style="border-color:#4ecdc4;color:#4ecdc4;font-size:0.8em;margin-bottom:12px" onclick="familiaCrearCodigo()">
+                Generar / ver mi código
+            </button>
+            <div style="font-size:0.72em;color:#333;margin-bottom:10px">— o únete con el código de alguien —</div>
+            <div class="familia-join-row">
+                <input id="inp-codigo-familia" type="text" placeholder="ABC123" maxlength="6">
+                <button class="btn btn-outline" style="border-color:#4ecdc4;color:#4ecdc4;font-size:0.82em;flex-shrink:0" onclick="familiaUnirseCodigo()">Unirme</button>
+            </div>
+            <div id="familia-joined-code" style="font-size:0.75em;color:#4ecdc4;margin-top:8px;text-align:center"></div>
+        </div>
 
         <!-- ESPACIO PARA MÍ -->
         <div class="espacio-card">
@@ -984,6 +1118,40 @@
 <div class="toast" id="toast"></div>
 
 <script>
+// ── URL PARAMS: demo / rol / entrar ────────────────────────────────────────
+(function() {
+    const p = new URLSearchParams(location.search);
+
+    // MODO DEMO: pre-cargar perfil de ejemplo
+    if (p.get('demo') === '1') {
+        localStorage.setItem('nexus_teens_nombre', 'Alex');
+        localStorage.setItem('nexus_teens_edad', '16');
+        localStorage.setItem('nexus_teens_onboarded', '1');
+        localStorage.setItem('nexus_teens_uid', 'demo_' + Math.random().toString(36).slice(2,6));
+        localStorage.setItem('nexus_negocio_ej_0', 'Haría stickers personalizados para mochilas y cuadernos — tengo buena mano para diseñar y siempre me piden que haga cosas.');
+        localStorage.setItem('nexus_negocio_ej_1', 'Chavos de 13-18 años que quieren personalizar sus cosas. Especialmente quienes siguen fandoms o tienen estética alternativa.');
+        localStorage.setItem('nexus_negocio_completados', JSON.stringify([0, 1]));
+        localStorage.setItem('nexus_identidad', JSON.stringify({ quien: 'Soy curioso/a, me gusta crear cosas y no me quedo callad@ cuando algo no me parece bien.', diferente: 'Veo soluciones donde otros ven problemas, siempre pensando en cómo mejorar algo.', poderes: 'Creatividad, honestidad y aprendo muy rápido cuando algo me interesa de verdad.' }));
+        localStorage.setItem('nexus_pensando', JSON.stringify([{ texto: 'Hoy me preguntaron qué quería estudiar y no supe qué responder. Pero creo que está bien — no tengo que saberlo todo todavía.', fecha: 'Ayer' }]));
+        localStorage.setItem('_nexus_modo', 'demo');
+        // limpiar param de URL sin recargar
+        history.replaceState({}, '', '/teens');
+    }
+
+    // MODO PADRE
+    if (p.get('rol') === 'padre') {
+        localStorage.setItem('nexus_teens_onboarded', '1');
+        localStorage.setItem('nexus_teens_nombre', localStorage.getItem('nexus_teens_nombre') || 'Familia');
+        localStorage.setItem('_nexus_rol', 'padre');
+        history.replaceState({}, '', '/teens');
+    }
+
+    // ENTRAR normal (desde landing) — solo limpia el param
+    if (p.get('entrar') === '1') {
+        history.replaceState({}, '', '/teens');
+    }
+})();
+
 // ── CONFIG ─────────────────────────────────────────────────────────────────
 const USER_ID = localStorage.getItem('nexus_teens_uid') || 'teen_' + Math.random().toString(36).slice(2, 8);
 const NOMBRE  = localStorage.getItem('nexus_teens_nombre') || 'Tú';
@@ -998,11 +1166,12 @@ function go(panel) {
     document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
     document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
     document.getElementById('panel-' + panel).classList.add('active');
-    event.currentTarget.classList.add('active');
+    if (event && event.currentTarget) event.currentTarget.classList.add('active');
     if (panel === 'aptitudes') dibujarRadar();
     if (panel === 'badges')    renderBadges();
     if (panel === 'ranking')   cargarRanking();
     if (panel === 'misiones')  renderMisiones();
+    if (panel === 'familia')   { if (typeof familiaIniciarUI === 'function') familiaIniciarUI(); }
 }
 
 // ── INICIALIZACIÓN ────────────────────────────────────────────────────────
@@ -2827,6 +2996,107 @@ const NX = (() => {
 
 // Arrancar voz después de que la app cargue
 window.addEventListener('DOMContentLoaded', () => setTimeout(NX.verificarOnboarding, 900));
+
+// ── MANUAL DE BIENVENIDA ────────────────────────────────────────────────────
+(function() {
+    const rol = localStorage.getItem('_nexus_rol') || 'teen';
+    const modo = localStorage.getItem('_nexus_modo');
+    const yaVioManual = localStorage.getItem('nexus_manual_visto_' + rol);
+    if (yaVioManual && modo !== 'demo') return;
+
+    // Definir slides según rol
+    const slides = rol === 'padre'
+        ? ['ms-p0', 'ms-p1', 'ms-p2']
+        : ['ms-t0', 'ms-t1', 'ms-t2', 'ms-t3'];
+
+    let idx = 0;
+
+    function _msRender() {
+        document.querySelectorAll('.manual-slide').forEach(s => s.classList.remove('active'));
+        document.getElementById(slides[idx]).classList.add('active');
+
+        // dots
+        const dots = document.getElementById('ms-dots');
+        dots.innerHTML = slides.map((_,i) =>
+            `<div class="mdot ${i===idx?'on':''}"></div>`).join('');
+
+        // botones
+        const ant = document.getElementById('ms-ant');
+        const sig = document.getElementById('ms-sig');
+        ant.style.visibility = idx === 0 ? 'hidden' : 'visible';
+        if (idx === slides.length - 1) {
+            sig.textContent = '¡Empezar! →';
+            sig.className = 'btn-mnav btn-empezar';
+        } else {
+            sig.textContent = 'Siguiente →';
+            sig.className = 'btn-mnav btn-sig';
+        }
+    }
+
+    window._msNav = function(dir) {
+        idx += dir;
+        if (idx >= slides.length) {
+            // cerrar
+            document.getElementById('manual-overlay').style.display = 'none';
+            localStorage.setItem('nexus_manual_visto_' + rol, '1');
+            // si es padre, ir a familia
+            if (rol === 'padre') go('familia');
+            // si es demo, mostrar badge
+            if (modo === 'demo') document.getElementById('demo-badge').style.display = 'block';
+            return;
+        }
+        if (idx < 0) idx = 0;
+        _msRender();
+    };
+
+    window.addEventListener('DOMContentLoaded', () => {
+        setTimeout(() => {
+            document.getElementById('manual-overlay').style.display = 'flex';
+            _msRender();
+        }, 800);
+    });
+})();
+
+// ── CÓDIGO DE FAMILIA ────────────────────────────────────────────────────────
+(function() {
+    const FAMILIA_CODE_KEY = 'nexus_familia_code';
+    const FAMILIA_JOINED_KEY = 'nexus_familia_joined';
+
+    function _generarCodigo() {
+        const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+        return Array.from({length: 6}, () => chars[Math.floor(Math.random() * chars.length)]).join('');
+    }
+
+    window.familiaCrearCodigo = function() {
+        let code = localStorage.getItem(FAMILIA_CODE_KEY);
+        if (!code) {
+            code = _generarCodigo();
+            localStorage.setItem(FAMILIA_CODE_KEY, code);
+        }
+        const el = document.getElementById('mi-codigo-familia');
+        if (el) el.textContent = code;
+        mostrarToast('Código listo — compártelo con tu familia 🔑', 3000);
+    };
+
+    window.familiaUnirseCodigo = function() {
+        const inp = document.getElementById('inp-codigo-familia');
+        if (!inp) return;
+        const code = inp.value.trim().toUpperCase();
+        if (code.length < 4) { mostrarToast('Ingresa el código de 6 caracteres', 2000); return; }
+        localStorage.setItem(FAMILIA_JOINED_KEY, code);
+        mostrarToast('¡Conectad@ con código ' + code + '! 🤝', 3000);
+        inp.value = '';
+    };
+
+    window.familiaIniciarUI = function() {
+        const code = localStorage.getItem(FAMILIA_CODE_KEY) || '——————';
+        const el = document.getElementById('mi-codigo-familia');
+        if (el) el.textContent = code;
+        const joined = localStorage.getItem(FAMILIA_JOINED_KEY);
+        const jel = document.getElementById('familia-joined-code');
+        if (jel) jel.textContent = joined ? 'Conectado con: ' + joined : '';
+    };
+})();
 
 // ── Service Worker + detección offline ──────────────────────────────────────
 if ('serviceWorker' in navigator) {
