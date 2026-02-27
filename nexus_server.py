@@ -15,6 +15,9 @@ from nexus_stock import manager as stock_mgr
 
 app = FastAPI(title="Nexus Mobile")
 
+# Detectar modo nube — features desktop deshabilitadas en Linux/Render
+CLOUD_MODE = os.getenv("CLOUD_MODE", "false").lower() == "true"
+
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 TEMPLATES_DIR = os.path.join(BASE_DIR, "WEB", "templates")
 STATIC_DIR = os.path.join(BASE_DIR, "WEB", "static")
@@ -645,6 +648,8 @@ class HablarRequest(BaseModel):
 
 @app.post("/api/hablar", response_class=JSONResponse)
 async def api_hablar(req: HablarRequest):
+    if CLOUD_MODE:
+        return {"ok": False, "error": "Voz no disponible en modo nube — solo en PC local"}
     try:
         import threading
         from nexus_voice import hablar
@@ -1671,9 +1676,12 @@ async def api_setup_check():
 
 
 # ── ESTUDIO: MOTORS (lanzador de apps) ───────────────────────────────────────
+_CLOUD_DESKTOP = {"ok": False, "error": "Función solo disponible en PC local (modo nube activo)"}
+
 @app.get("/api/estudio/apps", response_class=JSONResponse)
 async def api_estudio_apps():
     """Lista de apps instaladas y detectadas."""
+    if CLOUD_MODE: return _CLOUD_DESKTOP
     try:
         from nexus_motors import apps_disponibles
         return {"ok": True, "apps": apps_disponibles()}

@@ -1,0 +1,11 @@
+fastapi
+uvicorn[standard]
+jinja2
+pydantic
+python-dotenv
+supabase
+groq
+requests
+pillow
+ezdxf
+psutil
