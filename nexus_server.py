@@ -956,6 +956,13 @@ async def teens_view(request: Request):
 async def teens_instalar(request: Request):
     return templates.TemplateResponse("teens_bienvenida.html", {"request": request})
 
+@app.get("/teens_sw.js")
+async def teens_sw():
+    from fastapi.responses import FileResponse as _FR
+    return _FR(os.path.join(BASE_DIR, "WEB", "static", "teens_sw.js"),
+               media_type="application/javascript",
+               headers={"Service-Worker-Allowed": "/"})
+
 class TeensUserReq(BaseModel):
     user_id: str
     nombre:  str = "Teen"

@@ -452,6 +452,11 @@
     </div>
 
     <!-- TABS -->
+    <!-- Banner offline -->
+    <div id="offline-banner" style="display:none;background:#1a1a0a;border-bottom:1px solid #ff6b00;padding:8px 16px;text-align:center;font-size:0.78em;color:#ff9900;">
+        🔌 Sin conexión — el Tutor no está disponible · Diario y notas funcionan normal
+    </div>
+
     <div class="tabs">
         <div class="tab active" onclick="go('inicio')">🏠 Inicio</div>
         <div class="tab" onclick="go('misiones')">🎯 Misiones</div>
@@ -2822,6 +2827,20 @@ const NX = (() => {
 
 // Arrancar voz después de que la app cargue
 window.addEventListener('DOMContentLoaded', () => setTimeout(NX.verificarOnboarding, 900));
+
+// ── Service Worker + detección offline ──────────────────────────────────────
+if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('/teens_sw.js', { scope: '/teens' })
+        .catch(() => {});
+}
+
+function _actualizarBannerConexion() {
+    const banner = document.getElementById('offline-banner');
+    if (banner) banner.style.display = navigator.onLine ? 'none' : 'block';
+}
+window.addEventListener('online',  _actualizarBannerConexion);
+window.addEventListener('offline', _actualizarBannerConexion);
+window.addEventListener('DOMContentLoaded', _actualizarBannerConexion);
 </script>
 </body>
 </html>
