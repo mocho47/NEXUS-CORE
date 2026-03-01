@@ -142,7 +142,28 @@
     <span class="dot" id="dot">&#9679; Conectando...</span>
     <div id="topbar-right" style="display:flex;align-items:center;gap:8px;margin-left:10px">
         <button class="btn btn-sm" onclick="iniciarTour()" style="background:#f0c040;color:#111;font-weight:700;border-color:#f0c040">🎯 Tour</button>
+        <button class="btn btn-sm" onclick="mostrarQR()" style="background:#111;border-color:#333">📱 QR</button>
+        <button class="btn btn-sm" onclick="window.location='/mio'" title="Mi NEXUS personal" style="background:#111;border-color:#333;font-size:1rem;padding:4px 10px">🌙</button>
     </div>
+</div>
+
+<!-- Modal QR -->
+<div id="modal-qr" style="display:none;position:fixed;inset:0;background:#000a;z-index:9999;align-items:center;justify-content:center">
+  <div style="background:#111;border:1px solid #00ff8833;border-radius:16px;padding:28px;max-width:360px;width:90%;text-align:center;position:relative">
+    <button onclick="cerrarQR()" style="position:absolute;top:10px;right:14px;background:none;border:none;color:#555;font-size:1.3rem;cursor:pointer">✕</button>
+    <div style="color:#00ff88;font-weight:700;font-size:1rem;margin-bottom:6px">📱 QR de acceso</div>
+    <div style="color:#555;font-size:.75rem;margin-bottom:16px">Escanea para abrir NEXUS Teens<br>en cualquier celular</div>
+    <div id="qr-tabs" style="display:flex;gap:6px;justify-content:center;margin-bottom:14px">
+      <button onclick="cambiarQR('teens')" id="qbt-teens" class="btn btn-sm" style="font-size:.72rem">👦 Teens</button>
+      <button onclick="cambiarQR('instalar')" id="qbt-instalar" class="btn btn-sm" style="font-size:.72rem;background:#111;border-color:#333;color:#888">📲 Instalar</button>
+      <button onclick="cambiarQR('dashboard')" id="qbt-dashboard" class="btn btn-sm" style="font-size:.72rem;background:#111;border-color:#333;color:#888">🖥️ Panel</button>
+    </div>
+    <img id="qr-img" src="" alt="QR" style="width:200px;height:200px;border-radius:8px;display:block;margin:0 auto 14px">
+    <div id="qr-url" style="color:#444;font-size:.7rem;word-break:break-all;margin-bottom:14px"></div>
+    <a id="qr-dl" download="nexus_qr.png" style="display:inline-block">
+      <button class="btn btn-sm" style="font-size:.78rem">⬇ Descargar PNG</button>
+    </a>
+  </div>
 </div>
 
 <!-- TABS -->
@@ -157,14 +178,8 @@
     <div class="tab"         onclick="go('agenda')">📅 Agenda</div>
     <div class="tab"         onclick="go('marketing')">📣 Marketing</div>
     <div class="tab"         onclick="window.location='/finanzas'">💰 Finanzas</div>
-    <div class="tab"         onclick="window.location='/galeria'">🎨 Galería</div>
-    <div class="tab"         onclick="go('oido')">🎙️ Oído</div>
     <div class="tab"         onclick="go('autoventas')">🚀 AutoVentas</div>
-    <div class="tab"         onclick="go('paranormal')">🔮 Paranormal</div>
     <div class="tab"         onclick="go('comandos_tab')">📋 Comandos</div>
-    <div class="tab"         onclick="go('teens')">👾 Teens</div>
-    <div class="tab"         onclick="go('subliminal')">🎧 Subliminal</div>
-    <div class="tab"         onclick="go('social')">📲 Social</div>
     <div class="tab"         onclick="go('historial')">📂 Historial</div>
     <div class="tab"         onclick="go('sistema')">🖥️ Sistema</div>
     <div class="tab"         onclick="go('milens')">✂️ Milens</div>
@@ -315,7 +330,7 @@
     </div>
 
     <!-- Chat -->
-    <div id="oid-chat" style="height:320px;overflow-y:auto;display:flex;flex-direction:column;gap:8px;margin-bottom:12px;padding-right:4px"></div>
+    <div id="oid-chat" style="height:300px;overflow-y:auto;display:flex;flex-direction:column;gap:8px;margin-bottom:12px;padding-right:4px"></div>
 
     <!-- Input manual -->
     <div style="display:flex;gap:8px">
@@ -323,6 +338,8 @@
                style="flex:1;background:#111;border:1px solid #1e1e1e;color:#e0e0e0;padding:10px 14px;border-radius:8px;font-size:.88rem"
                onkeydown="if(event.key==='Enter')oidEnviar()">
         <button class="btn" onclick="oidEnviar()" style="white-space:nowrap">Enviar</button>
+        <button class="btn" id="btn-mic-test" onclick="testMicDirecto()"
+                style="background:#222;border:1px solid #333;white-space:nowrap" title="Prueba directa de micrófono">🎤</button>
     </div>
     <div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:10px" id="oid-chips"></div>
 </div>
@@ -608,9 +625,8 @@
 // ─── Tab navigation ────────────────────────────────────────────────────────
 // TAB_NAMES debe coincidir 1:1 con los elementos .tab en el DOM (incluye window.location tabs)
 const TAB_NAMES = ['inicio','pedidos','clientes','stock','cotizar','agenda','marketing',
-                   '_finanzas','_galeria',
-                   'oido','autoventas','paranormal','comandos_tab',
-                   'teens','subliminal','social','historial','sistema',
+                   '_finanzas',
+                   'autoventas','comandos_tab','historial','sistema',
                    'milens','_estudio','_canbusfix','_atf','demo','licencias','config','_admin'];
 const loaded = { inicio: true };
 
@@ -669,101 +685,71 @@ if(window.speechSynthesis && window.speechSynthesis.onvoiceschanged !== undefine
 let oidMicVivo=false, oidEsperando=false, oidHablando=false, oidMic=null;
 const OID_CHIPS = ['Pedidos','Stock','Clientes','Ventas','Sistema','Marketing','Hora','Ayuda'];
 
-// Habla NEXUS — usa Edge TTS JorgeNeural vía servidor
+// ─── Selector de salida de voz ────────────────────────────────────────────────
+const _oidSalidas = JSON.parse(localStorage.getItem('nexus_salidas')||'{"pc":true,"mini":false}');
+function _toggleSalida(key){
+    _oidSalidas[key] = !_oidSalidas[key];
+    localStorage.setItem('nexus_salidas', JSON.stringify(_oidSalidas));
+    _renderSalidas();
+}
+function _oidTodos(){
+    _oidSalidas.pc=true; _oidSalidas.mini=true;
+    localStorage.setItem('nexus_salidas', JSON.stringify(_oidSalidas));
+    _renderSalidas();
+}
+function _renderSalidas(){
+    const ON='#00ff88', OFF='#111', TC='#001a08', TC2='#888';
+    const bp=document.getElementById('oid-out-pc'), bm=document.getElementById('oid-out-mini');
+    if(bp){ bp.style.background=_oidSalidas.pc?ON:OFF; bp.style.color=_oidSalidas.pc?TC:TC2; bp.style.borderColor=_oidSalidas.pc?ON:'#1e1e1e'; }
+    if(bm){ bm.style.background=_oidSalidas.mini?ON:OFF; bm.style.color=_oidSalidas.mini?TC:TC2; bm.style.borderColor=_oidSalidas.mini?ON:'#1e1e1e'; }
+}
+
+// Habla NEXUS — respeta selector de salida (PC y/o Mini)
 let _speechCooldown = false;
 function nexusHablar(txt, pitch=1.05, rate=0.93){
     return new Promise(res=>{
         if(!txt){res();return;}
-        oidHablando=true;
-        _speechCooldown=true;
+        oidHablando=true; _speechCooldown=true;
         const duracion = txt.length*65+1200;
-        fetch('/api/hablar',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({texto:txt})})
-            .then(()=>{
-                setTimeout(()=>{ oidHablando=false; res(); }, duracion);
-                // Cooldown extra para evitar que el mic capture el eco
-                setTimeout(()=>{ _speechCooldown=false; }, duracion+800);
-            })
-            .catch(()=>{ oidHablando=false; _speechCooldown=false; res(); });
+        // Mini: fire-and-forget (no bloquea el flujo)
+        if(_oidSalidas.mini){
+            fetch('/api/cast/hablar',{method:'POST',headers:{'Content-Type':'application/json'},
+                body:JSON.stringify({texto:txt})}).catch(()=>{});
+        }
+        if(_oidSalidas.pc){
+            fetch('/api/hablar',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({texto:txt})})
+                .then(()=>{
+                    setTimeout(()=>{ oidHablando=false; res(); }, duracion);
+                    setTimeout(()=>{ _speechCooldown=false; }, duracion+800);
+                })
+                .catch(()=>{ oidHablando=false; _speechCooldown=false; res(); });
+        } else {
+            // Sin PC: esperar duración estimada y resolver
+            setTimeout(()=>{ oidHablando=false; res(); }, duracion);
+            setTimeout(()=>{ _speechCooldown=false; }, duracion+800);
+        }
     });
 }
 
+let _oidPanelActive = false;
 function iniciarOido(){
     document.getElementById('oid-chips').innerHTML = OID_CHIPS.map(c=>
         `<button class="btn btn-sm" onclick="oidCmd('${c.toLowerCase()}')">${c}</button>`
     ).join('');
-
-    const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
-    if(!SR){
-        document.getElementById('oid-status').textContent='STT no disponible (usa Chrome)';
-        return;
-    }
-    const mic=new SR(); oidMic=mic;
-    mic.lang='es-MX'; mic.continuous=true; mic.interimResults=true;
-
-    mic.onstart=()=>{ oidMicVivo=true; oidSetDot('listening'); oidSetStatus('Escuchando — di "nexus"'); };
-    mic.onresult=e=>{
-        // Ignorar mientras NEXUS está hablando (evita eco)
-        if(oidHablando) return;
-
-        let interim='',final='';
-        for(let i=e.resultIndex;i<e.results.length;i++){
-            if(e.results[i].isFinal) final+=e.results[i][0].transcript;
-            else interim+=e.results[i][0].transcript;
-        }
-        if(interim) document.getElementById('oid-interim').textContent=interim;
-        if(!final) return;
-        document.getElementById('oid-interim').textContent='';
-
-        // Ignorar si estamos en cooldown post-voz (evita eco del parlante)
-        if(_speechCooldown) return;
-        // Limpiar eco de NEXUS: ignora si la frase es solo "mande"
-        const t=final.toLowerCase().trim().replace(/manden?/g,'').trim();
-        if(!t) return;
-
-        if(!oidEsperando){
-            // Escucha trigger "nexus"
-            if(t.includes('nexus')||t.includes('nexo')||t.includes('oye nexus')){
-                oidEsperando=true;
-                oidSetDot('processing');
-                oidSetStatus('NEXUS activo — di el comando');
-                nexusHablar('Mande.').then(()=>{
-                    oidSetStatus('Escuchando tu comando...');
-                });
-                // Responder también en Google Home Mini
-                fetch('/api/cast/hablar', {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({texto:'Mande.'})}).catch(()=>{});
-                oidBurbuja('NEXUS','Mande.',false);
-                // Timeout de seguridad: si no llega comando en 10s, vuelve al modo escucha
-                clearTimeout(window._oidTimeout);
-                window._oidTimeout=setTimeout(()=>{
-                    if(oidEsperando){
-                        oidEsperando=false;
-                        oidSetDot('listening');
-                        oidSetStatus('Escuchando — di "nexus"');
-                    }
-                },10000);
-            }
-        } else {
-            // TENEMOS COMANDO
-            clearTimeout(window._oidTimeout);
-            oidEsperando=false;
-            oidBurbuja('tú',final,true);
-            oidSetStatus('Procesando...');
-            oidConsultar(final);
-        }
-    };
-    mic.onerror=()=>{ oidMicVivo=false; setTimeout(()=>{ try{mic.start();}catch(e){} },800); };
-    mic.onend=()=>{ oidMicVivo=false; setTimeout(()=>{ try{mic.start();}catch(e){} },400); };
-    try{ mic.start(); }catch(e){}
-    setInterval(()=>{ if(!oidMicVivo&&!oidHablando){ try{mic.start();}catch(e){} } },5000);
+    // El mic global ya está corriendo — solo activamos el panel
+    _oidPanelActive = true;
+    oidSetDot('listening');
+    oidSetStatus('Escuchando — di "nexus"');
+    setTimeout(_renderSalidas, 50); // actualizar botones al abrir panel
 }
 
 function oidSetDot(state){
-    const d=document.getElementById('oid-dot');
+    const d=document.getElementById('oid-dot'); if(!d) return;
     if(state==='listening') d.style.cssText='width:10px;height:10px;border-radius:50%;background:#00ff88;transition:.3s';
     else if(state==='processing') d.style.cssText='width:10px;height:10px;border-radius:50%;background:#ffcc02;transition:.3s';
     else d.style.cssText='width:10px;height:10px;border-radius:50%;background:#333;transition:.3s';
 }
-function oidSetStatus(t){ document.getElementById('oid-status').textContent=t; }
+function oidSetStatus(t){ const el=document.getElementById('oid-status'); if(el) el.textContent=t; }
 
 function oidBurbuja(quien, txt, derecha){
     const chat=document.getElementById('oid-chat');
@@ -827,8 +813,42 @@ function abrirURL(url, label) {
     setTimeout(()=>{ if(nav) nav.style.display='none'; }, 8000);
 }
 
+// Última acción pendiente de confirmación
+let _oidPendingAction = null;
+
 function navegarPorVoz(texto) {
-    const t = texto.toLowerCase();
+    const t = texto.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'');
+
+    // Confirmar acción pendiente con "sí / si / yes / dale / órale / claro"
+    if(_oidPendingAction && /^(si|yes|dale|orale|claro|va|andale|ok|correcto)/.test(t)){
+        const action = _oidPendingAction;
+        _oidPendingAction = null;
+        action();
+        return '¡Listo!';
+    }
+    if(_oidPendingAction && /^(no|cancel|para|mejor no)/.test(t)){
+        _oidPendingAction = null;
+        return 'Ok, cancelado.';
+    }
+
+    // Navegación directa a módulos
+    const PANELES = [
+        { keys:['laser','estudio','grabar','corte','grabad','vectori'], action:()=>window.location='/estudio', label:'Estudio / Laser' },
+        { keys:['milens','milen'], action:()=>{ document.querySelector('[onclick*="milens"]')?.click(); }, label:'Milens' },
+        { keys:['pedido','orden','pedidos'], action:()=>{ document.querySelector('[onclick*="pedidos"]')?.click(); }, label:'Pedidos' },
+        { keys:['cliente','clientes'], action:()=>{ document.querySelector('[onclick*="clientes"]')?.click(); }, label:'Clientes' },
+        { keys:['stock','inventario'], action:()=>{ document.querySelector('[onclick*="stock"]')?.click(); }, label:'Stock' },
+        { keys:['cotizar','cotizacion','presupuesto'], action:()=>{ document.querySelector('[onclick*="cotizar"]')?.click(); }, label:'Cotizar' },
+        { keys:['agenda','cita','citas'], action:()=>{ document.querySelector('[onclick*="agenda"]')?.click(); }, label:'Agenda' },
+        { keys:['teens','samantha'], action:()=>{ document.querySelector('[onclick*="teens"]')?.click(); }, label:'Teens' },
+    ];
+    for(const p of PANELES){
+        if(p.keys.some(k=>t.includes(k))){
+            _oidPendingAction = null;
+            p.action();
+            return `Abriendo ${p.label}.`;
+        }
+    }
 
     // "busca X en youtube/google"
     let m = t.match(/busca(?:r)?\s+(.+?)\s+en\s+(youtube|google)/);
@@ -889,6 +909,22 @@ async function oidConsultar(texto){
         const resp=r.respuesta||JSON.stringify(r).substring(0,200);
         oidBurbuja('NEXUS',resp,false);
         oidSetStatus('Respondiendo...');
+        // Detectar si AI ofrece navegar a un módulo → pre-cargar acción pendiente
+        const _rn = resp.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'');
+        if(/redirig|ir al?|abrir?|llevar|naveg|quieres (ir|abrir|ver)/.test(_rn)){
+            const _MODMAP = {
+                'laser':()=>window.location='/estudio','estudio':()=>window.location='/estudio',
+                'milens':()=>document.querySelector('[onclick*="milens"]')?.click(),
+                'pedidos':()=>document.querySelector('[onclick*="pedidos"]')?.click(),
+                'clientes':()=>document.querySelector('[onclick*="clientes"]')?.click(),
+                'stock':()=>document.querySelector('[onclick*="stock"]')?.click(),
+                'agenda':()=>document.querySelector('[onclick*="agenda"]')?.click(),
+                'teens':()=>document.querySelector('[onclick*="teens"]')?.click(),
+            };
+            for(const [mod,fn] of Object.entries(_MODMAP)){
+                if(_rn.includes(mod)){ _oidPendingAction=fn; break; }
+            }
+        }
         await nexusHablar(resp.substring(0,280));
         oidSetDot('listening');
         oidSetStatus('Escuchando — di "nexus"');
@@ -1101,53 +1137,131 @@ setInterval(cargarKPIs, 30000);
 // ─── Mic global: arranca automático, escucha "nexus" desde cualquier tab ────
 (function arrancarMicGlobal(){
     const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
-    if(!SR) return; // Solo Chrome/Edge
+    if(!SR) return;
     const mic = new SR();
-    mic.lang = 'es-MX';
-    mic.continuous = true;
+    mic.lang = 'es-ES';
+    mic.continuous = false; // false = más fiable; se reinicia en onend
     mic.interimResults = false;
 
     mic.onresult = e => {
-        if(_speechCooldown) return;
-        const t = e.results[e.results.length-1][0].transcript.toLowerCase().trim();
+        const lastRes = e.results[e.results.length - 1];
+        if(!lastRes.isFinal) return;
+        const raw = lastRes[0].transcript;
+        // Normalizar: minúsculas + quitar acentos + quitar eco "mande"
+        const t = raw.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').trim().replace(/manden?/g,'').trim();
         if(!t) return;
 
-        // Paranormal: detecta "te ordeno parar" o "para" SIN necesitar wake word
-        if(t.includes('ordeno parar') || t.includes('te ordeno') ||
-           t.includes('nexus para') || t.includes('para nexus')){
+        // Paranormal SIN wake word (siempre activo)
+        if(t.includes('ordeno parar')||t.includes('te ordeno')||t.includes('nexus para')||t.includes('para nexus')){
             fetch('/api/paranormal/parar',{method:'POST',headers:{'Content-Type':'application/json'},body:'{}'})
-            .then(r=>r.json()).then(d=>{
-                nexusHablar(d.msg || 'Deteniendo modo paranormal.');
-            });
+            .then(r=>r.json()).then(d=>{ nexusHablar(d.msg||'Deteniendo modo paranormal.'); });
             oidEsperando = false;
             return;
         }
 
-        if(oidHablando) return;
-
         if(!oidEsperando){
-            if(t.includes('nexus') || t.includes('nexo')){
+            // MODO TRIGGER: bloquear si NEXUS está hablando (evitar eco)
+            if(_speechCooldown || oidHablando) return;
+
+            // Confirmar acción pendiente
+            if(_oidPendingAction){
+                if(/^(si|yes|dale|orale|claro|va|andale|ok|correcto)/.test(t)){
+                    const action = _oidPendingAction; _oidPendingAction = null;
+                    oidBurbuja('NEXUS','¡Listo!',false); action(); return;
+                }
+                if(/^(no|cancel|para|mejor no)/.test(t)){
+                    _oidPendingAction = null; oidBurbuja('NEXUS','Ok, cancelado.',false); return;
+                }
+            }
+
+            if(t.includes('nexus')||t.includes('nexo')){
                 oidEsperando = true;
+                oidSetDot('processing');
+                oidSetStatus('NEXUS activo — di el comando');
                 nexusHablar('Mande.').then(()=>{
-                    oidEsperando && setTimeout(()=>{ oidEsperando=false; }, 10000);
+                    oidSetStatus('Escuchando tu comando...');
+                    window._globalOidTimeout = setTimeout(()=>{
+                        if(oidEsperando){ oidEsperando=false; oidSetDot('listening'); oidSetStatus('Escuchando — di "nexus"'); }
+                    }, 10000);
                 });
+                oidBurbuja('NEXUS','Mande.',false);
             }
         } else {
+            // MODO COMANDO: aceptar siempre (el usuario habla deliberadamente)
             clearTimeout(window._globalOidTimeout);
             oidEsperando = false;
-            const burbuja = document.getElementById('oid-chat');
-            if(burbuja) oidBurbuja('tú', t, true);
-            oidConsultar(t);
+            oidBurbuja('tú', raw, true);
+            oidSetStatus('Procesando...');
+            oidConsultar(raw);
         }
     };
 
-    mic.onerror = () => setTimeout(()=>{ try{ mic.start(); }catch(e){} }, 1000);
-    mic.onend  = () => setTimeout(()=>{ try{ mic.start(); }catch(e){} }, 500);
+    mic.onerror = e => {
+        if(e.error === 'no-speech' || e.error === 'aborted') return; // normales, onend reinicia
+        oidSetStatus('⚠️ Mic: '+(e.error||'error')+' — reintentando...');
+        setTimeout(()=>{ try{ mic.start(); }catch(ex){} }, 1500);
+    };
+    mic.onend = () => setTimeout(()=>{ try{ mic.start(); }catch(e){} }, 300);
     try{ mic.start(); } catch(e){}
 })();
 
 // Voz de arranque (después de que el mic esté listo)
 setTimeout(()=>nexusHablar('Nexus en línea. Listo para operar.'), 2000);
+
+// ─── QR Modal ────────────────────────────────────────────────────────────────
+const _QR_BASE_URL = 'https://enrique-slaty-afton.ngrok-free.dev';
+const _QR_URLS = {
+    teens:      _QR_BASE_URL + '/teens',
+    instalar:   _QR_BASE_URL + '/teens/instalar',
+    dashboard:  _QR_BASE_URL + '/dashboard',
+};
+let _qrActivo = 'teens';
+function mostrarQR(){
+    document.getElementById('modal-qr').style.display='flex';
+    cambiarQR('teens');
+}
+function cerrarQR(){ document.getElementById('modal-qr').style.display='none'; }
+function cambiarQR(tipo){
+    _qrActivo = tipo;
+    const url = _QR_URLS[tipo];
+    const qrSrc = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&margin=10&data=${encodeURIComponent(url)}`;
+    document.getElementById('qr-img').src = qrSrc;
+    document.getElementById('qr-url').textContent = url;
+    document.getElementById('qr-dl').href = qrSrc;
+    // Actualizar tabs
+    ['teens','instalar','dashboard'].forEach(t=>{
+        const b = document.getElementById('qbt-'+t);
+        if(b){ b.style.background=t===tipo?'#00ff88':'#111'; b.style.color=t===tipo?'#001':'#888'; b.style.borderColor=t===tipo?'#00ff88':'#333'; }
+    });
+}
+document.addEventListener('keydown', e=>{ if(e.key==='Escape') cerrarQR(); });
+
+// ─── Test directo de micrófono ───────────────────────────────────────────────
+function testMicDirecto(){
+    const btn = document.getElementById('btn-mic-test');
+    const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if(!SR){ oidBurbuja('NEXUS','⚠️ SpeechRecognition no disponible en este navegador. Usa Chrome.',false); return; }
+    btn.textContent='⏺ Habla...'; btn.style.borderColor='#f00';
+    oidSetStatus('🎤 Test — di cualquier cosa...');
+    const m = new SR();
+    m.lang = 'es-ES';
+    m.continuous = false;
+    m.interimResults = false;
+    m.onresult = e => {
+        const txt = e.results[0][0].transcript;
+        const conf = Math.round(e.results[0][0].confidence * 100);
+        oidBurbuja('MIC TEST', `"${txt}" (${conf}% confianza)`, true);
+        oidSetStatus(`✅ Mic funciona: "${txt}"`);
+        btn.textContent='🎤'; btn.style.borderColor='#00ff88';
+    };
+    m.onerror = e => {
+        oidBurbuja('NEXUS', `⚠️ Error mic: ${e.error}`, false);
+        oidSetStatus('Error: '+e.error);
+        btn.textContent='🎤'; btn.style.borderColor='#f00';
+    };
+    m.onend = () => { if(btn.textContent==='⏺ Habla...'){ btn.textContent='🎤'; btn.style.borderColor='#333'; } };
+    try{ m.start(); } catch(e){ oidBurbuja('NEXUS','Error al iniciar: '+e.message,false); }
+}
 
 // ─── Milens ─────────────────────────────────────────────────────────────────
 function milensCotar() {

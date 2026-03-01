@@ -612,6 +612,12 @@ def _guardar_uso(uso: dict):
         json.dump(uso, f, ensure_ascii=False, indent=2)
 
 def _get_plan() -> str:
+    # Modo privado (dueño) — acceso ADMIN completo sin licencia
+    import os
+    from dotenv import load_dotenv
+    load_dotenv()
+    if os.getenv("NEXUS_PRIVATE", "0") == "1":
+        return "ADMIN"
     try:
         from nexus_license import validar_licencia
         v = validar_licencia()

@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Mi NEXUS</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:#070707;color:#eee;font-family:'Segoe UI',sans-serif;min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center}
+
+/* ── PIN SCREEN ── */
+#pin-screen{text-align:center;padding:40px 20px;width:100%;max-width:360px}
+.pin-logo{font-size:48px;margin-bottom:8px}
+.pin-title{font-size:22px;font-weight:800;color:#f5c518;margin-bottom:6px}
+.pin-sub{font-size:13px;color:#444;margin-bottom:32px}
+.pin-dots{display:flex;gap:14px;justify-content:center;margin-bottom:28px}
+.pin-dot{width:16px;height:16px;border-radius:50%;background:#1a1a1a;border:2px solid #2a2a2a;transition:all .2s}
+.pin-dot.filled{background:#f5c518;border-color:#f5c518;box-shadow:0 0 8px #f5c51866}
+.pin-pad{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;max-width:260px;margin:0 auto 20px}
+.pin-btn{background:#111;border:1px solid #1e1e1e;border-radius:12px;padding:18px;font-size:22px;font-weight:600;color:#eee;cursor:pointer;transition:all .15s;user-select:none}
+.pin-btn:active,.pin-btn:hover{background:#1e1e1e;border-color:#333;transform:scale(.96)}
+.pin-btn.del{color:#555;font-size:18px}
+.pin-error{color:#ff4444;font-size:13px;min-height:20px;margin-top:4px}
+.pin-hint{font-size:11px;color:#333;margin-top:16px}
+
+/* ── HUB ── */
+#hub-screen{display:none;width:100%;max-width:600px;padding:24px 16px}
+.hub-header{display:flex;align-items:center;gap:12px;margin-bottom:28px;padding-bottom:16px;border-bottom:1px solid #111}
+.hub-logo{font-size:28px}
+.hub-title{font-size:18px;font-weight:800;color:#f5c518;flex:1}
+.hub-back{color:#333;text-decoration:none;font-size:12px;padding:6px 12px;border:1px solid #1a1a1a;border-radius:6px;transition:all .2s}
+.hub-back:hover{border-color:#333;color:#666}
+
+.hub-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;margin-bottom:24px}
+.hub-card{background:#0f0f0f;border:1px solid #1a1a1a;border-radius:14px;padding:22px 18px;cursor:pointer;transition:all .2s;text-decoration:none;display:block;position:relative;overflow:hidden}
+.hub-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:var(--c,#f5c518);opacity:0;transition:opacity .2s}
+.hub-card:hover{border-color:#2a2a2a;transform:translateY(-2px)}
+.hub-card:hover::before{opacity:1}
+.hub-icon{font-size:32px;margin-bottom:10px}
+.hub-name{font-size:14px;font-weight:700;color:#ddd;margin-bottom:4px}
+.hub-desc{font-size:11px;color:#444;line-height:1.5}
+
+.hub-footer{display:flex;justify-content:center;gap:12px}
+.btn-pin{background:none;border:1px solid #1a1a1a;color:#333;font-size:12px;padding:8px 16px;border-radius:8px;cursor:pointer;transition:all .2s}
+.btn-pin:hover{border-color:#333;color:#555}
+</style>
+</head>
+<body>
+
+<!-- PIN SCREEN -->
+<div id="pin-screen">
+  <div class="pin-logo">🌙</div>
+  <div class="pin-title" id="pin-title">Mi NEXUS</div>
+  <div class="pin-sub" id="pin-sub">Ingresa tu PIN</div>
+  <div class="pin-dots">
+    <div class="pin-dot" id="d0"></div>
+    <div class="pin-dot" id="d1"></div>
+    <div class="pin-dot" id="d2"></div>
+    <div class="pin-dot" id="d3"></div>
+  </div>
+  <div class="pin-pad">
+    <button class="pin-btn" onclick="presionar('1')">1</button>
+    <button class="pin-btn" onclick="presionar('2')">2</button>
+    <button class="pin-btn" onclick="presionar('3')">3</button>
+    <button class="pin-btn" onclick="presionar('4')">4</button>
+    <button class="pin-btn" onclick="presionar('5')">5</button>
+    <button class="pin-btn" onclick="presionar('6')">6</button>
+    <button class="pin-btn" onclick="presionar('7')">7</button>
+    <button class="pin-btn" onclick="presionar('8')">8</button>
+    <button class="pin-btn" onclick="presionar('9')">9</button>
+    <button class="pin-btn" onclick="presionar('')"></button>
+    <button class="pin-btn" onclick="presionar('0')">0</button>
+    <button class="pin-btn del" onclick="borrar()">⌫</button>
+  </div>
+  <div class="pin-error" id="pin-error"></div>
+  <div class="pin-hint" id="pin-hint"></div>
+</div>
+
+<!-- HUB -->
+<div id="hub-screen">
+  <div class="hub-header">
+    <span class="hub-logo">🌙</span>
+    <span class="hub-title">Mi NEXUS</span>
+    <a class="hub-back" href="/dashboard">← Dashboard</a>
+  </div>
+
+  <div class="hub-grid">
+    <a class="hub-card" href="/galeria" style="--c:#aa44ff">
+      <div class="hub-icon">🎨</div>
+      <div class="hub-name">Galería de Experiencias</div>
+      <div class="hub-desc">Binaural, subliminales, frecuencias y experiencias premium</div>
+    </a>
+    <a class="hub-card" href="/nexus-ear" style="--c:#00bfff">
+      <div class="hub-icon">🎙️</div>
+      <div class="hub-name">Oído / Voz</div>
+      <div class="hub-desc">Control por voz, transcripción y comandos de audio</div>
+    </a>
+    <a class="hub-card" href="/paranormal" style="--c:#7700ff">
+      <div class="hub-icon">🔮</div>
+      <div class="hub-name">Paranormal</div>
+      <div class="hub-desc">Teatro de terror interactivo y experiencias de IA extrema</div>
+    </a>
+    <a class="hub-card" href="/teens" style="--c:#00ff88">
+      <div class="hub-icon">👾</div>
+      <div class="hub-name">NEXUS Teens</div>
+      <div class="hub-desc">App familiar: Samantha, Rocío y los demás perfiles activos</div>
+    </a>
+    <a class="hub-card" href="/api/subliminal/pistas" onclick="abrirSubliminal(event)" style="--c:#f5c518">
+      <div class="hub-icon">🎧</div>
+      <div class="hub-name">Subliminal</div>
+      <div class="hub-desc">Generador de audio subliminal y pistas de persuasión ética</div>
+    </a>
+    <a class="hub-card" href="/marketing" style="--c:#ff6b00">
+      <div class="hub-icon">📲</div>
+      <div class="hub-name">Marketing Privado</div>
+      <div class="hub-desc">Videos motion con subliminales activos para tus promos</div>
+    </a>
+  </div>
+
+  <div class="hub-footer">
+    <button class="btn-pin" onclick="cambiarPin()">🔑 Cambiar PIN</button>
+    <button class="btn-pin" onclick="cerrarSesion()">🔒 Cerrar sesión</button>
+  </div>
+</div>
+
+<script>
+const KEY_PIN  = 'nexus_mio_pin';
+const KEY_SESS = 'nexus_mio_ok';
+let entrada = '';
+let modo = 'login'; // 'login' | 'crear' | 'cambiar_viejo' | 'cambiar_nuevo'
+let pinViejo = '';
+
+async function sha(s) {
+  const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(s));
+  return Array.from(new Uint8Array(buf)).map(b=>b.toString(16).padStart(2,'0')).join('');
+}
+
+function actualizarDots() {
+  for (let i = 0; i < 4; i++)
+    document.getElementById('d'+i).classList.toggle('filled', i < entrada.length);
+}
+
+function presionar(d) {
+  if (!d || entrada.length >= 4) return;
+  entrada += d;
+  actualizarDots();
+  if (entrada.length === 4) setTimeout(evaluar, 120);
+}
+
+function borrar() {
+  entrada = entrada.slice(0, -1);
+  actualizarDots();
+  document.getElementById('pin-error').textContent = '';
+}
+
+async function evaluar() {
+  const hash = await sha(entrada);
+  const guardado = localStorage.getItem(KEY_PIN);
+
+  if (modo === 'crear') {
+    localStorage.setItem(KEY_PIN, hash);
+    sessionStorage.setItem(KEY_SESS, '1');
+    mostrarHub();
+    return;
+  }
+
+  if (modo === 'cambiar_viejo') {
+    if (hash === guardado) {
+      pinViejo = hash;
+      modo = 'cambiar_nuevo';
+      entrada = '';
+      actualizarDots();
+      document.getElementById('pin-title').textContent = 'Nuevo PIN';
+      document.getElementById('pin-sub').textContent = 'Escribe tu nuevo PIN de 4 dígitos';
+    } else {
+      document.getElementById('pin-error').textContent = 'PIN incorrecto';
+      entrada = '';
+      actualizarDots();
+    }
+    return;
+  }
+
+  if (modo === 'cambiar_nuevo') {
+    localStorage.setItem(KEY_PIN, hash);
+    sessionStorage.setItem(KEY_SESS, '1');
+    mostrarHub();
+    return;
+  }
+
+  // login normal
+  if (hash === guardado) {
+    sessionStorage.setItem(KEY_SESS, '1');
+    mostrarHub();
+  } else {
+    document.getElementById('pin-error').textContent = 'PIN incorrecto';
+    entrada = '';
+    actualizarDots();
+  }
+}
+
+function mostrarHub() {
+  document.getElementById('pin-screen').style.display = 'none';
+  document.getElementById('hub-screen').style.display = 'block';
+}
+
+function cerrarSesion() {
+  sessionStorage.removeItem(KEY_SESS);
+  location.reload();
+}
+
+function cambiarPin() {
+  document.getElementById('hub-screen').style.display = 'none';
+  document.getElementById('pin-screen').style.display = 'block';
+  modo = 'cambiar_viejo';
+  entrada = '';
+  actualizarDots();
+  document.getElementById('pin-title').textContent = 'Cambiar PIN';
+  document.getElementById('pin-sub').textContent = 'Ingresa tu PIN actual';
+  document.getElementById('pin-error').textContent = '';
+}
+
+function abrirSubliminal(e) {
+  e.preventDefault();
+  // El subliminal ahora está en /dashboard pero mejor abrimos galeria con filtro
+  // o abrimos en la misma ventana
+  window.location = '/galeria';
+}
+
+// ── Init ─────────────────────────────────────────────────────────────────────
+(function init() {
+  const guardado = localStorage.getItem(KEY_PIN);
+  const sesion   = sessionStorage.getItem(KEY_SESS);
+
+  if (!guardado) {
+    // Primera vez — crear PIN
+    modo = 'crear';
+    document.getElementById('pin-title').textContent = 'Bienvenido';
+    document.getElementById('pin-sub').textContent = 'Crea tu PIN de 4 dígitos';
+    document.getElementById('pin-hint').textContent = 'Solo tú tendrás acceso a este espacio.';
+  } else if (sesion === '1') {
+    // Ya autenticado en esta sesión
+    mostrarHub();
+  } else {
+    modo = 'login';
+    document.getElementById('pin-sub').textContent = 'Ingresa tu PIN';
+  }
+})();
+</script>
+</body>
+</html>

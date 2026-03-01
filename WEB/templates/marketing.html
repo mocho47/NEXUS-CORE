@@ -192,6 +192,25 @@
         .btn-wav { margin-top: 8px; background: #111; border: 1px solid #1e1e1e; color: #444; border-radius: 6px; padding: 5px 10px; font-size: 0.76em; cursor: pointer; }
         .btn-wav:hover { color: #00aaff; border-color: #00aaff40; }
 
+        /* VIDEO IA */
+        .btn-video { width:100%; background:#f5c51818; border:1px solid #f5c51830; color:#f5c518; border-radius:8px; padding:8px; font-size:0.82em; font-weight:700; cursor:pointer; margin-top:6px; }
+        .btn-video:hover { background:#f5c51825; }
+        .btn-video:disabled { background:#0f0f0f; color:#333; cursor:not-allowed; }
+        .marca-btns { display:flex; gap:4px; flex-wrap:wrap; margin:7px 0; }
+        .m-btn { flex:1; min-width:48px; background:#111; border:1px solid #1a1a1a; color:#444; border-radius:5px; padding:4px 6px; font-size:0.7em; font-weight:700; cursor:pointer; text-align:center; }
+        .m-btn.sel { border-color:#f5c518; color:#f5c518; background:#f5c51810; }
+        .v-textarea { width:100%; background:#0a0a0a; border:1px solid #1a1a1a; border-radius:6px; padding:8px 10px; color:#ccc; font-family:inherit; font-size:0.8em; resize:none; outline:none; margin-bottom:6px; }
+        .v-textarea:focus { border-color:#f5c51830; }
+        .v-progress { height:2px; background:#151515; border-radius:1px; overflow:hidden; margin:8px 0; display:none; }
+        .v-prog-fill { height:100%; background:#f5c518; transition:width 0.5s; }
+        .v-msg { font-size:0.72em; color:#555; margin-bottom:5px; min-height:14px; }
+        .v-result { display:none; margin-top:8px; }
+        .v-result video { width:100%; border-radius:6px; background:#000; max-height:200px; }
+        .v-dl { display:block; width:100%; margin-top:6px; background:#00ff8810; border:1px solid #00ff8825; color:#00ff88; text-align:center; padding:6px; border-radius:6px; font-size:0.78em; font-weight:700; text-decoration:none; }
+        .v-caption { margin-top:8px; background:#080808; border:1px solid #151515; border-radius:6px; padding:8px; font-size:0.74em; color:#555; white-space:pre-wrap; max-height:80px; overflow-y:auto; cursor:pointer; }
+        .spin-s { display:inline-block; width:10px; height:10px; border:1px solid #444; border-top-color:#f5c518; border-radius:50%; animation:spin .6s linear infinite; }
+        @keyframes spin { to { transform:rotate(360deg); } }
+
         /* calendar suggestion */
         .cal-item { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
         .cal-date { font-size: 0.72em; color: #444; min-width: 55px; }
@@ -288,6 +307,31 @@
             </select>
             <button class="btn-proc" id="btn-proc" onclick="procImg()">Procesar imagen</button>
             <div class="proc-result" id="proc-r"></div>
+        </div>
+
+        <!-- VIDEO IA -->
+        <div class="section">
+            <h3>&#127916; Video IA — Motion Graphics</h3>
+            <div style="display:flex;gap:8px;margin-bottom:8px">
+                <button id="vm-motion" class="m-btn sel" onclick="setVMode('motion')" style="flex:1;font-size:12px">&#127926; Motion + Rock</button>
+                <button id="vm-promo" class="m-btn" onclick="setVMode('promo')" style="flex:1;font-size:12px">&#127908; Clon + Voz</button>
+            </div>
+            <textarea class="v-textarea" id="v-prompt" rows="2" placeholder="Ej: Promo NEXUS 30s tech premium, TikTok..."></textarea>
+            <div class="marca-btns" id="v-marcas">
+                <div class="m-btn sel" data-m="NEXUS" onclick="selM(this)">NEXUS</div>
+                <div class="m-btn" data-m="ATF" onclick="selM(this)" style="color:#00bfff55">ATF</div>
+                <div class="m-btn" data-m="CANBUSFIX" onclick="selM(this)" style="color:#d4af3755">CF</div>
+                <div class="m-btn" data-m="MILENS" onclick="selM(this)" style="color:#ff6b0055">Milens</div>
+                <div class="m-btn" id="v-fmt" data-f="tiktok" onclick="cycleF(this)" style="min-width:60px">TikTok</div>
+            </div>
+            <div class="v-msg" id="v-msg"></div>
+            <div class="v-progress" id="v-bar"><div class="v-prog-fill" id="v-fill"></div></div>
+            <button class="btn-video" id="v-btn" onclick="genVideo()">&#127918; Generar video</button>
+            <div class="v-result" id="v-result">
+                <video id="v-player" controls></video>
+                <div class="v-caption" id="v-cap" onclick="cpV(this)">Caption (clic para copiar)</div>
+                <a class="v-dl" id="v-dl" href="#" download>Descargar MP4</a>
+            </div>
         </div>
 
         <!-- PILOTO AUTOMATICO -->
@@ -609,6 +653,68 @@ function cpSub(){
     const out=document.getElementById('sub-out');
     navigator.clipboard.writeText(out.innerText).then(()=>alert('Mensajes copiados al portapapeles'));
 }
+
+/* ── VIDEO IA ──────────────────────────────────────────────── */
+let vMarca='NEXUS', vFmt='tiktok', vPoll=null;
+const fmts=['tiktok','reels','youtube'];
+function selM(el){
+    document.querySelectorAll('.m-btn[data-m]').forEach(b=>b.classList.remove('sel'));
+    el.classList.add('sel'); vMarca=el.dataset.m;
+}
+function cycleF(el){
+    const i=(fmts.indexOf(el.dataset.f)+1)%fmts.length;
+    el.dataset.f=fmts[i]; vFmt=fmts[i];
+    el.textContent={tiktok:'TikTok',reels:'Reels',youtube:'YouTube'}[fmts[i]];
+}
+function vMsg(t,p){ document.getElementById('v-msg').textContent=t; if(p!==undefined){document.getElementById('v-bar').style.display='block';document.getElementById('v-fill').style.width=p+'%';} }
+// vMode: 'motion' = gráficos modernos+música (default) | 'promo' = foto+voz Jorge
+let vMode='motion';
+function setVMode(m){
+    vMode=m;
+    document.getElementById('vm-motion').classList.toggle('active',m==='motion');
+    document.getElementById('vm-promo').classList.toggle('active',m==='promo');
+}
+async function genVideo(){
+    const prompt=document.getElementById('v-prompt').value.trim();
+    if(!prompt) return;
+    const btn=document.getElementById('v-btn');
+    btn.disabled=true; btn.innerHTML='<span class="spin-s"></span> Generando...';
+    document.getElementById('v-result').style.display='none';
+    vMsg('Iniciando...',5);
+    try{
+        const ep  = vMode==='motion' ? '/api/marketing/generar_motion' : '/api/marketing/generar_promo';
+        const r=await fetch(ep,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({prompt,marca:vMarca,formato:vFmt})});
+        const d=await r.json();
+        if(!d.job_id) throw new Error(d.error||'Sin job_id');
+        vPoll=setInterval(()=>pollV(d.job_id,btn),2500);
+    }catch(e){
+        vMsg('Error: '+e.message); btn.disabled=false; btn.innerHTML='&#127918; Generar video';
+    }
+}
+async function pollV(jid,btn){
+    try{
+        const ep = vMode==='motion' ? '/api/marketing/motion_status/' : '/api/marketing/promo_status/';
+        const d=await(await fetch(ep+jid)).json();
+        vMsg(d.msg||'',d.progress);
+        if(d.status==='done'){
+            clearInterval(vPoll);
+            const player=document.getElementById('v-player');
+            player.src=d.url+'?t='+Date.now();
+            player.load();
+            document.getElementById('v-cap').textContent=(d.caption||'')+'\n\n'+(d.hashtags||[]).join(' ');
+            document.getElementById('v-dl').href=d.url;
+            document.getElementById('v-result').style.display='block';
+            player.scrollIntoView({behavior:'smooth'});
+            btn.disabled=false; btn.innerHTML='&#127918; Nuevo video';
+            addMsg('bot','Video listo: '+vMarca+' para '+vFmt+'. Descarga disponible en Marketing.');
+        }else if(d.status==='error'){
+            clearInterval(vPoll);
+            vMsg('Error: '+(d.error||d.msg));
+            btn.disabled=false; btn.innerHTML='&#127918; Generar video';
+        }
+    }catch(e){}
+}
+function cpV(el){ navigator.clipboard.writeText(el.textContent).catch(()=>{}); }
 </script>
 <script src="/static/nexus_ambient.js"></script>
 </body>

@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Analizador de Mercado | NEXUS</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;900&display=swap');
+*{box-sizing:border-box;margin:0;padding:0}
+:root{--gold:#f5c518;--dark:#0a0a0a;--card:#111;--border:#1e1e1e;--text:#ccc;--green:#22c55e;--red:#ef4444}
+body{font-family:'Inter',sans-serif;background:var(--dark);color:#fff;min-height:100vh}
+
+/* HEADER */
+.top-bar{background:#000;border-bottom:1px solid var(--border);padding:14px 24px;display:flex;align-items:center;gap:16px}
+.top-bar a{color:#555;text-decoration:none;font-size:.82em}
+.top-bar a:hover{color:var(--gold)}
+.top-bar h1{font-size:1em;font-weight:700;color:var(--gold)}
+.top-bar h1 span{color:#555;font-weight:400}
+
+/* FORM */
+.form-section{max-width:900px;margin:32px auto;padding:0 20px}
+.search-card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:28px}
+.search-card h2{font-size:1.1em;font-weight:700;margin-bottom:20px;color:#fff}
+.search-card h2 span{color:var(--gold)}
+
+.form-grid{display:grid;grid-template-columns:1fr 200px 120px;gap:12px;margin-bottom:12px}
+@media(max-width:600px){.form-grid{grid-template-columns:1fr}}
+.form-group{display:flex;flex-direction:column;gap:6px}
+.form-group label{font-size:.72em;color:#555;text-transform:uppercase;letter-spacing:1px}
+.form-group input{background:#0d0d0d;border:1px solid var(--border);border-radius:8px;padding:10px 14px;color:#fff;font-family:'Inter',sans-serif;font-size:.88em;outline:none;transition:.2s}
+.form-group input:focus{border-color:var(--gold)}
+.form-group input::placeholder{color:#333}
+
+.btn-analizar{display:flex;align-items:center;justify-content:center;gap:8px;background:var(--gold);color:#000;font-weight:700;font-size:.88em;padding:11px 24px;border:none;border-radius:8px;cursor:pointer;transition:.2s;letter-spacing:.5px;margin-top:24px}
+.btn-analizar:hover{background:#ffbf00;transform:translateY(-1px)}
+.btn-analizar:disabled{background:#2a2a2a;color:#555;cursor:not-allowed;transform:none}
+.btn-analizar .spin{display:inline-block;width:14px;height:14px;border:2px solid #555;border-top-color:#000;border-radius:50%;animation:spin .6s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* CHIPS CONTEXTO */
+.chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
+.chip{background:#1a1a1a;border:1px solid var(--border);color:#666;font-size:.72em;padding:5px 12px;border-radius:20px;cursor:pointer;transition:.15s}
+.chip:hover,.chip.active{background:rgba(245,197,24,.15);border-color:var(--gold);color:var(--gold)}
+
+/* RESULTADOS */
+.resultados{max-width:900px;margin:0 auto 40px;padding:0 20px;display:none}
+
+.stats-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:12px;margin-bottom:24px}
+.stat-card{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:16px;text-align:center}
+.stat-val{font-size:1.4em;font-weight:900;color:var(--gold)}
+.stat-lbl{font-size:.68em;color:#555;margin-top:4px;text-transform:uppercase;letter-spacing:1px}
+
+/* IA CARD */
+.ia-card{background:var(--card);border:1px solid rgba(245,197,24,.3);border-radius:14px;padding:24px;margin-bottom:24px}
+.ia-header{display:flex;align-items:center;gap:10px;margin-bottom:16px}
+.ia-header .badge{background:var(--gold);color:#000;font-size:.65em;font-weight:900;padding:3px 10px;border-radius:10px;letter-spacing:1px}
+.ia-header h3{font-size:.95em;font-weight:700}
+
+.posicion{display:inline-flex;align-items:center;gap:6px;padding:6px 14px;border-radius:6px;font-size:.8em;font-weight:700;margin-bottom:14px}
+.posicion.bajo{background:rgba(34,197,94,.15);color:var(--green)}
+.posicion.competitivo{background:rgba(245,197,24,.15);color:var(--gold)}
+.posicion.alto{background:rgba(239,68,68,.15);color:var(--red)}
+
+.ia-row{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:14px}
+@media(max-width:500px){.ia-row{grid-template-columns:1fr}}
+.ia-block label{font-size:.68em;color:#555;text-transform:uppercase;letter-spacing:1px;display:block;margin-bottom:4px}
+.ia-block p{font-size:.85em;color:#ccc;line-height:1.5}
+.precio-sug{font-size:1.6em;font-weight:900;color:var(--green)}
+.kws{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px}
+.kw-tag{background:#1a1a1a;color:#666;font-size:.68em;padding:3px 8px;border-radius:4px}
+
+.advertencia{background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.3);border-radius:8px;padding:10px 14px;font-size:.8em;color:var(--red);margin-top:10px}
+
+/* TABLA COMPETIDORES */
+.tabla-card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:24px;margin-bottom:24px}
+.tabla-card h3{font-size:.88em;font-weight:700;margin-bottom:16px;color:#888}
+.tabla{width:100%;border-collapse:collapse}
+.tabla th{font-size:.68em;color:#444;text-transform:uppercase;letter-spacing:1px;padding:8px;text-align:left;border-bottom:1px solid var(--border)}
+.tabla td{font-size:.8em;padding:10px 8px;border-bottom:1px solid #0f0f0f;vertical-align:top}
+.tabla tr:hover td{background:#151515}
+.badge-gratis{background:rgba(34,197,94,.15);color:var(--green);font-size:.65em;padding:2px 6px;border-radius:4px}
+.badge-nuevo{background:rgba(100,149,237,.15);color:#6495ed;font-size:.65em;padding:2px 6px;border-radius:4px}
+.link-ml{color:var(--gold);text-decoration:none;font-size:.75em}
+.link-ml:hover{text-decoration:underline}
+
+/* TÍTULO OPTIMIZADO */
+.titulo-opt{background:#0d0d0d;border:1px solid var(--border);border-radius:8px;padding:14px;font-size:.88em;color:var(--gold);font-weight:600;margin-top:6px;cursor:pointer;position:relative}
+.titulo-opt:hover::after{content:"Copiado!";position:absolute;right:10px;top:50%;transform:translateY(-50%);background:var(--gold);color:#000;font-size:.7em;padding:2px 8px;border-radius:4px}
+
+/* ERROR */
+.error-box{background:rgba(239,68,68,.1);border:1px solid var(--border);border-radius:10px;padding:20px;text-align:center;color:var(--red);font-size:.88em;display:none}
+
+/* LOADING */
+.loading-box{text-align:center;padding:40px;display:none}
+.loading-box .big-spin{width:40px;height:40px;border:3px solid #1a1a1a;border-top-color:var(--gold);border-radius:50%;animation:spin .8s linear infinite;margin:0 auto 16px}
+.loading-box p{color:#555;font-size:.88em}
+</style>
+</head>
+<body>
+
+<div class="top-bar">
+  <a href="/dashboard">← Dashboard</a>
+  <h1>Analizador de Mercado <span>/ MercadoLibre México</span></h1>
+</div>
+
+<div class="form-section">
+  <div class="search-card">
+    <h2>Analiza la <span>competencia</span> con IA</h2>
+
+    <div class="form-grid">
+      <div class="form-group">
+        <label>Producto o keyword</label>
+        <input type="text" id="query" placeholder="ej: proyectores bi-led aozoom x1" />
+      </div>
+      <div class="form-group">
+        <label>Mi precio de venta (MXN)</label>
+        <input type="number" id="miPrecio" placeholder="ej: 2800" />
+      </div>
+      <div class="form-group">
+        <label>Cantidad a analizar</label>
+        <input type="number" id="limite" value="30" min="5" max="50" />
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label>Contexto (opcional — ayuda a la IA)</label>
+      <input type="text" id="contexto" placeholder="ej: incluye instalación, solo el equipo, servicio en Guadalajara..." />
+    </div>
+
+    <div class="chips" id="chips">
+      <div class="chip" onclick="setChip(this,'bi-led aozoom x1 3 pulgadas')">Aozoom X1</div>
+      <div class="chip" onclick="setChip(this,'bi-led aozoom x3 drl')">Aozoom X3</div>
+      <div class="chip" onclick="setChip(this,'bi-led aozoom x5 2.5 compacto')">Aozoom X5</div>
+      <div class="chip" onclick="setChip(this,'retrofit faros bi-led guadalajara instalacion')">Retrofit GDL</div>
+      <div class="chip" onclick="setChip(this,'restauracion faros opticos luz led')">Restauración faros</div>
+      <div class="chip" onclick="setChip(this,'proyector angel eyes halos led')">Angel eyes</div>
+      <div class="chip" onclick="setChip(this,'membresía curso instaladores retrofit')">Curso retrofit</div>
+    </div>
+
+    <button class="btn-analizar" id="btnAnalizar" onclick="analizar()">
+      <span id="btnIcon">🔍</span>
+      <span id="btnText">Analizar mercado</span>
+    </button>
+  </div>
+</div>
+
+<div class="resultados" id="resultados">
+  <div class="loading-box" id="loadingBox">
+    <div class="big-spin"></div>
+    <p>Consultando MercadoLibre y procesando con IA...</p>
+  </div>
+
+  <div class="error-box" id="errorBox"></div>
+
+  <!-- STATS -->
+  <div class="stats-grid" id="statsGrid"></div>
+
+  <!-- IA -->
+  <div class="ia-card" id="iaCard" style="display:none">
+    <div class="ia-header">
+      <span class="badge">IA GROQ</span>
+      <h3>Análisis de estrategia de precios</h3>
+    </div>
+    <div id="posicion"></div>
+    <div id="estrategia" style="font-size:.88em;color:#aaa;line-height:1.6;margin-bottom:14px"></div>
+    <div class="ia-row">
+      <div class="ia-block">
+        <label>Precio recomendado</label>
+        <div class="precio-sug" id="precioSug"></div>
+      </div>
+      <div class="ia-block">
+        <label>Precio con envío gratis</label>
+        <div class="precio-sug" id="precioEnvio" style="color:var(--gold)"></div>
+      </div>
+      <div class="ia-block">
+        <label>Oportunidad de mercado</label>
+        <p id="oportunidad"></p>
+      </div>
+      <div class="ia-block">
+        <label>Palabras clave ML</label>
+        <div class="kws" id="keywords"></div>
+      </div>
+    </div>
+    <div class="ia-block" style="margin-top:14px">
+      <label>Título optimizado para ML — clic para copiar</label>
+      <div class="titulo-opt" id="tituloOpt" onclick="copiarTitulo(this)"></div>
+    </div>
+    <div id="advertencias"></div>
+  </div>
+
+  <!-- TABLA COMPETIDORES -->
+  <div class="tabla-card">
+    <h3>Top competidores encontrados</h3>
+    <table class="tabla">
+      <thead>
+        <tr>
+          <th>Producto</th>
+          <th>Precio</th>
+          <th>Vendidos</th>
+          <th>Envío</th>
+          <th>Ver</th>
+        </tr>
+      </thead>
+      <tbody id="tablaBody"></tbody>
+    </table>
+  </div>
+</div>
+
+<script>
+function fmt(n){return n ? '$'+n.toLocaleString('es-MX',{minimumFractionDigits:0,maximumFractionDigits:0}) : '--'}
+
+function setChip(el, query){
+  document.querySelectorAll('.chip').forEach(c=>c.classList.remove('active'));
+  el.classList.add('active');
+  document.getElementById('query').value = query;
+}
+
+async function analizar(){
+  const query = document.getElementById('query').value.trim();
+  if(!query) return;
+
+  const btn = document.getElementById('btnAnalizar');
+  btn.disabled = true;
+  document.getElementById('btnIcon').innerHTML = '<span class="spin"></span>';
+  document.getElementById('btnText').textContent = 'Analizando...';
+
+  const res = document.getElementById('resultados');
+  res.style.display = 'block';
+  document.getElementById('loadingBox').style.display = 'block';
+  document.getElementById('errorBox').style.display = 'none';
+  document.getElementById('iaCard').style.display = 'none';
+  document.getElementById('statsGrid').innerHTML = '';
+  document.getElementById('tablaBody').innerHTML = '';
+
+  const body = {
+    query,
+    mi_precio: parseFloat(document.getElementById('miPrecio').value) || null,
+    limite: parseInt(document.getElementById('limite').value) || 30,
+    contexto: document.getElementById('contexto').value.trim(),
+  };
+
+  try {
+    const r = await fetch('/api/mercado/analizar', {
+      method: 'POST',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify(body)
+    });
+    const d = await r.json();
+    document.getElementById('loadingBox').style.display = 'none';
+
+    if(!d.ok){
+      document.getElementById('errorBox').textContent = d.error || 'Error desconocido';
+      document.getElementById('errorBox').style.display = 'block';
+      return;
+    }
+
+    renderStats(d.stats, d.total_encontrados);
+    renderIA(d.ia, d.mi_precio);
+    renderTabla(d.resultados);
+
+  } catch(e){
+    document.getElementById('loadingBox').style.display = 'none';
+    document.getElementById('errorBox').textContent = 'Error de red: '+e.message;
+    document.getElementById('errorBox').style.display = 'block';
+  } finally {
+    btn.disabled = false;
+    document.getElementById('btnIcon').textContent = '🔍';
+    document.getElementById('btnText').textContent = 'Analizar mercado';
+  }
+}
+
+function renderStats(s, total){
+  const grid = document.getElementById('statsGrid');
+  const items = [
+    {val: total?.toLocaleString() || s.count, lbl: 'En MercadoLibre'},
+    {val: s.count, lbl: 'Analizados'},
+    {val: fmt(s.min), lbl: 'Precio mínimo'},
+    {val: fmt(s.max), lbl: 'Precio máximo'},
+    {val: fmt(s.promedio), lbl: 'Precio promedio'},
+    {val: fmt(s.mediana), lbl: 'Precio mediana'},
+    {val: s.total_vendidos?.toLocaleString() || 0, lbl: 'Vendidos muestra'},
+    {val: s.con_envio_gratis+'/'+s.count, lbl: 'Envío gratis'},
+  ];
+  grid.innerHTML = items.map(i=>
+    `<div class="stat-card"><div class="stat-val">${i.val}</div><div class="stat-lbl">${i.lbl}</div></div>`
+  ).join('');
+}
+
+function renderIA(ia, miPrecio){
+  if(!ia || !ia.ok){ return; }
+  const card = document.getElementById('iaCard');
+  card.style.display = 'block';
+
+  // Posición
+  const pos = ia.posicion_mercado || '';
+  let posClass = 'competitivo';
+  if(pos.toLowerCase().includes('debajo')) posClass = 'bajo';
+  if(pos.toLowerCase().includes('encima')) posClass = 'alto';
+  document.getElementById('posicion').innerHTML =
+    `<div class="posicion ${posClass}">${miPrecio ? fmt(miPrecio)+' → ' : ''}${pos}</div>`;
+
+  document.getElementById('estrategia').textContent = ia.estrategia || '';
+  document.getElementById('precioSug').textContent = fmt(ia.precio_recomendado);
+  document.getElementById('precioEnvio').textContent = fmt(ia.precio_con_envio_gratis);
+  document.getElementById('oportunidad').textContent = ia.oportunidad || '';
+
+  const kws = document.getElementById('keywords');
+  kws.innerHTML = (ia.palabras_clave||[]).map(k=>`<span class="kw-tag">${k}</span>`).join('');
+
+  document.getElementById('tituloOpt').textContent = ia.titulo_ml_sugerido || '';
+
+  const adv = document.getElementById('advertencias');
+  adv.innerHTML = (ia.advertencias||[]).filter(a=>a).map(a=>`<div class="advertencia">⚠️ ${a}</div>`).join('');
+}
+
+function renderTabla(resultados){
+  const tbody = document.getElementById('tablaBody');
+  tbody.innerHTML = resultados.map(r=>`
+    <tr>
+      <td style="max-width:280px;color:#ccc">${r.titulo}</td>
+      <td style="color:var(--gold);font-weight:700;white-space:nowrap">${fmt(r.precio)}</td>
+      <td style="color:#666">${r.vendidos || 0}</td>
+      <td>${r.envio_gratis ? '<span class="badge-gratis">Gratis</span>' : '<span style="color:#333;font-size:.75em">No</span>'}</td>
+      <td><a href="${r.link}" target="_blank" class="link-ml">Ver →</a></td>
+    </tr>
+  `).join('');
+}
+
+function copiarTitulo(el){
+  navigator.clipboard.writeText(el.textContent).catch(()=>{});
+}
+
+// Enter en query
+document.getElementById('query').addEventListener('keydown', e=>{
+  if(e.key==='Enter') analizar();
+});
+</script>
+</body>
+</html>

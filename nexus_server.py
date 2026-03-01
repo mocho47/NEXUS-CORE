@@ -342,6 +342,65 @@ async def precios_admin_view(request: Request):
 async def marketing_view(request: Request):
     return templates.TemplateResponse("marketing.html", {"request": request})
 
+# ── VIDEO PROMO ───────────────────────────────────────────────────────────────
+
+class VideoPromoRequest(BaseModel):
+    prompt: str
+    marca: str = "NEXUS"
+    formato: str = "tiktok"
+
+@app.post("/api/marketing/generar_promo", response_class=JSONResponse)
+async def api_marketing_generar_promo(req: VideoPromoRequest):
+    try:
+        from nexus_video_promo import iniciar_job
+        job_id = iniciar_job(req.prompt, req.marca, req.formato)
+        return {"ok": True, "job_id": job_id}
+    except Exception as e:
+        return {"ok": False, "error": str(e)}
+
+@app.get("/api/marketing/promo_status/{job_id}", response_class=JSONResponse)
+async def api_marketing_promo_status(job_id: str):
+    try:
+        from nexus_video_promo import estado_job
+        return estado_job(job_id)
+    except Exception as e:
+        return {"status": "error", "error": str(e)}
+
+class CaptionRapidoRequest(BaseModel):
+    texto: str
+    marca: str = "NEXUS"
+    red: str = "instagram"
+
+@app.post("/api/marketing/caption_rapido", response_class=JSONResponse)
+async def api_marketing_caption_rapido(req: CaptionRapidoRequest):
+    try:
+        from nexus_video_promo import caption_rapido
+        return await caption_rapido(req.texto, req.marca, req.red)
+    except Exception as e:
+        return {"ok": False, "error": str(e)}
+
+class MotionVideoRequest(BaseModel):
+    prompt: str
+    marca: str = "NEXUS"
+    formato: str = "tiktok"
+
+@app.post("/api/marketing/generar_motion", response_class=JSONResponse)
+async def api_marketing_generar_motion(req: MotionVideoRequest):
+    try:
+        from nexus_motion_video import iniciar_motion_job
+        job_id = iniciar_motion_job(req.prompt, req.marca, req.formato)
+        return {"ok": True, "job_id": job_id}
+    except Exception as e:
+        return {"ok": False, "error": str(e)}
+
+@app.get("/api/marketing/motion_status/{job_id}", response_class=JSONResponse)
+async def api_marketing_motion_status(job_id: str):
+    try:
+        from nexus_motion_video import estado_job
+        return estado_job(job_id)
+    except Exception as e:
+        return {"ok": False, "error": str(e)}
+
 @app.get("/historial", response_class=HTMLResponse)
 async def historial_view(request: Request):
     orders_mgr.load_orders()
@@ -619,11 +678,84 @@ async def atf_view():
     <p class="text-gray-400">Módulo en construcción — agrega tu contenido en WEB_ATF/index.html</p>
     <a href="/dashboard" class="mt-6 inline-block bg-yellow-500 text-black px-6 py-2 rounded">← Volver</a></div></body></html>""")
 
+@app.get("/atf/galeria", response_class=HTMLResponse)
+async def atf_galeria():
+    path = os.path.join(BASE_DIR, "WEB", "templates", "atf_galeria.html")
+    if os.path.exists(path):
+        with open(path, "r", encoding="utf-8") as f:
+            return HTMLResponse(content=f.read())
+    return HTMLResponse(content="<h1>Galería no generada aún. Ejecuta organizar_atf_videos.py</h1>")
+
+@app.post("/api/atf/clasificar_videos")
+async def clasificar_videos(request: Request):
+    import json, shutil
+    from pathlib import Path
+    try:
+        data = await request.json()
+        clasificacion = data.get("clasificacion", {})
+        trabajos_dir = Path(BASE_DIR) / "TRABAJOS_ATF"
+        movidos = 0
+        for trabajo in trabajos_dir.iterdir():
+            if not trabajo.is_dir() or not trabajo.name.startswith("TRABAJO_"):
+                continue
+            proceso_dir = trabajo / "proceso"
+            terminado_dir = trabajo / "terminado"
+            proceso_dir.mkdir(exist_ok=True)
+            terminado_dir.mkdir(exist_ok=True)
+            for tipo_dir in [proceso_dir, terminado_dir]:
+                for video in list(tipo_dir.glob("*.mp4")):
+                    nombre = video.name
+                    if nombre in clasificacion:
+                        nuevo_tipo = clasificacion[nombre]
+                        nuevo_tipo_dir = trabajo / nuevo_tipo
+                        destino = nuevo_tipo_dir / nombre
+                        if not destino.exists():
+                            shutil.move(str(video), str(destino))
+                            movidos += 1
+        return {"ok": True, "movidos": movidos}
+    except Exception as e:
+        return {"ok": False, "error": str(e)}
+
+# Servir archivos de TRABAJOS_ATF estáticamente
+_trabajos_dir = os.path.join(BASE_DIR, "TRABAJOS_ATF")
+if os.path.exists(_trabajos_dir):
+    from fastapi.staticfiles import StaticFiles as _SFT
+    app.mount("/trabajos_atf", _SFT(directory=_trabajos_dir), name="trabajos_atf")
+
+@app.get("/api/atf/videos_terminados")
+async def atf_videos_terminados():
+    from pathlib import Path
+    trabajos_dir = Path(BASE_DIR) / "TRABAJOS_ATF"
+    videos = []
+    if trabajos_dir.exists():
+        for trabajo in sorted(trabajos_dir.iterdir()):
+            if not trabajo.is_dir() or not trabajo.name.startswith("TRABAJO_"):
+                continue
+            for tipo in ["terminado", "proceso"]:
+                tipo_dir = trabajo / tipo
+                if tipo_dir.exists():
+                    for mp4 in sorted(tipo_dir.glob("*.mp4")):
+                        videos.append({"trabajo": trabajo.name, "tipo": tipo, "nombre": mp4.name})
+    return {"videos": videos, "total": len(videos)}
+
 @app.get("/canbusfix", response_class=HTMLResponse)
 async def canbusfix_view():
     path = os.path.join(BASE_DIR, "WEB_CANBUSFIX", "index.html")
     with open(path, "r", encoding="utf-8") as f:
         return HTMLResponse(content=f.read())
+
+@app.get("/canbusfix/catalogo", response_class=HTMLResponse)
+async def canbusfix_catalogo():
+    path = os.path.join(BASE_DIR, "WEB_CANBUSFIX", "catalogo.html")
+    with open(path, "r", encoding="utf-8") as f:
+        return HTMLResponse(content=f.read())
+
+@app.get("/api/canbusfix/productos")
+async def canbusfix_productos():
+    import json
+    path = os.path.join(BASE_DIR, "ilume_prices.json")
+    with open(path, "r", encoding="utf-8") as f:
+        return json.load(f)
 
 @app.get("/demo", response_class=HTMLResponse)
 async def demo_view(request: Request):
@@ -632,6 +764,83 @@ async def demo_view(request: Request):
 @app.get("/licencias", response_class=HTMLResponse)
 async def licencias_view(request: Request):
     return templates.TemplateResponse("licencias.html", {"request": request})
+
+@app.get("/modulos", response_class=HTMLResponse)
+async def modulos_view(request: Request):
+    return templates.TemplateResponse("modulos.html", {"request": request})
+
+@app.post("/api/licencia/activar_demo", response_class=JSONResponse)
+async def api_licencia_activar_demo():
+    try:
+        from nexus_license import activar_demo
+        return activar_demo()
+    except Exception as e:
+        return {"ok": False, "error": str(e)}
+
+class LicenciaAdminRequest(BaseModel):
+    huella: str = ""
+    cliente: str = ""
+    tipo: str = "DEMO"
+    dias: int = None
+    modulos: list = []
+
+@app.post("/api/licencia/crear_admin", response_class=JSONResponse)
+async def api_licencia_crear_admin(req: LicenciaAdminRequest):
+    try:
+        from nexus_license import crear_licencia, guardar_licencia
+        modulos = req.modulos if req.modulos else None
+        dias = req.dias if req.dias else None
+        lic = crear_licencia(
+            huella=req.huella.upper(),
+            tipo=req.tipo,
+            cliente=req.cliente,
+            dias=dias,
+            modulos=modulos,
+        )
+        # Guardar solo si la huella coincide con la máquina local (admin en su propia máquina)
+        try:
+            from nexus_fingerprint import generar_huella
+            huella_local = generar_huella()
+            if req.huella.upper() == huella_local or req.huella.upper() == "BYPASS":
+                guardar_licencia(lic)
+        except Exception:
+            pass
+        return {"ok": True, "licencia": lic}
+    except Exception as e:
+        return {"ok": False, "error": str(e)}
+
+# ── ANALIZADOR DE MERCADO ─────────────────────────────────────────────────────
+
+@app.get("/mercado", response_class=HTMLResponse)
+async def mercado_view(request: Request):
+    return templates.TemplateResponse("mercado.html", {"request": request})
+
+class MercadoAnalizarRequest(BaseModel):
+    query: str
+    mi_precio: float = None
+    limite: int = 30
+    contexto: str = ""
+
+@app.post("/api/mercado/analizar", response_class=JSONResponse)
+async def api_mercado_analizar(req: MercadoAnalizarRequest):
+    try:
+        from nexus_market_analyzer import analisis_completo
+        return await analisis_completo(
+            query=req.query,
+            mi_precio=req.mi_precio,
+            limite=req.limite,
+            contexto=req.contexto,
+        )
+    except Exception as e:
+        return {"ok": False, "error": str(e)}
+
+@app.get("/api/mercado/buscar", response_class=JSONResponse)
+async def api_mercado_buscar(q: str, limite: int = 20):
+    try:
+        from nexus_market_analyzer import buscar_ml
+        return await buscar_ml(q, limite)
+    except Exception as e:
+        return {"ok": False, "error": str(e)}
 
 @app.post("/api/milens/cotizar", response_class=JSONResponse)
 async def api_milens_cotizar(data: dict):
@@ -666,7 +875,13 @@ async def api_cast_hablar(req: HablarRequest):
     try:
         import threading
         from nexus_cast import hablar_en_mini
-        threading.Thread(target=hablar_en_mini, args=(req.texto,), daemon=True).start()
+        def _run():
+            result = hablar_en_mini(req.texto)
+            if not result.get("ok"):
+                print(f"[MINI ERROR] {result.get('error','desconocido')}")
+            else:
+                print(f"[MINI OK] '{req.texto[:40]}'")
+        threading.Thread(target=_run, daemon=True).start()
         return {"ok": True}
     except Exception as e:
         return {"ok": False, "error": str(e)}
@@ -881,6 +1096,12 @@ async def api_autopilot_ejecutar(tarea: str = "resumen"):
         return {"ok": True, "tarea": tarea, "resultado": resultado}
     except Exception as e:
         return {"ok": False, "error": str(e)}
+
+# ── MI NEXUS (espacio personal del dueño — PIN en frontend) ──────────────────
+
+@app.get("/mio", response_class=HTMLResponse)
+async def mio_view(request: Request):
+    return templates.TemplateResponse("mio.html", {"request": request})
 
 # ── GALERÍA DE EXPERIENCIAS ───────────────────────────────────────────────────
 
@@ -1432,8 +1653,12 @@ async def api_admin_setup(req: dict):
     except Exception as e:
         return {"ok": False, "error": str(e)}
 
-# ── TIENDA PÚBLICA (usuarios sin autenticación admin) ─────────────────────────
-@app.get("/tienda", response_class=JSONResponse)
+# ── TIENDA PÚBLICA ────────────────────────────────────────────────────────────
+@app.get("/tienda", response_class=HTMLResponse)
+async def tienda_view(request: Request):
+    return templates.TemplateResponse("tienda.html", {"request": request})
+
+@app.get("/api/tienda/catalogo", response_class=JSONResponse)
 async def tienda_catalogo():
     try:
         from nexus_admin import get_catalogo_tienda
@@ -1790,6 +2015,43 @@ async def api_estudio_generar_caja(req: GenerarCajaReq):
     except Exception as e:
         return {"ok": False, "error": str(e)}
 
+
+# ── PLANILLA STICKERS ────────────────────────────────────────────────────────
+@app.post("/api/estudio/planilla_stickers", response_class=JSONResponse)
+async def api_planilla_stickers(
+    request: Request,
+    imagen: UploadFile = File(None)
+):
+    try:
+        from nexus_planilla_stickers import generar_planilla_pdf
+        form = await request.form()
+        ancho_hoja  = float(form.get("ancho_hoja", 279))
+        alto_hoja   = float(form.get("alto_hoja", 432))
+        ancho_st    = float(form.get("ancho_sticker", 60))
+        alto_st     = float(form.get("alto_sticker", 90))
+        margen      = float(form.get("margen", 3))
+        titulo      = form.get("titulo", "Planilla Stickers")
+
+        img_path = None
+        if imagen and imagen.filename:
+            tmp = os.path.join(BASE_DIR, "out", f"tmp_{imagen.filename}")
+            with open(tmp, "wb") as f:
+                f.write(await imagen.read())
+            img_path = tmp
+
+        nombre = f"planilla_{int(ancho_st)}x{int(alto_st)}.pdf"
+        out_path = os.path.join(BASE_DIR, "out", nombre)
+
+        result = generar_planilla_pdf(
+            imagen_path=img_path,
+            ancho_hoja_mm=ancho_hoja, alto_hoja_mm=alto_hoja,
+            ancho_sticker_mm=ancho_st, alto_sticker_mm=alto_st,
+            margen_mm=margen, output_path=out_path, titulo=titulo
+        )
+        result["url"] = f"/out/{nombre}"
+        return result
+    except Exception as e:
+        return {"ok": False, "error": str(e)}
 
 # ── HEALTH / AUTO-DIAGNÓSTICO ────────────────────────────────────────────────
 @app.get("/api/health/check", response_class=JSONResponse)

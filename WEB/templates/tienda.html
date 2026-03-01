@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>NEXUS — Tienda de Módulos</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:#0a0a0a;color:#eee;font-family:'Segoe UI',sans-serif;min-height:100vh}
+header{background:#111;border-bottom:1px solid #222;padding:18px 24px;display:flex;align-items:center;gap:16px}
+header h1{font-size:20px;font-weight:700;color:#f5c518}
+header span{font-size:13px;color:#666}
+.back{color:#f5c518;text-decoration:none;font-size:13px;margin-left:auto;padding:6px 14px;border:1px solid #f5c51833;border-radius:6px}
+.back:hover{background:#f5c51811}
+
+.hero{background:linear-gradient(135deg,#111 0%,#1a1500 100%);padding:40px 24px;text-align:center;border-bottom:1px solid #222}
+.hero h2{font-size:28px;font-weight:800;color:#f5c518;margin-bottom:8px}
+.hero p{color:#888;font-size:14px;max-width:500px;margin:0 auto 20px}
+.tiers{display:flex;gap:10px;justify-content:center;flex-wrap:wrap}
+.tier-badge{padding:6px 18px;border-radius:20px;font-size:12px;font-weight:700;letter-spacing:1px}
+.tier-demo{background:#1a1a1a;color:#888;border:1px solid #333}
+.tier-lite{background:#1a1a2e;color:#4488ff;border:1px solid #4488ff44}
+.tier-pro{background:#1a1a00;color:#f5c518;border:1px solid #f5c51844}
+.tier-full{background:#1a0a00;color:#ff6b00;border:1px solid #ff6b0044}
+
+.content{max-width:960px;margin:0 auto;padding:24px 16px}
+
+.cat-title{font-size:11px;font-weight:700;letter-spacing:2px;color:#555;text-transform:uppercase;margin:28px 0 12px;padding-left:4px;border-left:3px solid #333}
+
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:12px}
+
+.card{background:#111;border:1px solid #1e1e1e;border-radius:12px;padding:18px;transition:border-color .2s,transform .2s;cursor:default;position:relative;overflow:hidden}
+.card:hover{border-color:#333;transform:translateY(-2px)}
+.card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:var(--c,#00ff88)}
+.card-head{display:flex;align-items:center;gap:10px;margin-bottom:10px}
+.card-emoji{font-size:24px;line-height:1}
+.card-name{font-size:14px;font-weight:700;color:#eee}
+.card-cat{font-size:10px;color:#555;margin-top:2px;text-transform:uppercase;letter-spacing:1px}
+.card-desc{font-size:12px;color:#777;line-height:1.5;margin-bottom:10px}
+.card-detail{font-size:11px;color:#555;line-height:1.5;margin-bottom:12px}
+.card-foot{display:flex;align-items:center;justify-content:space-between}
+.badge-tier{font-size:10px;font-weight:700;padding:3px 8px;border-radius:10px;letter-spacing:.5px}
+.b-demo{background:#1a1a1a;color:#666}
+.b-lite{background:#1a1a2e;color:#4488ff}
+.b-pro{background:#1a1a00;color:#f5c518}
+.b-full{background:#1a0a00;color:#ff6b00}
+.card-precio{font-size:12px;font-weight:700;color:#00ff88}
+.card-precio.gratis{color:#00ff8866}
+.badge-new{position:absolute;top:10px;right:10px;background:#ff6b00;color:#fff;font-size:9px;font-weight:700;padding:2px 7px;border-radius:10px;letter-spacing:.5px}
+.badge-popular{position:absolute;top:10px;right:10px;background:#f5c518;color:#000;font-size:9px;font-weight:700;padding:2px 7px;border-radius:10px;letter-spacing:.5px}
+
+.cta{background:#111;border:1px solid #f5c51833;border-radius:14px;padding:32px 24px;text-align:center;margin:32px 0}
+.cta h3{color:#f5c518;font-size:18px;margin-bottom:8px}
+.cta p{color:#777;font-size:13px;margin-bottom:18px}
+.cta-btns{display:flex;gap:10px;justify-content:center;flex-wrap:wrap}
+.btn-wa{background:#25d366;color:#fff;border:none;padding:10px 24px;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer;text-decoration:none}
+.btn-wa:hover{background:#1db954}
+
+.loading{text-align:center;padding:60px;color:#444;font-size:14px}
+</style>
+</head>
+<body>
+
+<header>
+  <h1>⚡ NEXUS</h1>
+  <span>Tienda de Módulos</span>
+  <a class="back" href="/dashboard">← Dashboard</a>
+</header>
+
+<div class="hero">
+  <h2>Expande tu NEXUS</h2>
+  <p>Cada módulo amplía las capacidades de tu sistema. Actívalos según el giro de tu negocio.</p>
+  <div class="tiers">
+    <span class="tier-badge tier-demo">DEMO</span>
+    <span class="tier-badge tier-lite">LITE</span>
+    <span class="tier-badge tier-pro">PRO ⭐</span>
+    <span class="tier-badge tier-full">FULL 🔥</span>
+  </div>
+</div>
+
+<div class="content">
+  <div id="catalogo"><div class="loading">Cargando catálogo...</div></div>
+
+  <div class="cta">
+    <h3>¿Quieres activar un módulo?</h3>
+    <p>Contacta a Simplex para actualizar tu licencia o contratar módulos adicionales.</p>
+    <div class="cta-btns">
+      <a class="btn-wa" href="https://wa.me/523326148674?text=Hola%2C%20quiero%20activar%20un%20m%C3%B3dulo%20de%20NEXUS" target="_blank">📱 WhatsApp Simplex</a>
+    </div>
+  </div>
+</div>
+
+<script>
+const TIER_ORDER = ['DEMO','LITE','PRO','FULL','ADMIN'];
+const TIER_CLASS = {DEMO:'b-demo',LITE:'b-lite',PRO:'b-pro',FULL:'b-full',ADMIN:'b-full'};
+const BADGES = {
+  marketing:'badge-new', teens:'badge-new', voz:'badge-popular',
+  estudio:'badge-popular', salud:'badge-new'
+};
+
+function tierMin(incluido_en){
+  for(const t of TIER_ORDER) if(incluido_en.includes(t)) return t;
+  return 'FULL';
+}
+
+async function cargar(){
+  const res = await fetch('/api/tienda/catalogo');
+  const d   = await res.json();
+  if(!d.ok){ document.getElementById('catalogo').innerHTML='<div class="loading">Error cargando catálogo</div>'; return; }
+
+  const cats = d.categorias;
+  let html = '';
+  for(const [cat, mods] of Object.entries(cats)){
+    html += `<div class="cat-title">${cat}</div><div class="grid">`;
+    for(const m of mods){
+      const tm = tierMin(m.incluido_en);
+      const tc = TIER_CLASS[tm]||'b-demo';
+      const precio = m.precio_extra > 0
+        ? `<span class="card-precio">+$${m.precio_extra} MXN</span>`
+        : `<span class="card-precio gratis">Incluido</span>`;
+      const badge = BADGES[m.id]
+        ? `<span class="${BADGES[m.id]}">${BADGES[m.id]==='badge-new'?'NUEVO':'POPULAR'}</span>` : '';
+      html += `
+        <div class="card" style="--c:${m.color}">
+          ${badge}
+          <div class="card-head">
+            <span class="card-emoji">${m.emoji}</span>
+            <div><div class="card-name">${m.nombre}</div><div class="card-cat">${cat}</div></div>
+          </div>
+          <div class="card-desc">${m.descripcion}</div>
+          <div class="card-detail">${m.detalle}</div>
+          <div class="card-foot">
+            <span class="badge-tier ${tc}">desde ${tm}</span>
+            ${precio}
+          </div>
+        </div>`;
+    }
+    html += '</div>';
+  }
+  document.getElementById('catalogo').innerHTML = html;
+}
+cargar();
+</script>
+</body>
+</html>
