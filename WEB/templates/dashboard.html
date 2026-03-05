@@ -137,10 +137,11 @@
 
 <!-- TOP BAR -->
 <div class="topbar">
-    <span class="logo">&#9889; NEXUS</span>
+    <span class="logo" id="topbar-negocio">&#9889; NEXUS</span>
     <span style="flex:1"></span>
     <span class="dot" id="dot">&#9679; Conectando...</span>
     <div id="topbar-right" style="display:flex;align-items:center;gap:8px;margin-left:10px">
+        <span id="perfil-badge" style="font-size:.7rem;padding:3px 10px;border-radius:20px;border:1px solid #333;color:#888;display:none"></span>
         <button class="btn btn-sm" onclick="iniciarTour()" style="background:#f0c040;color:#111;font-weight:700;border-color:#f0c040">🎯 Tour</button>
         <button class="btn btn-sm" onclick="mostrarQR()" style="background:#111;border-color:#333">📱 QR</button>
         <button class="btn btn-sm" onclick="window.location='/mio'" title="Mi NEXUS personal" style="background:#111;border-color:#333;font-size:1rem;padding:4px 10px">🌙</button>
@@ -220,6 +221,26 @@
         <div class="card-title">🔧 Módulos del sistema</div>
         <div id="modulos" style="display:flex;flex-wrap:wrap;gap:6px;"></div>
         <div style="color:#2a2a2a;font-size:0.74em;margin-top:8px;text-align:right" id="ts"></div>
+    </div>
+
+    <div class="card">
+        <div class="card-title">🤖 Asistente NEXUS</div>
+        <!-- Barra de estado del mic -->
+        <div style="background:#050d08;border:1px solid #00ff8822;border-radius:8px;padding:10px 14px;margin-bottom:10px;display:flex;align-items:center;gap:10px">
+            <div id="oid-dot" style="width:9px;height:9px;border-radius:50%;background:#333;flex-shrink:0;transition:.3s"></div>
+            <span id="oid-status" style="color:#555;font-size:.8rem;flex:1">Iniciando micrófono...</span>
+            <span id="oid-interim" style="color:#00ff8877;font-style:italic;font-size:.78rem;text-align:right;max-width:50%"></span>
+        </div>
+        <div id="oid-chat" style="height:200px;overflow-y:auto;display:flex;flex-direction:column;gap:8px;margin-bottom:10px;padding-right:4px"></div>
+        <div style="display:flex;gap:8px">
+            <input type="text" id="oid-input" placeholder="Escribe el comando directo (ej: crea un pedido para Juan)..."
+                   style="flex:1;background:#111;border:1px solid #1e1e1e;color:#e0e0e0;padding:10px 14px;border-radius:8px;font-size:.88rem"
+                   onkeydown="if(event.key==='Enter')oidEnviar()">
+            <button class="btn" onclick="oidEnviar()" style="white-space:nowrap">Enviar</button>
+            <button class="btn" id="btn-mic-test" onclick="testMicDirecto()"
+                    style="background:#222;border:1px solid #333;white-space:nowrap" title="Prueba directa de micrófono">🎤</button>
+        </div>
+        <div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:8px" id="oid-chips"></div>
     </div>
 </div>
 
@@ -319,31 +340,8 @@
     </div>
 </div>
 
-<!-- ░░ OÍDO ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░ -->
-<div class="panel" id="panel-oido">
-<div class="card" style="min-height:60vh">
-    <div class="card-title">🎙️ NEXUS Oído — Voz + Texto</div>
-    <div style="background:#050d08;border:1px solid #00ff8822;border-radius:10px;padding:14px;margin-bottom:12px;display:flex;align-items:center;gap:12px">
-        <div id="oid-dot" style="width:10px;height:10px;border-radius:50%;background:#333;transition:.3s"></div>
-        <span id="oid-status" style="color:#555;font-size:.83rem">Iniciando micrófono...</span>
-        <span id="oid-interim" style="color:#00ff8877;font-style:italic;font-size:.8rem;flex:1;text-align:right"></span>
-    </div>
-
-    <!-- Chat -->
-    <div id="oid-chat" style="height:300px;overflow-y:auto;display:flex;flex-direction:column;gap:8px;margin-bottom:12px;padding-right:4px"></div>
-
-    <!-- Input manual -->
-    <div style="display:flex;gap:8px">
-        <input type="text" id="oid-input" placeholder="Escribe un comando o di 'nexus'..."
-               style="flex:1;background:#111;border:1px solid #1e1e1e;color:#e0e0e0;padding:10px 14px;border-radius:8px;font-size:.88rem"
-               onkeydown="if(event.key==='Enter')oidEnviar()">
-        <button class="btn" onclick="oidEnviar()" style="white-space:nowrap">Enviar</button>
-        <button class="btn" id="btn-mic-test" onclick="testMicDirecto()"
-                style="background:#222;border:1px solid #333;white-space:nowrap" title="Prueba directa de micrófono">🎤</button>
-    </div>
-    <div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:10px" id="oid-chips"></div>
-</div>
-</div>
+<!-- ░░ OÍDO ░░ (panel vacío — asistente en panel-inicio) -->
+<div class="panel" id="panel-oido"></div>
 
 <!-- ░░ AUTO-VENTAS ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░ -->
 <div class="panel" id="panel-autoventas">
@@ -548,6 +546,7 @@
             <button class="btn btn-sm" onclick="cmdSistema('autopilot')">🤖 Estado autopilot</button>
             <button class="btn btn-sm" onclick="cmdSistema('backup')">💾 Ejecutar backup</button>
             <button class="btn btn-sm" onclick="cmdSistema('voz')">🎙️ Test de voz</button>
+            <button class="btn btn-sm" onclick="oidCmd('abre carpeta out')">📁 Abrir carpeta Out</button>
         </div>
         <div id="sis-cmd" style="margin-top:10px;background:#050505;border:1px solid #1a1a1a;border-radius:8px;padding:12px;font-size:.85rem;color:#666;min-height:60px">
             Selecciona un comando...
@@ -685,6 +684,50 @@ if(window.speechSynthesis && window.speechSynthesis.onvoiceschanged !== undefine
 let oidMicVivo=false, oidEsperando=false, oidHablando=false, oidMic=null;
 const OID_CHIPS = ['Pedidos','Stock','Clientes','Ventas','Sistema','Marketing','Hora','Ayuda'];
 
+// ─── Diálogos guiados por voz ────────────────────────────────────────────────
+let _dialogo = null; // { tipo, paso, datos }
+
+async function _pasoDialogo(texto) {
+    if (!_dialogo) return false;
+    const t = texto.trim();
+
+    if (_dialogo.tipo === 'pedido') {
+        if (_dialogo.paso === 'cliente') {
+            _dialogo.datos.cliente = t;
+            _dialogo.paso = 'producto';
+            const msg = '¿Qué producto o servicio?';
+            oidBurbuja('NEXUS', msg, false);
+            await nexusHablar(msg);
+            oidSetStatus('Escuchando respuesta...');
+            return true;
+        }
+        if (_dialogo.paso === 'producto') {
+            _dialogo.datos.producto = t;
+            _dialogo.paso = 'entrega';
+            const msg = '¿Para cuándo lo necesita?';
+            oidBurbuja('NEXUS', msg, false);
+            await nexusHablar(msg);
+            oidSetStatus('Escuchando respuesta...');
+            return true;
+        }
+        if (_dialogo.paso === 'entrega') {
+            _dialogo.datos.entrega = t;
+            const d = _dialogo.datos;
+            _dialogo = null;
+            const r = await fetch('/api/pedidos/nuevo', {method:'POST',
+                headers:{'Content-Type':'application/json'},
+                body: JSON.stringify(d)}).then(x=>x.json());
+            const msg = r.ok ? `Listo. Pedido de ${d.producto} para ${d.cliente} registrado.` : 'Error al guardar el pedido.';
+            oidBurbuja('NEXUS', msg, false);
+            await nexusHablar(msg);
+            oidSetDot('listening');
+            oidSetStatus('Escuchando — di "nexus"');
+            return true;
+        }
+    }
+    return false;
+}
+
 // ─── Selector de salida de voz ────────────────────────────────────────────────
 const _oidSalidas = JSON.parse(localStorage.getItem('nexus_salidas')||'{"pc":true,"mini":false}');
 function _toggleSalida(key){
@@ -706,12 +749,12 @@ function _renderSalidas(){
 
 // Habla NEXUS — respeta selector de salida (PC y/o Mini)
 let _speechCooldown = false;
-function nexusHablar(txt, pitch=1.05, rate=0.93){
+function nexusHablar(txt, pitch=1.05, rate=1.1){
     return new Promise(res=>{
         if(!txt){res();return;}
         oidHablando=true; _speechCooldown=true;
-        const duracion = txt.length*65+1200;
-        // Mini: fire-and-forget (no bloquea el flujo)
+        const duracion = txt.length*32+600;  // mitad del original
+        // Mini: fire-and-forget
         if(_oidSalidas.mini){
             fetch('/api/cast/hablar',{method:'POST',headers:{'Content-Type':'application/json'},
                 body:JSON.stringify({texto:txt})}).catch(()=>{});
@@ -720,13 +763,12 @@ function nexusHablar(txt, pitch=1.05, rate=0.93){
             fetch('/api/hablar',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({texto:txt})})
                 .then(()=>{
                     setTimeout(()=>{ oidHablando=false; res(); }, duracion);
-                    setTimeout(()=>{ _speechCooldown=false; }, duracion+800);
+                    setTimeout(()=>{ _speechCooldown=false; }, duracion+400);
                 })
                 .catch(()=>{ oidHablando=false; _speechCooldown=false; res(); });
         } else {
-            // Sin PC: esperar duración estimada y resolver
             setTimeout(()=>{ oidHablando=false; res(); }, duracion);
-            setTimeout(()=>{ _speechCooldown=false; }, duracion+800);
+            setTimeout(()=>{ _speechCooldown=false; }, duracion+400);
         }
     });
 }
@@ -869,6 +911,13 @@ function navegarPorVoz(texto) {
         return `Reproduciendo "${m[1]}" en YouTube.`;
     }
 
+    // Comandos de carpeta/archivos locales
+    if(/(?:abre?|abrir|muestra|ver|entra)\s+(?:la\s+)?(?:carpeta\s+)?out|carpeta\s+de\s+salida|archivos?\s+generados?/.test(t)){
+        fetch('/api/estudio/abrir',{method:'POST',headers:{'Content-Type':'application/json'},
+            body:JSON.stringify({app:'carpeta',archivo:''})}).catch(()=>{});
+        return 'Abriendo carpeta de archivos generados.';
+    }
+
     // "abre X" / "entra a X" / "ve a X"
     m = t.match(/(?:abre|entra\s+a|ve\s+a|p[aá]gina\s+de|ir\s+a)\s+(.+)/);
     if(m){
@@ -891,6 +940,22 @@ function navegarPorVoz(texto) {
 async function oidConsultar(texto){
     oidSetDot('processing');
     oidSetStatus('Procesando...');
+
+    // Si hay un diálogo activo, canalizar respuesta ahí
+    if (_dialogo) {
+        const handled = await _pasoDialogo(texto);
+        if (handled) { oidSetDot('listening'); oidSetStatus('Escuchando — di "nexus"'); return; }
+    }
+
+    // Detectar inicio de diálogos guiados
+    const tl = texto.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'');
+    if (/pedido|orden\s+nueva|nuevo\s+orden/.test(tl)) {
+        _dialogo = { tipo:'pedido', paso:'cliente', datos:{} };
+        const msg = '¿Para qué cliente?';
+        oidBurbuja('NEXUS', msg, false);
+        await nexusHablar(msg);
+        oidSetDot('listening'); oidSetStatus('Escuchando respuesta...'); return;
+    }
 
     // Intentar navegación web primero
     const navResp = navegarPorVoz(texto);
@@ -1139,14 +1204,27 @@ setInterval(cargarKPIs, 30000);
     const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
     if(!SR) return;
     const mic = new SR();
-    mic.lang = 'es-ES';
-    mic.continuous = false; // false = más fiable; se reinicia en onend
-    mic.interimResults = false;
+    mic.lang = 'es-MX';
+    mic.continuous = false;
+    mic.interimResults = true;   // muestra texto en tiempo real mientras hablas
+    mic.maxAlternatives = 3;     // 3 interpretaciones, toma la más probable
 
     mic.onresult = e => {
         const lastRes = e.results[e.results.length - 1];
-        if(!lastRes.isFinal) return;
-        const raw = lastRes[0].transcript;
+        // Mostrar texto interim en tiempo real
+        if(!lastRes.isFinal){
+            const interim = lastRes[0].transcript;
+            const el = document.getElementById('oid-interim');
+            if(el) el.textContent = interim;
+            return;
+        }
+        const el = document.getElementById('oid-interim');
+        if(el) el.textContent = '';
+        // Tomar la mejor alternativa que contenga "nexus" si aplica, si no la primera
+        let raw = lastRes[0].transcript;
+        for(let i=0;i<lastRes.length;i++){
+            if(lastRes[i].transcript.toLowerCase().includes('nexus')){ raw=lastRes[i].transcript; break; }
+        }
         // Normalizar: minúsculas + quitar acentos + quitar eco "mande"
         const t = raw.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').trim().replace(/manden?/g,'').trim();
         if(!t) return;
@@ -1156,6 +1234,38 @@ setInterval(cargarKPIs, 30000);
             fetch('/api/paranormal/parar',{method:'POST',headers:{'Content-Type':'application/json'},body:'{}'})
             .then(r=>r.json()).then(d=>{ nexusHablar(d.msg||'Deteniendo modo paranormal.'); });
             oidEsperando = false;
+            return;
+        }
+
+        // INTERRUPCIÓN: si NEXUS está hablando y escucha "nexus" → se detiene y responde "Mande"
+        if((oidHablando || _speechCooldown) && (t.includes('nexus')||t.includes('nexo'))){
+            window.speechSynthesis.cancel();
+            fetch('/api/hablar',{method:'POST',headers:{'Content-Type':'application/json'},
+                body:JSON.stringify({texto:'__stop__'})}).catch(()=>{});
+            oidHablando=false; _speechCooldown=false;
+            oidEsperando=true;
+            oidSetDot('processing');
+            oidBurbuja('NEXUS','Mande.',false);
+            const _utt2 = new SpeechSynthesisUtterance('Mande.');
+            _utt2.lang='es-MX'; _utt2.rate=1.3; _utt2.pitch=1.05;
+            const _vz2=getVozNexus(); if(_vz2) _utt2.voice=_vz2;
+            _utt2.onend=()=>{ setTimeout(()=>{
+                oidHablando=false; _speechCooldown=false;
+                oidSetStatus('Escuchando tu comando...');
+                window._globalOidTimeout=setTimeout(()=>{
+                    if(oidEsperando){oidEsperando=false;oidSetDot('listening');oidSetStatus('Escuchando — di "nexus"');}
+                },4000);
+            },200);};
+            oidHablando=true; _speechCooldown=true;
+            window.speechSynthesis.cancel();
+            window.speechSynthesis.speak(_utt2);
+            return;
+        }
+
+        // Si hay diálogo activo, tomar la respuesta directamente sin trigger ni cooldown
+        if(_dialogo){
+            oidBurbuja('tú', raw, true);
+            oidConsultar(raw);
             return;
         }
 
@@ -1178,13 +1288,23 @@ setInterval(cargarKPIs, 30000);
                 oidEsperando = true;
                 oidSetDot('processing');
                 oidSetStatus('NEXUS activo — di el comando');
-                nexusHablar('Mande.').then(()=>{
-                    oidSetStatus('Escuchando tu comando...');
-                    window._globalOidTimeout = setTimeout(()=>{
-                        if(oidEsperando){ oidEsperando=false; oidSetDot('listening'); oidSetStatus('Escuchando — di "nexus"'); }
-                    }, 10000);
-                });
                 oidBurbuja('NEXUS','Mande.',false);
+                // Respuesta rápida: TTS del navegador directo, sin red
+                oidHablando = true; _speechCooldown = true; // bloquear mic mientras habla
+                const _utt = new SpeechSynthesisUtterance('Mande.');
+                _utt.lang = 'es-MX'; _utt.rate = 1.3; _utt.pitch = 1.05;
+                const _vz = getVozNexus(); if(_vz) _utt.voice = _vz;
+                _utt.onend = ()=>{
+                    setTimeout(()=>{
+                        oidHablando = false; _speechCooldown = false;
+                        oidSetStatus('Escuchando tu comando...');
+                        window._globalOidTimeout = setTimeout(()=>{
+                            if(oidEsperando){ oidEsperando=false; oidSetDot('listening'); oidSetStatus('Escuchando — di "nexus"'); }
+                        }, 4000);
+                    }, 200);
+                };
+                window.speechSynthesis.cancel();
+                window.speechSynthesis.speak(_utt);
             }
         } else {
             // MODO COMANDO: aceptar siempre (el usuario habla deliberadamente)
@@ -1201,12 +1321,43 @@ setInterval(cargarKPIs, 30000);
         oidSetStatus('⚠️ Mic: '+(e.error||'error')+' — reintentando...');
         setTimeout(()=>{ try{ mic.start(); }catch(ex){} }, 1500);
     };
-    mic.onend = () => setTimeout(()=>{ try{ mic.start(); }catch(e){} }, 300);
+    mic.onend = () => {
+        // Si hay diálogo activo, esperar a que NEXUS termine de hablar antes de reescuchar
+        const delay = _dialogo ? Math.max(300, _speechCooldown ? 1200 : 300) : 300;
+        setTimeout(()=>{ try{ mic.start(); }catch(e){} }, delay);
+    };
     try{ mic.start(); } catch(e){}
 })();
 
 // Voz de arranque (después de que el mic esté listo)
-setTimeout(()=>nexusHablar('Nexus en línea. Listo para operar.'), 2000);
+setTimeout(()=>nexusHablar('Nexus en línea.'), 1000);
+
+// ─── Perfil + nombre negocio en topbar ───────────────────────────────────────
+(async function cargarPerfil(){
+  try {
+    const r = await fetch('/api/perfil');
+    const d = await r.json();
+    if(!d.ok) return;
+    const badge = document.getElementById('perfil-badge');
+    const p = d.perfil;
+    badge.textContent = p.perfil === 'ADMIN' ? '👑 ADMIN' : '🏢 ' + (p.nombre||'Negocio');
+    badge.style.color  = p.color || '#888';
+    badge.style.borderColor = p.color || '#333';
+    badge.style.display = 'inline-block';
+  } catch(e){}
+})();
+
+(async function cargarNombreNegocio(){
+  try {
+    const r = await fetch('/api/config_negocio');
+    const d = await r.json();
+    const nombre = d.nombre || 'NEXUS';
+    const color  = d.color_marca || '#00ff88';
+    const el = document.getElementById('topbar-negocio');
+    if(el){ el.textContent = '⚡ ' + nombre; el.style.color = color; }
+    document.documentElement.style.setProperty('--color-marca', color);
+  } catch(e){}
+})();
 
 // ─── QR Modal ────────────────────────────────────────────────────────────────
 const _QR_BASE_URL = 'https://enrique-slaty-afton.ngrok-free.dev';
@@ -1215,10 +1366,10 @@ const _QR_URLS = {
     instalar:   _QR_BASE_URL + '/teens/instalar',
     dashboard:  _QR_BASE_URL + '/dashboard',
 };
-let _qrActivo = 'teens';
+let _qrActivo = 'instalar';
 function mostrarQR(){
     document.getElementById('modal-qr').style.display='flex';
-    cambiarQR('teens');
+    cambiarQR('instalar');
 }
 function cerrarQR(){ document.getElementById('modal-qr').style.display='none'; }
 function cambiarQR(tipo){
@@ -1244,7 +1395,7 @@ function testMicDirecto(){
     btn.textContent='⏺ Habla...'; btn.style.borderColor='#f00';
     oidSetStatus('🎤 Test — di cualquier cosa...');
     const m = new SR();
-    m.lang = 'es-ES';
+    m.lang = 'es-MX';
     m.continuous = false;
     m.interimResults = false;
     m.onresult = e => {

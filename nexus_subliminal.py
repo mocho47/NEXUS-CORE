@@ -216,6 +216,7 @@ def get_pistas() -> list:
     """Lista de categorías disponibles con metadata."""
     return [
         {
+            "id":             cat,
             "categoria":      cat,
             "descripcion":    data["descripcion"],
             "beat_hz":        round(data["hz_derecho"] - data["hz_izquierdo"], 2),

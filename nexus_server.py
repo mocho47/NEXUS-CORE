@@ -77,6 +77,37 @@ async def dashboard_view(request: Request):
 async def api_nexus_status():
     return nexus_status()
 
+# ── PERFILES DE USUARIO ──────────────────────────────────────────────────────
+@app.get("/api/perfil", response_class=JSONResponse)
+async def api_perfil_info():
+    try:
+        from nexus_profiles import info_perfil, get_perfil_activo
+        info = info_perfil()
+        perfil = get_perfil_activo()
+        return {"ok": True, "perfil": info, "tabs": perfil.get("tabs_dashboard", [])}
+    except Exception as e:
+        return {"ok": False, "error": str(e)}
+
+@app.post("/api/perfil/set", response_class=JSONResponse)
+async def api_perfil_set(request: Request):
+    try:
+        data = await request.json()
+        perfil_id = data.get("perfil", "admin")
+        from nexus_profiles import set_perfil_activo
+        p = set_perfil_activo(perfil_id)
+        return {"ok": True, "perfil": p.get("tipo"), "nombre": p.get("nombre")}
+    except Exception as e:
+        return {"ok": False, "error": str(e)}
+
+@app.get("/api/perfil/permisos", response_class=JSONResponse)
+async def api_perfil_permisos():
+    try:
+        from nexus_profiles import get_perfil_activo, PERMISOS
+        tipo = get_perfil_activo().get("tipo", "NEGOCIO")
+        return {"ok": True, "tipo": tipo, "permisos": PERMISOS.get(tipo, {})}
+    except Exception as e:
+        return {"ok": False, "error": str(e)}
+
 @app.get("/api/pedidos", response_class=JSONResponse)
 async def api_pedidos():
     return orders_mgr.get_pending()
@@ -109,6 +140,19 @@ async def crear_pedido(
 ):
     res = orders_mgr.add_order(cliente, producto, entrega)
     return RedirectResponse(url="/", status_code=303)
+
+class NuevoPedidoJSON(BaseModel):
+    cliente: str
+    producto: str
+    entrega: str = "Por definir"
+
+@app.post("/api/pedidos/nuevo", response_class=JSONResponse)
+async def api_nuevo_pedido(req: NuevoPedidoJSON):
+    try:
+        res = orders_mgr.add_order(req.cliente, req.producto, req.entrega)
+        return {"ok": True, "mensaje": f"Pedido creado para {req.cliente}: {req.producto}"}
+    except Exception as e:
+        return {"ok": False, "error": str(e)}
 
 @app.post("/nuevo_cliente")
 async def crear_cliente(
@@ -534,10 +578,14 @@ async def api_config_negocio_get():
 
 class NegocioConfig(BaseModel):
     nombre: str = ""
+    giro: str = ""
     telefono: str = ""
+    whatsapp: str = ""
+    email: str = ""
     ciudad: str = ""
     horario: str = ""
     slogan: str = ""
+    color_marca: str = "#00ff88"
     instagram: str = ""
     tiktok: str = ""
     facebook: str = ""
@@ -551,18 +599,23 @@ async def api_config_negocio_post(cfg: NegocioConfig):
                 data = json.load(f)
         except Exception:
             data = {}
-        data["nombre"]   = cfg.nombre
-        data["telefono"] = cfg.telefono
-        data["ciudad"]   = cfg.ciudad
-        data["horario"]  = cfg.horario
-        data["slogan"]   = cfg.slogan
+        data["nombre"]      = cfg.nombre
+        data["giro"]        = cfg.giro
+        data["telefono"]    = cfg.telefono
+        data["whatsapp"]    = cfg.whatsapp or cfg.telefono
+        data["email"]       = cfg.email
+        data["ciudad"]      = cfg.ciudad
+        data["horario"]     = cfg.horario
+        data["slogan"]      = cfg.slogan
+        data["color_marca"] = cfg.color_marca or "#00ff88"
+        data["configured"]  = True
         data.setdefault("redes", {})
         data["redes"]["instagram"] = cfg.instagram
         data["redes"]["tiktok"]    = cfg.tiktok
         data["redes"]["facebook"]  = cfg.facebook
         with open(path, "w", encoding="utf-8") as f:
             json.dump(data, f, ensure_ascii=False, indent=2)
-        return {"ok": True}
+        return {"ok": True, "nombre": cfg.nombre}
     except Exception as e:
         return {"ok": False, "error": str(e)}
 

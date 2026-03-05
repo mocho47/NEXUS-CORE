@@ -209,7 +209,7 @@ def _generar_alertas(pedidos: list, stock: list, clientes_dormidos: list) -> lis
     if bajo:
         alertas.append({
             "nivel": "ALTA",
-            "mensaje": f"{len(bajo)} item(s) con stock crítico (≤3 unidades)",
+            "mensaje": f"{len(bajo)} item(s) con stock critico (<=3 unidades)",
             "accion": "Revisar Inventario"
         })
 
