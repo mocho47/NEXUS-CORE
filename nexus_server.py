@@ -2181,8 +2181,8 @@ if __name__ == "__main__":
     try:
         from dotenv import load_dotenv
         load_dotenv()
-        from nexus_telegram import NexusBot
-        _bot = NexusBot()
+        from nexus_telegram import TelegramBot
+        _bot = TelegramBot()
         _bot.start()
         _bot.send("🟢 <b>NEXUS iniciado</b>\nServidor activo en puerto 8000.")
     except Exception as _e:
