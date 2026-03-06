@@ -1885,6 +1885,36 @@ async def api_social_abrir_ig(req: SocialPostReq):
     except Exception as e:
         return {"ok": False, "error": str(e)}
 
+
+# -- DREAM / APRENDIZAJE GENERATIVO -------------------------------------------
+
+@app.post("/api/dream/sonar", response_class=JSONResponse)
+async def api_dream_sonar():
+    """Lanza ciclo de sueno generativo manualmente (admin)."""
+    try:
+        from nexus_dream import sonar
+        return sonar()
+    except Exception as e:
+        return {"ok": False, "error": str(e)}
+
+@app.get("/api/dream/despertar", response_class=JSONResponse)
+async def api_dream_despertar():
+    """Retorna el conocimiento consolidado del ultimo sueno."""
+    try:
+        from nexus_dream import despertar
+        return despertar()
+    except Exception as e:
+        return {"ok": False, "error": str(e)}
+
+@app.get("/api/dream/conocimiento", response_class=JSONResponse)
+async def api_dream_conocimiento():
+    """Retorna todo el conocimiento acumulado (historial de suenos)."""
+    try:
+        from nexus_dream import get_conocimiento_completo
+        return get_conocimiento_completo()
+    except Exception as e:
+        return {"ok": False, "error": str(e)}
+
 # ── PARANORMAL ────────────────────────────────────────────────────────────────
 @app.get("/paranormal", response_class=HTMLResponse)
 async def paranormal_panel(request: Request):

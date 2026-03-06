@@ -136,6 +136,21 @@ def t_landing():
         return False  # server puede no estar corriendo en CI
 test("landing_wa", t_landing)
 
+
+# DREAM / APRENDIZAJE GENERATIVO
+def t_dream():
+    from nexus_dream import _recopilar_dia, _cargar_conocimiento, despertar
+    datos = _recopilar_dia()
+    assert "fecha" in datos, "Sin fecha en datos"
+    assert "pedidos" in datos, "Sin pedidos en datos"
+    base = _cargar_conocimiento()
+    assert "version" in base, "Sin version en conocimiento"
+    assert isinstance(base.get("dias_aprendidos", 0), int), "dias_aprendidos no es int"
+    r = despertar()
+    assert isinstance(r, dict), "despertar no retorna dict"
+    return True
+test("dream_module", t_dream)
+
 # REPORTE
 ok = sum(1 for _,r,_ in RESULTADOS if r)
 total = len(RESULTADOS)

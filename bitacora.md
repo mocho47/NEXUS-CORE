@@ -42,3 +42,24 @@
 2026-03-05 22:29 TEST 18/18 (100%) APROBADO
 2026-03-06 00:31 TEST 18/18 (100%) APROBADO
 2026-03-06 00:33 TEST 20/20 (100%) APROBADO
+2026-03-06 00:41 TEST 21/21 (100%) APROBADO
+2026-03-06 00:41 TEST 21/21 (100%) APROBADO
+
+## 2026-03-06 — Fase 5: Sueno Generativo + Aprendizaje Real
+
+### Modulos nuevos
+- **nexus_dream.py** — Motor de aprendizaje generativo nocturno
+  - `sonar()`: Recopila datos del dia (pedidos, stock, interacciones) → Groq genera patrones + recomendaciones + frases aprendidas → persiste en CONFIG/nexus_conocimiento.json
+  - `despertar()`: Al arrancar el dia, NEXUS ya sabe lo del dia anterior
+  - `get_conocimiento_completo()`: Historial de 30 dias + patrones globales + frases acumuladas
+  - `get_frase_aprendida(situacion)`: Busca respuesta aprendida para una situacion
+
+### Integraciones
+- **nexus_autopilot.py**: Ciclo de sueno a las 00:35 diario (5 min despues del backup)
+- **nexus_server.py**: 3 nuevas rutas API
+  - POST /api/dream/sonar — lanza sueno manualmente (admin)
+  - GET  /api/dream/despertar — conocimiento del ultimo sueno
+  - GET  /api/dream/conocimiento — historial completo
+
+### Tests
+- 21/21 (100%) APROBADO — dream_module test anadido

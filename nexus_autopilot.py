@@ -11,6 +11,7 @@ TAREAS AUTOMÁTICAS:
   10:00 diario  → Post sugerido para Instagram (copia a TALLER/MARKETING_STUDIO)
   18:00 diario  → Alerta de pedidos sin entregar que vencen hoy
   00:30 diario  → Backup automático de base de datos
+  00:35 diario  → Ciclo de sueño generativo (aprendizaje IA)
   Cada 5 min    → Ping de keepalive a Supabase
   Cada lunes    → Lista de clientes inactivos (30+ días) para reactivación
   Cada arranque → Verifica licencia y muestra días restantes
@@ -294,6 +295,17 @@ class AutopilotScheduler:
                 # Clientes inactivos los lunes a las 09:05
                 if cfg.get("clientes_inactivos") and dia_semana == 0 and hora == (9, 5):
                     self._ejecutar_si_nuevo("inactivos", tarea_clientes_inactivos)
+
+                # Ciclo de sueno generativo a las 00:35
+                if hora == (0, 35):
+                    def _dream_task():
+                        try:
+                            from nexus_dream import sonar
+                            return sonar()
+                        except Exception as e:
+                            _log(f"Dream error: {e}", "ERROR")
+                            return {"ok": False, "error": str(e)}
+                    self._ejecutar_si_nuevo("dream", _dream_task)
 
             except Exception as e:
                 _log(f"Error en loop autopilot: {e}", "ERROR")
