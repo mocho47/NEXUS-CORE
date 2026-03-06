@@ -1855,6 +1855,36 @@ async def av_lead_form(
         return JSONResponse({"ok": False, "error": str(e)})
 
 
+
+# ── SOCIAL — Posts por negocio ───────────────────────────────────────────────
+@app.get("/api/social/templates", response_class=JSONResponse)
+async def api_social_templates():
+    try:
+        from nexus_social import get_templates_disponibles
+        return {"ok": True, "templates": get_templates_disponibles()}
+    except Exception as e:
+        return {"ok": False, "error": str(e)}
+
+class SocialPostReq(BaseModel):
+    negocio: str
+    datos_extra: dict = {}
+
+@app.post("/api/social/generar_post", response_class=JSONResponse)
+async def api_social_generar_post(req: SocialPostReq):
+    try:
+        from nexus_social import generar_post_negocio
+        return generar_post_negocio(req.negocio, req.datos_extra)
+    except Exception as e:
+        return {"ok": False, "error": str(e)}
+
+@app.post("/api/social/abrir_instagram", response_class=JSONResponse)
+async def api_social_abrir_ig(req: SocialPostReq):
+    try:
+        from nexus_social import abrir_instagram_web
+        return abrir_instagram_web(req.negocio)
+    except Exception as e:
+        return {"ok": False, "error": str(e)}
+
 # ── PARANORMAL ────────────────────────────────────────────────────────────────
 @app.get("/paranormal", response_class=HTMLResponse)
 async def paranormal_panel(request: Request):

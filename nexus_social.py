@@ -111,6 +111,53 @@ Cotiza sin compromiso 👇
 
 #SublimacionGDL #PersonalizacionGDL #RegalosCorporativos #EmprendedoresGDL
 """,
+    # ── NEGOCIOS SIMPLEX ─────────────────────────────────────────────────────
+    "atf_retrofit": """🔦 ¿Ya viste cómo quedó este {vehiculo}?
+
+ANTES: focos amarillos que no iluminan nada.
+DESPUÉS: Bi-LED profesional, nitidez total, look premium.
+
+✅ Instalación en 1 día
+✅ Garantía incluida
+✅ Tecnología Aozoom | Illume
+
+📍 Guadalajara · {nombre_negocio}
+📱 WhatsApp: wa.me/{wa_number}
+
+#RetrofitFaros #BiLED #ATF #FarosGDL #Guadalajara #Aozoom #TuningGDL""",
+
+    "milens_laser": """✂️ Mira lo que salió del láser hoy 😍
+
+{descripcion_pieza}
+
+🪵 Material: {material}
+📐 Medidas: {medidas}
+⏱️ Entrega: {entrega}
+
+¿Quieres algo personalizado? Escríbenos.
+Hacemos desde 1 pieza.
+
+📱 {wa_number} | {nombre_negocio}
+📍 Guadalajara, Jalisco
+
+#MDF #CorteLaser #PersonalizadoMDF #AcrilicoCortado #MilensGDL #Laser #RegaloPersonalizado""",
+
+    "canbusfix_instalador": """🔧 ¿Instalas faros retrofit?
+
+Únete a CanbusFix y accede a:
+✅ Catálogo mayorista con precios reales
+✅ Soporte técnico de instaladores reales
+✅ Capacitación y tutoriales exclusivos
+✅ Certificación CanbusFix para tu negocio
+
+👉 3 niveles: Básico (gratis) · Pro ($299/mes) · Elite ($599/mes)
+
+Más de {num_instaladores}+ instaladores activos en México.
+¿Cuándo te unes?
+
+📱 {wa_number}
+#CanbusFix #RetrofitFaros #InstaladorRetrofit #BiLED #TallerGDL #Aozoom""",
+
 }
 
 
@@ -197,3 +244,71 @@ if __name__ == "__main__":
     if pyperclip:
         pyperclip.copy(texto)
         print("\n[COPIADO AL PORTAPAPELES]")
+
+
+# ── API NEGOCIOS ──────────────────────────────────────────────────────────────
+
+DATOS_NEGOCIO_DEFAULT = {
+    "atf": {
+        "nombre_negocio": "ATF by Simplex",
+        "wa_number": "3326148674",
+        "vehiculo": "Nissan NP300",
+        "descripcion": "Retrofit bi-LED profesional"
+    },
+    "milens": {
+        "nombre_negocio": "Milens by Simplex",
+        "wa_number": "3326148674",
+        "descripcion_pieza": "Caja con tapa en MDF 6mm",
+        "material": "MDF 6mm",
+        "medidas": "20x15x10cm",
+        "entrega": "48 horas"
+    },
+    "canbusfix": {
+        "nombre_negocio": "CanbusFix",
+        "wa_number": "3326148674",
+        "num_instaladores": "150"
+    }
+}
+
+TEMPLATE_POR_NEGOCIO = {
+    "atf":       "atf_retrofit",
+    "milens":    "milens_laser",
+    "canbusfix": "canbusfix_instalador"
+}
+
+def generar_post_negocio(negocio: str, datos_extra: dict = None) -> dict:
+    """Genera caption listo para pegar en Instagram/TikTok para ATF, Milens o CanbusFix."""
+    negocio = negocio.lower().strip()
+    if negocio not in TEMPLATE_POR_NEGOCIO:
+        return {"ok": False, "error": f"Negocio '{negocio}' no reconocido. Usa: atf, milens, canbusfix"}
+    tipo = TEMPLATE_POR_NEGOCIO[negocio]
+    datos = dict(DATOS_NEGOCIO_DEFAULT.get(negocio, {}))
+    if datos_extra:
+        datos.update(datos_extra)
+    caption = generar_copy(tipo, datos)
+    wa_url  = whatsapp_url(f"Hola! Quiero cotizar con {datos.get('nombre_negocio','')}")
+    return {
+        "ok": True,
+        "negocio": negocio,
+        "caption": caption,
+        "caracteres": len(caption),
+        "wa_url": wa_url,
+        "instruccion": "Copia el caption, abre Instagram y pégalo en tu nueva publicación"
+    }
+
+def abrir_instagram_web(negocio: str = "") -> dict:
+    """Abre Instagram en el navegador para publicar manualmente."""
+    try:
+        import webbrowser, subprocess
+        url = "https://www.instagram.com/create/style/"
+        webbrowser.open(url)
+        return {"ok": True, "url": url, "nota": "Instagram abierto — pega el caption generado"}
+    except Exception as e:
+        return {"ok": False, "error": str(e)}
+
+def get_templates_disponibles() -> list:
+    """Lista todos los templates disponibles."""
+    return [
+        {"id": k, "negocio": k.split("_")[0], "nombre": k.replace("_"," ").title()}
+        for k in TEMPLATES.keys()
+    ]

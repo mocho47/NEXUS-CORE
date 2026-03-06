@@ -112,6 +112,30 @@ def t_server_import():
     return spec is not None
 test("server_importable", t_server_import)
 
+# SOCIAL NEGOCIOS (nuevas funciones)
+def t_social_negocio():
+    from nexus_social import generar_post_negocio, get_templates_disponibles
+    r = generar_post_negocio("atf", {"vehiculo": "Hilux"})
+    assert r.get("ok"), f"ATF post fallo: {r}"
+    assert r.get("caracteres", 0) > 100
+    r2 = generar_post_negocio("milens")
+    assert r2.get("ok")
+    templates = get_templates_disponibles()
+    assert len(templates) >= 8
+    return True
+test("social_negocios", t_social_negocio)
+
+# LANDING
+def t_landing():
+    import urllib.request
+    try:
+        resp = urllib.request.urlopen("http://localhost:8000/landing", timeout=5)
+        html = resp.read().decode("utf-8", errors="ignore")
+        return "NEXUS" in html and "WhatsApp" in html
+    except:
+        return False  # server puede no estar corriendo en CI
+test("landing_wa", t_landing)
+
 # REPORTE
 ok = sum(1 for _,r,_ in RESULTADOS if r)
 total = len(RESULTADOS)
@@ -136,3 +160,5 @@ with open("BITACORA.md","a",encoding="utf-8") as f:
     f.write("\n")
 
 sys.exit(0 if pct >= 80 else 1)
+
+

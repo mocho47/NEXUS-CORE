@@ -32,6 +32,10 @@ def get_offline_engine():
             if "sabina" in v.name.lower() or "pablo" in v.name.lower() or "raul" in v.name.lower():
                 target_voice = v.id; break
         if target_voice: _offline_engine.setProperty('voice', target_voice)
+        elif any('Helena' in v.name for v in voices):
+            # Fallback: Helena es-ES si no hay voz mexicana
+            helena = next(v for v in voices if 'Helena' in v.name)
+            _offline_engine.setProperty('voice', helena.id)
     return _offline_engine
 
 # --- FUNCIÓN DE PARADA ---
