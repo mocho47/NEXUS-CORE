@@ -9,6 +9,7 @@ import json
 import platform
 import shutil
 import tempfile
+import urllib.parse
 from nexus_orders import manager as orders_mgr
 from nexus_crm import manager as crm_mgr
 from nexus_stock import manager as stock_mgr
@@ -805,6 +806,57 @@ if os.path.exists(_trabajos_dir):
     from fastapi.staticfiles import StaticFiles as _SFT
     app.mount("/trabajos_atf", _SFT(directory=_trabajos_dir), name="trabajos_atf")
 
+class ATFAgendarReq(BaseModel):
+    nombre: str
+    telefono: str
+    vehiculo: str
+    servicio: str = "Retrofit faros"
+    fecha_preferida: str = ""
+    notas: str = ""
+
+@app.post("/api/atf/agendar", response_class=JSONResponse)
+async def api_atf_agendar(req: ATFAgendarReq):
+    """Agenda un servicio ATF — crea pedido en el sistema de ordenes."""
+    try:
+        import nexus_db, time, datetime
+        now = datetime.datetime.now()
+        # Determinar deadline: mañana al mediodía si no se especificó
+        if req.fecha_preferida:
+            deadline = req.fecha_preferida + " 12:00:00"
+        else:
+            tmr = now + datetime.timedelta(days=1)
+            deadline = tmr.strftime("%Y-%m-%d 12:00:00")
+        order = {
+            "id": int(time.time()),
+            "cliente": req.nombre,
+            "whatsapp": req.telefono,
+            "producto": f"{req.servicio} — {req.vehiculo}. {req.notas}",
+            "tipo": "ATF",
+            "precio": 0,
+            "deadline": deadline,
+            "status": "NUEVO",
+            "area": "ATF",
+            "notified_1h": False, "notified_15m": False,
+            "insistent_level": 0, "last_nag_time": 0.0,
+        }
+        nexus_db.db.upsert_pedido(order)
+        orders_mgr.load_orders()
+        # WhatsApp de confirmacion
+        num = req.telefono.replace(" ","").replace("-","")
+        if len(num) == 10: num = "52" + num
+        wa_msg = f"Hola {req.nombre}! Tu cita ATF fue recibida.\nServicio: {req.servicio}\nVehiculo: {req.vehiculo}\nTe contactamos para confirmar fecha.\nATF by Simplex"
+        wa_url = f"https://wa.me/{num}?text={urllib.parse.quote(wa_msg)}"
+        return {"ok": True, "id": order["id"], "wa_url": wa_url, "mensaje": f"Servicio agendado para {req.nombre}"}
+    except Exception as e:
+        return {"ok": False, "error": str(e)}
+
+@app.get("/api/atf/agenda", response_class=JSONResponse)
+async def api_atf_agenda():
+    """Lista ordenes ATF."""
+    orders_mgr.load_orders()
+    atf = [o for o in orders_mgr.get_all_orders() if o.get("tipo") == "ATF" or o.get("area") == "ATF"]
+    return {"ok": True, "servicios": atf}
+
 @app.get("/api/atf/videos_terminados")
 async def atf_videos_terminados():
     from pathlib import Path
@@ -839,6 +891,59 @@ async def canbusfix_productos():
     path = os.path.join(BASE_DIR, "ilume_prices.json")
     with open(path, "r", encoding="utf-8") as f:
         return json.load(f)
+
+@app.get("/api/canbusfix/catalogo", response_class=JSONResponse)
+async def api_canbusfix_catalogo(tier: str = "publico"):
+    """Devuelve productos con precios por tier: publico/pro/elite."""
+    import json
+    path = os.path.join(BASE_DIR, "ilume_prices.json")
+    with open(path, "r", encoding="utf-8") as f:
+        raw = json.load(f)
+    precio_key = {"publico":"precio_publico","pro":"precio_pro","elite":"precio_elite","distribuidor":"precio_distribuidor"}.get(tier, "precio_publico")
+    productos = []
+    for codigo, p in raw.items():
+        productos.append({
+            "codigo": codigo,
+            "descripcion": p.get("descripcion",""),
+            "precio": p.get(precio_key, p.get("precio_publico",0)),
+            "temp_color": p.get("temp_color",""),
+            "pulgadas": p.get("pulgadas",""),
+            "destacado": p.get("destacado", False),
+        })
+    return {"ok": True, "tier": tier, "productos": productos, "total": len(productos)}
+
+class CanbusInstaladorReq(BaseModel):
+    nombre: str
+    ciudad: str
+    telefono: str
+    experiencia: str = "basica"
+    notas: str = ""
+
+@app.post("/api/canbusfix/registrar_instalador", response_class=JSONResponse)
+async def api_canbusfix_registrar(req: CanbusInstaladorReq):
+    """Registra nuevo instalador en la red Canbusfix."""
+    try:
+        import nexus_db, time
+        registro = {
+            "id": int(time.time()),
+            "nombre": req.nombre,
+            "ciudad": req.ciudad,
+            "telefono": req.telefono,
+            "experiencia": req.experiencia,
+            "notas": req.notas,
+            "tier": "BASICO",
+            "estado": "PENDIENTE_APROBACION",
+            "fecha": time.strftime("%Y-%m-%d"),
+        }
+        # Guardar como cliente en CRM
+        crm_mgr.add_cliente(
+            req.nombre,
+            req.telefono,
+            email="",
+        )
+        return {"ok": True, "id": registro["id"], "mensaje": f"Solicitud de {req.nombre} recibida. Te contactamos en 24h."}
+    except Exception as e:
+        return {"ok": False, "error": str(e)}
 
 @app.get("/demo", response_class=HTMLResponse)
 async def demo_view(request: Request):

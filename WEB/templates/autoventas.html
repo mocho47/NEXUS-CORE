@@ -99,6 +99,7 @@ input:focus,select:focus,textarea:focus{border-color:var(--green)}
   <div class="tab"        data-panel="pSeg"    onclick="go(this)">📅 Seguimiento</div>
   <div class="tab"        data-panel="pConten" onclick="go(this)">🎬 Contenido</div>
   <div class="tab"        data-panel="pLead"   onclick="go(this)">➕ Nuevo Lead</div>
+  <div class="tab"        data-panel="pBandeja" onclick="go(this)">📤 Bandeja</div>
 </div>
 
 <!-- ── DASHBOARD ─────────────────────────────────────────────────────────── -->
@@ -194,6 +195,16 @@ input:focus,select:focus,textarea:focus{border-color:var(--green)}
   </div>
 </div>
 
+<!-- ── BANDEJA PUBLICACION ─────────────────────────────────────────────── -->
+<div class="panel" id="pBandeja">
+  <div class="card">
+    <div class="card-title">📤 Contenido listo para publicar</div>
+    <p style="font-size:12px;color:var(--muted)">1 clic copia el texto y abre la red social. Solo pega y publica.</p>
+    <button id="btnGenMas" class="btn btn-green" onclick="generarMasContenido()">+ Generar mas contenido</button>
+  </div>
+  <div id="bandejaList" style="display:flex;flex-direction:column;gap:10px"></div>
+</div>
+
 <!-- ── PROPUESTA MODAL ────────────────────────────────────────────────────── -->
 <div id="propModal" onclick="closeProp(event)">
   <div class="prop-sheet">
@@ -231,7 +242,8 @@ function go(el) {
   if (pid === 'pDash')   loadMetricas();
   if (pid === 'pPipe')   loadPipeline();
   if (pid === 'pSeg')    loadSeguimiento();
-  if (pid === 'pConten') { loadHooks('tiktok'); loadCalendario(); }
+  if (pid === 'pConten')  { loadHooks('tiktok'); loadCalendario(); }
+  if (pid === 'pBandeja') loadBandeja();
 }
 
 // ── MÉTRICAS ─────────────────────────────────────────────────────────────────
@@ -411,6 +423,93 @@ async function registrarLead() {
   } else {
     toast('❌ ' + r.error, false);
   }
+}
+
+// ── BANDEJA ──────────────────────────────────────────────────────────────────
+let bandejaItems = [];
+
+async function loadBandeja() {
+  // Genera contenido listo para publicar usando el calendario + caption_rapido
+  const cal = await api('/api/autoventas/calendario');
+  const dias = cal.calendario || [];
+  const container = document.getElementById('bandejaList');
+  bandejaItems = dias.slice(0,5).map((d,i) => ({
+    id: i,
+    titulo: d.titulo || 'Post NEXUS',
+    caption: d.hook_instagram || d.hook_tiktok || '',
+    hashtags: d.hashtags || '',
+    red: 'instagram',
+    publicado: false
+  }));
+  renderBandeja();
+}
+
+function renderBandeja() {
+  const container = document.getElementById('bandejaList');
+  const REDES = {
+    instagram: {label:'Instagram', url:'https://www.instagram.com/', color:'#e1306c'},
+    tiktok:    {label:'TikTok',    url:'https://www.tiktok.com/', color:'#010101'},
+    facebook:  {label:'Facebook',  url:'https://www.facebook.com/', color:'#1877f2'},
+    whatsapp:  {label:'WhatsApp',  url:'', color:'#25d366'}
+  };
+  container.innerHTML = bandejaItems.map((item,i) => {
+    const red = REDES[item.red] || REDES.instagram;
+    return `<div class="card" style="${item.publicado ? 'opacity:.4' : ''}">
+      <div style="display:flex;align-items:center;gap:8px;justify-content:space-between">
+        <div style="font-weight:700;font-size:14px">${item.titulo}</div>
+        <span style="font-size:11px;padding:2px 8px;border-radius:10px;background:${red.color}20;color:${red.color}">${red.label}</span>
+      </div>
+      <div style="font-size:12px;color:var(--muted);background:var(--surface2);border-radius:6px;padding:10px;line-height:1.5">${item.caption}</div>
+      <div style="font-size:11px;color:var(--purple)">${item.hashtags}</div>
+      <div style="display:flex;gap:6px;flex-wrap:wrap">
+        <select onchange="bandejaItems[${i}].red=this.value;renderBandeja()" style="flex:1;max-width:120px;padding:6px;font-size:12px">
+          ${Object.keys(REDES).map(k=>`<option value="${k}" ${item.red===k?'selected':''}>${REDES[k].label}</option>`).join('')}
+        </select>
+        <button onclick="copiarBandeja(${i})" style="flex:1;background:var(--surface2);border:1px solid var(--border);color:var(--text);padding:6px;border-radius:6px;cursor:pointer;font-size:12px">Copiar</button>
+        <button onclick="publicarBandeja(${i})" style="flex:1;background:var(--green);border:none;color:#000;padding:6px;border-radius:6px;cursor:pointer;font-size:12px;font-weight:700">${item.publicado ? 'Publicado' : '1 clic → Publicar'}</button>
+      </div>
+    </div>`;
+  }).join('') || '<div style="text-align:center;color:var(--muted);padding:30px">Cargando contenido...</div>';
+}
+
+function copiarBandeja(i) {
+  const item = bandejaItems[i];
+  const texto = item.caption + '\n\n' + item.hashtags;
+  navigator.clipboard.writeText(texto);
+  toast('Copiado al portapapeles');
+}
+
+function publicarBandeja(i) {
+  const item = bandejaItems[i];
+  const URLS = {
+    instagram:'https://www.instagram.com/create/story/',
+    tiktok:'https://www.tiktok.com/upload/',
+    facebook:'https://www.facebook.com/',
+    whatsapp:`https://wa.me/?text=${encodeURIComponent(item.caption+'\n\n'+item.hashtags)}`
+  };
+  // 1. Copiar texto al clipboard
+  navigator.clipboard.writeText(item.caption + '\n\n' + item.hashtags);
+  // 2. Abrir la red social
+  window.open(URLS[item.red] || URLS.instagram, '_blank');
+  bandejaItems[i].publicado = true;
+  renderBandeja();
+  toast('Texto copiado — pega en la red que se abrio');
+}
+
+async function generarMasContenido() {
+  const btn = document.getElementById('btnGenMas');
+  btn.textContent = 'Generando...'; btn.disabled = true;
+  const negocios = ['Corte laser personalizado','Sublimacion vasos','Stickers vinil','Cajas MDF regalo'];
+  const nuevos = [];
+  for (const neg of negocios) {
+    const r = await api('/api/marketing/caption_rapido', {texto: neg, marca: 'Creaciones Milens', red: 'instagram'});
+    const cap = r.caption || r.texto || '';
+    if (cap) nuevos.push({id: Date.now(), titulo: neg, caption: cap, hashtags: '#milens #gdl #laser #sublimacion', red:'instagram', publicado:false});
+  }
+  bandejaItems = [...bandejaItems, ...nuevos];
+  renderBandeja();
+  btn.textContent = '+ Generar mas'; btn.disabled = false;
+  toast('Contenido generado');
 }
 
 // ── INIT ─────────────────────────────────────────────────────────────────────
