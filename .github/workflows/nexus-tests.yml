@@ -11,6 +11,10 @@ on:
 jobs:
   test:
     runs-on: windows-latest
+    defaults:
+      run:
+        working-directory: ${{ github.workspace }}
+
     steps:
       - uses: actions/checkout@v4
 
@@ -24,26 +28,21 @@ jobs:
           pip install fastapi uvicorn jinja2 python-multipart groq requests httpx ezdxf reportlab numpy pygame
 
       - name: Create test CONFIG
-        shell: python
         run: |
-          import os, json, base64, hmac, hashlib, datetime
-          os.makedirs('CONFIG', exist_ok=True)
-          # Config negocio de prueba
-          negocio = {"nombre":"NEXUS Test CI","giro":"Pruebas","telefono":"0000000000",
-                     "ciudad":"CI","configured":True,"color_marca":"#00ff88"}
-          json.dump(negocio, open('CONFIG/negocio.json','w',encoding='utf-8'), ensure_ascii=False)
-          # Perfil admin CI
-          from nexus_profiles import set_perfil_activo
-          set_perfil_activo('admin')
-          # Licencia bypass para CI
-          lic = {"tipo":"ADMIN","cliente":"CI_TEST","huella":"BYPASS",
-                 "creada":datetime.datetime.now().isoformat(),
-                 "expira":datetime.datetime(2099,1,1).isoformat(),
-                 "modulos":["*"],"firma":"CI_BYPASS"}
-          import base64 as b64
-          raw = json.dumps(lic, ensure_ascii=False).encode()
-          open('CONFIG/license.key','wb').write(b64.b64encode(raw))
-          print("CONFIG OK")
+          python -c "
+import sys, os
+sys.path.insert(0, os.getcwd())
+import json, datetime, base64 as b64
+os.makedirs('CONFIG', exist_ok=True)
+negocio = {'nombre':'NEXUS Test CI','giro':'Pruebas','telefono':'0000000000','ciudad':'CI','configured':True,'color_marca':'#00ff88'}
+json.dump(negocio, open('CONFIG/negocio.json','w',encoding='utf-8'), ensure_ascii=False)
+from nexus_profiles import set_perfil_activo
+set_perfil_activo('admin')
+lic = {'tipo':'ADMIN','cliente':'CI_TEST','huella':'BYPASS','creada':datetime.datetime.now().isoformat(),'expira':datetime.datetime(2099,1,1).isoformat(),'modulos':['*'],'firma':'CI_BYPASS'}
+raw = json.dumps(lic, ensure_ascii=False).encode()
+open('CONFIG/license.key','wb').write(b64.b64encode(raw))
+print('CONFIG OK')
+"
 
       - name: Run test suite
         run: python nexus_test_suite.py
