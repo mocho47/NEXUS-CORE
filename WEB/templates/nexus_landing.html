@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#0a0a0a">
+<title>NEXUS by Simplex — El cerebro digital de tu negocio</title>
+<meta name="description" content="Sistema de gestion con IA en espanol. Sin suscripcion mensual. Para negocios reales en Mexico.">
+<style>
+:root{
+  --bg:#0a0a0a;--surface:#111;--surface2:#1a1a1a;--border:#2a2a2a;
+  --green:#00ff88;--blue:#00aaff;--gold:#ffd700;--text:#f0f0f0;--muted:#888;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;line-height:1.6}
+
+/* ── HERO ── */
+.hero{min-height:100dvh;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:32px 20px;position:relative;overflow:hidden}
+.hero::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse 80% 50% at 50% 0%,#00ff8815,transparent)}
+.hero-badge{background:#00ff8820;border:1px solid #00ff8840;color:var(--green);font-size:13px;font-weight:600;padding:6px 16px;border-radius:20px;margin-bottom:24px;display:inline-block}
+.hero h1{font-size:clamp(32px,8vw,56px);font-weight:900;line-height:1.1;margin-bottom:16px}
+.hero h1 span{color:var(--green)}
+.hero p{font-size:clamp(15px,3vw,18px);color:var(--muted);max-width:540px;margin:0 auto 32px}
+.hero-btns{display:flex;gap:12px;flex-wrap:wrap;justify-content:center}
+.btn{padding:14px 28px;border-radius:12px;font-size:16px;font-weight:700;cursor:pointer;border:none;text-decoration:none;display:inline-block;transition:.2s}
+.btn-green{background:var(--green);color:#000}
+.btn-green:hover{filter:brightness(1.1);transform:translateY(-1px)}
+.btn-outline{background:transparent;border:2px solid #333;color:var(--text)}
+.btn-outline:hover{border-color:var(--green);color:var(--green)}
+
+/* ── SECTIONS ── */
+section{padding:60px 20px;max-width:960px;margin:0 auto}
+.section-title{font-size:clamp(24px,5vw,36px);font-weight:800;text-align:center;margin-bottom:12px}
+.section-sub{color:var(--muted);text-align:center;margin-bottom:40px;font-size:15px}
+
+/* ── FEATURES ── */
+.features-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:16px}
+.feature-card{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:24px;transition:.3s}
+.feature-card:hover{border-color:var(--green);transform:translateY(-2px)}
+.feature-emoji{font-size:34px;margin-bottom:12px}
+.feature-name{font-size:16px;font-weight:700;margin-bottom:6px}
+.feature-desc{color:var(--muted);font-size:13px;line-height:1.5}
+
+/* ── COMO FUNCIONA ── */
+.pasos{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:24px}
+.paso{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:28px 24px;text-align:center}
+.paso-num{width:48px;height:48px;border-radius:50%;background:#00ff8820;border:2px solid var(--green);color:var(--green);font-size:20px;font-weight:900;display:flex;align-items:center;justify-content:center;margin:0 auto 16px}
+.paso h3{font-size:18px;font-weight:800;margin-bottom:8px}
+.paso p{color:var(--muted);font-size:14px}
+
+/* ── TESTIMONIOS ── */
+.testimonios-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:16px}
+.testimonio{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:24px}
+.testimonio-texto{font-size:15px;line-height:1.6;margin-bottom:16px;font-style:italic}
+.testimonio-texto::before{content:'"';color:var(--green);font-size:24px;font-weight:900;line-height:0;vertical-align:-8px;margin-right:4px}
+.testimonio-autor{font-size:13px;color:var(--muted);font-weight:600}
+.stars{color:var(--gold);font-size:14px;margin-bottom:8px}
+
+/* ── CTA / FORM ── */
+.cta-section{background:var(--surface);border-top:1px solid var(--border);border-bottom:1px solid var(--border);max-width:100%;padding:70px 20px}
+.cta-inner{max-width:600px;margin:0 auto;text-align:center}
+.cta-inner h2{font-size:clamp(24px,5vw,36px);font-weight:900;margin-bottom:12px}
+.cta-inner > p{color:var(--muted);margin-bottom:32px;font-size:15px}
+.separador{display:flex;align-items:center;gap:16px;margin:28px 0;color:var(--muted);font-size:13px}
+.separador::before,.separador::after{content:'';flex:1;border-top:1px solid var(--border)}
+.form-card{background:var(--bg);border:1px solid var(--border);border-radius:20px;padding:28px 24px;text-align:left}
+.field{margin-bottom:14px}
+.field label{font-size:13px;color:var(--muted);margin-bottom:4px;display:block}
+.field input,.field select{background:var(--surface2);border:1px solid var(--border);color:var(--text);padding:12px;border-radius:10px;font-size:15px;width:100%;outline:none}
+.field input:focus,.field select:focus{border-color:var(--green)}
+.btn-full{width:100%;padding:14px;font-size:16px;border-radius:10px;border:none;cursor:pointer;font-weight:700}
+
+/* ── GRACIAS ── */
+#gracias{display:none;background:#00ff8820;border:1px solid #00ff8840;border-radius:16px;padding:28px;text-align:center;margin-bottom:24px}
+#gracias h3{color:var(--green);font-size:22px;margin-bottom:8px}
+#gracias p{color:var(--muted);font-size:15px}
+
+/* ── FOOTER ── */
+footer{border-top:1px solid var(--border);padding:28px 20px;text-align:center;color:var(--muted);font-size:13px}
+footer a{color:var(--green);text-decoration:none}
+footer a:hover{text-decoration:underline}
+
+/* ── WA FLOTANTE ── */
+.wa-float{position:fixed;bottom:24px;right:24px;background:#25D366;color:#000;border-radius:50px;padding:14px 20px;font-weight:700;font-size:15px;text-decoration:none;box-shadow:0 4px 20px #25D36660;display:flex;align-items:center;gap:8px;z-index:1000;transition:.2s}
+.wa-float:hover{transform:scale(1.05);box-shadow:0 6px 28px #25D36680}
+
+@media(max-width:480px){.wa-float span{display:none}}
+</style>
+</head>
+<body>
+
+<!-- ── HERO ──────────────────────────────────────────────────────────────── -->
+<div class="hero">
+  <div class="hero-badge">&#9889; NEXUS by Simplex</div>
+  <h1>El cerebro digital<br>de <span>tu negocio</span></h1>
+  <p>IA en espanol. Sin suscripcion mensual. Para negocios reales en Mexico.</p>
+  <div class="hero-btns">
+    <a href="https://wa.me/523326148674?text=Hola!+Me+interesa+NEXUS+para+mi+negocio"
+       target="_blank" class="btn btn-green">&#128172; Hablar por WhatsApp</a>
+    <a href="#como-funciona" class="btn btn-outline">Ver como funciona</a>
+  </div>
+</div>
+
+<!-- ── FEATURES ───────────────────────────────────────────────────────────── -->
+<section>
+  <div class="section-title">Todo lo que tu negocio necesita</div>
+  <div class="section-sub">En un solo sistema. En tu idioma. En tu computadora.</div>
+  <div class="features-grid">
+    <div class="feature-card">
+      <div class="feature-emoji">&#128203;</div>
+      <div class="feature-name">Pedidos en Tiempo Real</div>
+      <div class="feature-desc">Controla pedidos, entregas y estados desde tu celular o computadora.</div>
+    </div>
+    <div class="feature-card">
+      <div class="feature-emoji">&#128101;</div>
+      <div class="feature-name">CRM de Clientes</div>
+      <div class="feature-desc">Historial, notas y seguimiento de cada cliente en un solo lugar.</div>
+    </div>
+    <div class="feature-card">
+      <div class="feature-emoji">&#128230;</div>
+      <div class="feature-name">Inventario Inteligente</div>
+      <div class="feature-desc">Alertas de stock bajo, reabasto automatico y control por categoria.</div>
+    </div>
+    <div class="feature-card">
+      <div class="feature-emoji">&#128178;</div>
+      <div class="feature-name">Cotizador Automatico</div>
+      <div class="feature-desc">Genera cotizaciones profesionales en segundos. Envia por WhatsApp con un clic.</div>
+    </div>
+    <div class="feature-card">
+      <div class="feature-emoji">&#129302;</div>
+      <div class="feature-name">Asistente por Voz</div>
+      <div class="feature-desc">"Nexus, cuantos pedidos tengo hoy?" — y te responde al instante.</div>
+    </div>
+    <div class="feature-card">
+      <div class="feature-emoji">&#128227;</div>
+      <div class="feature-name">Marketing con IA</div>
+      <div class="feature-desc">Copies, hashtags y guiones para TikTok e Instagram generados automaticamente.</div>
+    </div>
+    <div class="feature-card">
+      <div class="feature-emoji">&#128197;</div>
+      <div class="feature-name">Agenda + Citas</div>
+      <div class="feature-desc">Calendario de servicios, recordatorios automaticos y confirmaciones por WhatsApp.</div>
+    </div>
+    <div class="feature-card">
+      <div class="feature-emoji">&#128176;</div>
+      <div class="feature-name">Finanzas Claras</div>
+      <div class="feature-desc">Flujo de caja, ingresos y gastos. Sin contabilidad complicada.</div>
+    </div>
+  </div>
+</section>
+
+<!-- ── COMO FUNCIONA ───────────────────────────────────────────────────────── -->
+<section id="como-funciona" style="background:var(--surface);border-top:1px solid var(--border);border-bottom:1px solid var(--border);max-width:100%;padding:60px 20px">
+  <div style="max-width:960px;margin:0 auto">
+    <div class="section-title">Como funciona</div>
+    <div class="section-sub">Tres pasos y tu negocio ya esta conectado</div>
+    <div class="pasos">
+      <div class="paso">
+        <div class="paso-num">1</div>
+        <h3>&#127919; Lo configuras</h3>
+        <p>Tu negocio, tus productos, tu WhatsApp. NEXUS se adapta a ti — no al reves.</p>
+      </div>
+      <div class="paso">
+        <div class="paso-num">2</div>
+        <h3>&#129302; NEXUS aprende</h3>
+        <p>Pedidos, clientes, precios: todo en un sistema que entiende como trabajas.</p>
+      </div>
+      <div class="paso">
+        <div class="paso-num">3</div>
+        <h3>&#128640; Tu creces</h3>
+        <p>Mientras NEXUS gestiona lo administrativo, tu te concentras en cerrar mas ventas.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── TESTIMONIOS ─────────────────────────────────────────────────────────── -->
+<section>
+  <div class="section-title">Lo que dicen nuestros clientes</div>
+  <div class="section-sub">Negocios reales, resultados reales</div>
+  <div class="testimonios-grid">
+    <div class="testimonio">
+      <div class="stars">&#9733;&#9733;&#9733;&#9733;&#9733;</div>
+      <div class="testimonio-texto">Redujo 2 horas diarias de papeleo y administracion. Ahora sigo mis pedidos desde el telefono sin perder nada.</div>
+      <div class="testimonio-autor">— Taller grafico, Guadalajara</div>
+    </div>
+    <div class="testimonio">
+      <div class="stars">&#9733;&#9733;&#9733;&#9733;&#9733;</div>
+      <div class="testimonio-texto">Mis clientes notan la diferencia. Cotizaciones rapidas, seguimiento profesional. Parece empresa grande.</div>
+      <div class="testimonio-autor">— Servicios a domicilio, CDMX</div>
+    </div>
+  </div>
+</section>
+
+<!-- ── CTA + FORM ──────────────────────────────────────────────────────────── -->
+<div class="cta-section" id="contacto">
+  <div class="cta-inner">
+    <h2>Listo para probarlo?</h2>
+    <p>Sin compromiso. Sin tarjeta. Platica con nosotros y te mostramos como funciona para tu negocio.</p>
+
+    <div id="gracias">
+      <h3>&#10003; Mensaje recibido</h3>
+      <p>Gracias, nos comunicamos contigo en breve por WhatsApp.</p>
+    </div>
+
+    <a href="https://wa.me/523326148674?text=Hola!+Quiero+ver+una+demo+de+NEXUS+para+mi+negocio"
+       target="_blank" class="btn btn-green btn-full" style="font-size:18px;padding:18px;display:block;text-align:center">
+      &#128172; Hablar por WhatsApp ahora
+    </a>
+
+    <div class="separador">o dejanos tus datos y te contactamos</div>
+
+    <div class="form-card">
+      <form method="POST" action="/api/autoventas/lead">
+        <input type="hidden" name="canal" value="nexus">
+        <div class="field">
+          <label>Tu nombre</label>
+          <input type="text" name="nombre" placeholder="Ej: Carlos Mendoza" required>
+        </div>
+        <div class="field">
+          <label>WhatsApp</label>
+          <input type="tel" name="telefono" placeholder="10 digitos" required>
+        </div>
+        <div class="field">
+          <label>Tipo de negocio</label>
+          <select name="tipo_negocio">
+            <option value="General">Selecciona...</option>
+            <option value="Taller/Manufactura">Taller o Manufactura</option>
+            <option value="Comercio">Tienda o Comercio</option>
+            <option value="Servicios">Servicios a domicilio</option>
+            <option value="Restaurante/Food">Restaurante o Food</option>
+            <option value="Otro">Otro</option>
+          </select>
+        </div>
+        <button type="submit" class="btn btn-green btn-full">Quiero que me contacten &#8594;</button>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- ── FOOTER ─────────────────────────────────────────────────────────────── -->
+<footer>
+  <p>NEXUS by Simplex &copy; 2026 &middot; Hecho en Mexico &#127474;&#127485;</p>
+  <p style="margin-top:8px">
+    <a href="#">Aviso de privacidad</a> &nbsp;&middot;&nbsp;
+    <a href="/dashboard">Panel NEXUS</a>
+  </p>
+</footer>
+
+<!-- ── WA FLOTANTE ────────────────────────────────────────────────────────── -->
+<a href="https://wa.me/523326148674?text=Hola!+Me+interesa+NEXUS" target="_blank" class="wa-float">
+  &#128172; <span>WhatsApp</span>
+</a>
+
+<script>
+if(new URLSearchParams(location.search).get('gracias')==='1'){
+  document.getElementById('gracias').style.display='block';
+  document.getElementById('gracias').scrollIntoView({behavior:'smooth',block:'center'});
+}
+document.querySelectorAll('a[href^="#"]').forEach(a=>{
+  a.addEventListener('click',e=>{
+    const t=document.querySelector(a.getAttribute('href'));
+    if(t){e.preventDefault();t.scrollIntoView({behavior:'smooth'})}
+  });
+});
+</script>
+</body>
+</html>

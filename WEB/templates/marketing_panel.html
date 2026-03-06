@@ -1,0 +1,376 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Marketing — NEXUS</title>
+<style>
+:root{--bg:#0a0a0a;--s:#111;--s2:#1a1a1a;--b:#2a2a2a;--g:#00ff88;--gold:#ffd700;--pink:#ff66aa;--t:#f0f0f0;--m:#666}
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:var(--bg);color:var(--t);font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif}
+.topbar{background:var(--s);border-bottom:1px solid var(--b);padding:12px 20px;display:flex;align-items:center;gap:16px;position:sticky;top:0;z-index:100}
+.topbar a{color:var(--m);text-decoration:none;font-size:13px}.topbar a:hover{color:var(--g)}
+.topbar h1{font-size:16px;font-weight:800;color:var(--g)}
+.spacer{flex:1}
+.content{padding:20px;max-width:1000px;margin:0 auto}
+.tabs{display:flex;border-bottom:1px solid var(--b);margin-bottom:20px;overflow-x:auto}
+.tab{padding:12px 18px;font-size:13px;font-weight:600;color:var(--m);cursor:pointer;border-bottom:2px solid transparent;white-space:nowrap}
+.tab.active{color:var(--g);border-bottom-color:var(--g)}
+.tab-panel{display:none}.tab-panel.active{display:block}
+.card{background:var(--s);border:1px solid var(--b);border-radius:12px;padding:20px;margin-bottom:16px}
+.card h3{font-size:14px;font-weight:800;color:var(--g);margin-bottom:14px;text-transform:uppercase;letter-spacing:.5px}
+.field{margin-bottom:14px}
+.field label{font-size:12px;color:var(--m);margin-bottom:5px;display:block;font-weight:600;text-transform:uppercase;letter-spacing:.5px}
+.field input,.field select,.field textarea{background:var(--s2);border:1px solid var(--b);color:var(--t);padding:11px 14px;border-radius:10px;font-size:14px;width:100%;outline:none;font-family:inherit}
+.field textarea{min-height:90px;resize:vertical}
+.field input:focus,.field select:focus,.field textarea:focus{border-color:var(--g)}
+.btn{border:none;padding:12px 20px;border-radius:10px;font-size:14px;font-weight:700;cursor:pointer;transition:.2s}
+.btn-g{background:var(--g);color:#000}.btn-g:hover{filter:brightness(1.1)}
+.btn-g:disabled{opacity:.5;cursor:not-allowed}
+.btn-outline{background:transparent;border:1px solid var(--b);color:var(--m)}.btn-outline:hover{border-color:var(--g);color:var(--g)}
+.btn-pink{background:#ff66aa20;color:var(--pink);border:1px solid var(--pink)}
+.result-box{background:var(--s2);border:1px solid var(--b);border-radius:10px;padding:16px;margin-top:14px;white-space:pre-wrap;font-size:13px;line-height:1.7;display:none}
+.red-btns{display:flex;gap:8px;margin-top:10px;flex-wrap:wrap}
+.red-btn{padding:6px 14px;border-radius:8px;font-size:12px;font-weight:700;cursor:pointer;border:none}
+.ig{background:#e1306c20;color:#e1306c}.tt{background:#00f2ea20;color:#00f2ea}.fb{background:#1877f220;color:#1877f2}.wa{background:#25d36620;color:#25d366}
+.tags-grid{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
+.tag{background:var(--s2);border:1px solid var(--b);padding:5px 12px;border-radius:20px;font-size:12px;cursor:pointer;transition:.2s}
+.tag:hover{border-color:var(--g);color:var(--g)}
+.tag.sel{border-color:var(--g);color:var(--g);background:#00ff8810}
+.progress{background:#1a1a1a;border-radius:6px;height:8px;margin-top:10px;overflow:hidden;display:none}
+.progress-fill{background:var(--g);height:100%;border-radius:6px;transition:width .5s}
+.status-msg{font-size:12px;color:var(--m);margin-top:6px}
+.formato-btns{display:flex;gap:8px;flex-wrap:wrap;margin-top:6px}
+.fmt-btn{padding:8px 16px;border-radius:8px;border:2px solid var(--b);background:var(--s2);color:var(--m);cursor:pointer;font-size:12px;font-weight:700;transition:.2s}
+.fmt-btn.sel{border-color:var(--g);color:var(--g)}
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-bottom:20px}
+.kpi{background:var(--s);border:1px solid var(--b);border-radius:12px;padding:16px;text-align:center}
+.kpi .num{font-size:1.8em;font-weight:900;color:var(--g)}.kpi .lbl{font-size:11px;color:var(--m);margin-top:4px;text-transform:uppercase}
+</style>
+</head>
+<body>
+<div class="topbar">
+  <a href="/dashboard">&#8592; Panel</a>
+  <h1>&#128227; Marketing NEXUS</h1>
+  <div class="spacer"></div>
+  <button onclick="mostrarQR()" style="background:transparent;border:1px solid #333;color:#888;padding:7px 14px;border-radius:8px;cursor:pointer;font-size:12px">&#128247; Cel</button>
+</div>
+
+<div class="content">
+
+<div class="tabs">
+  <div class="tab active" onclick="irTab('caption')" id="tab-caption">&#9997; Caption</div>
+  <div class="tab" onclick="irTab('guion')" id="tab-guion">&#127916; Guion</div>
+  <div class="tab" onclick="irTab('hashtags')" id="tab-hashtags">&#35; Hashtags</div>
+  <div class="tab" onclick="irTab('campana')" id="tab-campana">&#127775; Campana</div>
+  <div class="tab" onclick="irTab('calendario')" id="tab-calendario">&#128197; Calendario</div>
+  <div class="tab" onclick="irTab('analizador')" id="tab-analizador">&#128202; Mercado</div>
+</div>
+
+<!-- ── CAPTION ── -->
+<div class="tab-panel active" id="panel-caption">
+  <div class="card">
+    <h3>&#9997; Generar caption rapido</h3>
+    <div class="field"><label>Describe el trabajo o producto</label>
+      <textarea id="cap-texto" placeholder="Ej: 5 vasos con nombre sublimados, terminado premium..."></textarea>
+    </div>
+    <div class="field"><label>Tu marca / negocio</label>
+      <input type="text" id="cap-marca" placeholder="Ej: Creaciones Milens">
+    </div>
+    <div class="field"><label>Red social</label>
+      <div class="formato-btns">
+        <div class="fmt-btn sel" onclick="selFmt(this,'instagram')" data-val="instagram">Instagram</div>
+        <div class="fmt-btn" onclick="selFmt(this,'tiktok')" data-val="tiktok">TikTok</div>
+        <div class="fmt-btn" onclick="selFmt(this,'facebook')" data-val="facebook">Facebook</div>
+        <div class="fmt-btn" onclick="selFmt(this,'whatsapp')" data-val="whatsapp">WhatsApp</div>
+      </div>
+      <input type="hidden" id="cap-red" value="instagram">
+    </div>
+    <button class="btn btn-g" id="btn-caption" onclick="generarCaption()">Generar caption</button>
+    <div class="result-box" id="res-caption"></div>
+    <div class="red-btns" id="cap-actions" style="display:none">
+      <button class="red-btn ig" onclick="copiar('res-caption')">Copiar</button>
+      <button class="red-btn wa" onclick="enviarWA('res-caption')">WhatsApp</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── GUION ── -->
+<div class="tab-panel" id="panel-guion">
+  <div class="card">
+    <h3>&#127916; Guion para video</h3>
+    <div class="field"><label>Producto o servicio</label>
+      <input type="text" id="gui-producto" placeholder="Ej: Cajas MDF personalizadas">
+    </div>
+    <div class="field"><label>Tipo de negocio</label>
+      <select id="gui-tipo">
+        <option value="laser">Corte laser / Milens</option>
+        <option value="sublimacion">Sublimacion</option>
+        <option value="retrofit">Retrofit faros</option>
+        <option value="general">General</option>
+      </select>
+    </div>
+    <div class="field"><label>Formato</label>
+      <div class="formato-btns">
+        <div class="fmt-btn sel" onclick="selFmtG(this,'tiktok')">TikTok 60s</div>
+        <div class="fmt-btn" onclick="selFmtG(this,'reels')">Reels 30s</div>
+        <div class="fmt-btn" onclick="selFmtG(this,'youtube')">YouTube</div>
+      </div>
+      <input type="hidden" id="gui-formato" value="tiktok">
+    </div>
+    <button class="btn btn-g" id="btn-guion" onclick="generarGuion()">Generar guion</button>
+    <div class="result-box" id="res-guion"></div>
+    <div class="red-btns" id="gui-actions" style="display:none">
+      <button class="red-btn ig" onclick="copiar('res-guion')">Copiar</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── HASHTAGS ── -->
+<div class="tab-panel" id="panel-hashtags">
+  <div class="card">
+    <h3>&#35; Generador de hashtags</h3>
+    <div class="field"><label>Tema o producto</label>
+      <input type="text" id="hash-tema" placeholder="Ej: stickers vinil Guadalajara">
+    </div>
+    <div class="field"><label>Cantidad</label>
+      <select id="hash-cantidad">
+        <option value="10">10 hashtags</option>
+        <option value="20" selected>20 hashtags</option>
+        <option value="30">30 hashtags</option>
+      </select>
+    </div>
+    <button class="btn btn-g" onclick="generarHashtags()">Generar hashtags</button>
+    <div class="result-box" id="res-hashtags"></div>
+    <div class="red-btns" id="hash-actions" style="display:none">
+      <button class="red-btn ig" onclick="copiar('res-hashtags')">Copiar todos</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── CAMPANA ── -->
+<div class="tab-panel" id="panel-campana">
+  <div class="card">
+    <h3>&#127775; Campana completa</h3>
+    <div class="field"><label>Producto o servicio</label>
+      <input type="text" id="cam-producto" placeholder="Ej: Tazas sublimadas con foto">
+    </div>
+    <div class="field"><label>Objetivo</label>
+      <select id="cam-objetivo">
+        <option value="ventas">Generar ventas</option>
+        <option value="seguidores">Ganar seguidores</option>
+        <option value="reconocimiento">Reconocimiento de marca</option>
+        <option value="lanzamiento">Lanzamiento de producto</option>
+      </select>
+    </div>
+    <div class="field"><label>Duracion</label>
+      <select id="cam-duracion">
+        <option value="1 semana">1 semana</option>
+        <option value="2 semanas" selected>2 semanas</option>
+        <option value="1 mes">1 mes</option>
+      </select>
+    </div>
+    <button class="btn btn-g" id="btn-campana" onclick="generarCampana()">Generar campana</button>
+    <div class="progress" id="prog-campana"><div class="progress-fill" id="prog-fill" style="width:0%"></div></div>
+    <div class="status-msg" id="cam-status"></div>
+    <div class="result-box" id="res-campana"></div>
+    <div class="red-btns" id="cam-actions" style="display:none">
+      <button class="red-btn ig" onclick="copiar('res-campana')">Copiar</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── CALENDARIO ── -->
+<div class="tab-panel" id="panel-calendario">
+  <div class="card">
+    <h3>&#128197; Calendario de contenido</h3>
+    <div class="field"><label>Negocio / giro</label>
+      <input type="text" id="cal-negocio" placeholder="Ej: Taller de corte laser en Guadalajara">
+    </div>
+    <div class="field"><label>Semanas a planear</label>
+      <select id="cal-semanas">
+        <option value="1">1 semana</option>
+        <option value="2" selected>2 semanas</option>
+        <option value="4">4 semanas</option>
+      </select>
+    </div>
+    <button class="btn btn-g" onclick="generarCalendario()">Generar calendario</button>
+    <div class="result-box" id="res-calendario"></div>
+  </div>
+</div>
+
+<!-- ── ANALIZADOR MERCADO ── -->
+<div class="tab-panel" id="panel-analizador">
+  <div class="card">
+    <h3>&#128202; Analizar precios de mercado</h3>
+    <div class="field"><label>Producto a analizar</label>
+      <input type="text" id="ana-producto" placeholder="Ej: vasos sublimados personalizados">
+    </div>
+    <button class="btn btn-g" id="btn-ana" onclick="analizarMercado()">Analizar en MercadoLibre</button>
+    <div class="status-msg" id="ana-status"></div>
+    <div class="result-box" id="res-ana"></div>
+  </div>
+</div>
+
+</div><!-- /content -->
+
+<!-- QR Modal -->
+<div id="qr-modal" style="display:none;position:fixed;inset:0;background:#000c;z-index:999;align-items:center;justify-content:center">
+  <div style="background:#111;border:1px solid #2a2a2a;border-radius:16px;padding:28px;max-width:300px;width:90%;text-align:center;position:relative">
+    <button onclick="document.getElementById('qr-modal').style.display='none'" style="position:absolute;top:10px;right:14px;background:none;border:none;color:#555;font-size:1.3rem;cursor:pointer">&#10005;</button>
+    <div style="color:#00ff88;font-weight:700;margin-bottom:12px">&#128247; Abrir en celular</div>
+    <div id="qr-box" style="background:#fff;padding:10px;border-radius:8px;display:inline-block"></div>
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<script>
+const NGROK = 'https://enrique-slaty-afton.ngrok-free.dev';
+
+function mostrarQR(){
+  document.getElementById('qr-modal').style.display='flex';
+  const box=document.getElementById('qr-box'); box.innerHTML='';
+  new QRCode(box,{text:NGROK+'/marketing/panel',width:180,height:180,colorDark:'#000',colorLight:'#fff'});
+}
+
+function irTab(t){
+  document.querySelectorAll('.tab,.tab-panel').forEach(el=>el.classList.remove('active'));
+  document.getElementById('tab-'+t).classList.add('active');
+  document.getElementById('panel-'+t).classList.add('active');
+  // Cargar negocio en marca si vacío
+  if(t==='caption'&&!document.getElementById('cap-marca').value) cargarNegocio();
+}
+
+async function cargarNegocio(){
+  try{ const r=await fetch('/api/config_negocio'); const d=await r.json(); if(d.nombre) document.getElementById('cap-marca').value=d.nombre; }catch(e){}
+}
+
+function selFmt(el,val){ document.querySelectorAll('#panel-caption .fmt-btn').forEach(b=>b.classList.remove('sel')); el.classList.add('sel'); document.getElementById('cap-red').value=val; }
+function selFmtG(el,val){ document.querySelectorAll('#panel-guion .fmt-btn').forEach(b=>b.classList.remove('sel')); el.classList.add('sel'); document.getElementById('gui-formato').value=val; }
+
+function mostrarResultado(id, txt, actionsId){
+  const box=document.getElementById(id); box.textContent=txt; box.style.display='block';
+  if(actionsId){ const a=document.getElementById(actionsId); if(a) a.style.display='flex'; }
+}
+
+function copiar(id){ navigator.clipboard.writeText(document.getElementById(id).textContent).then(()=>toast('Copiado')); }
+function enviarWA(id){ const txt=encodeURIComponent(document.getElementById(id).textContent); window.open('https://wa.me/?text='+txt,'_blank'); }
+
+async function generarCaption(){
+  const texto=document.getElementById('cap-texto').value.trim();
+  const marca=document.getElementById('cap-marca').value.trim()||'Mi negocio';
+  const red=document.getElementById('cap-red').value;
+  if(!texto){toast('Escribe el trabajo o producto','#f44');return;}
+  const btn=document.getElementById('btn-caption'); btn.disabled=true; btn.textContent='Generando...';
+  try{
+    const r=await fetch('/api/marketing/caption_rapido',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({texto,marca,red})});
+    const d=await r.json();
+    mostrarResultado('res-caption', d.caption||d.texto||JSON.stringify(d), 'cap-actions');
+  }catch(e){toast('Error: '+e.message,'#f44')}
+  btn.disabled=false; btn.textContent='Generar caption';
+}
+
+async function generarGuion(){
+  const producto=document.getElementById('gui-producto').value.trim();
+  const tipo=document.getElementById('gui-tipo').value;
+  const formato=document.getElementById('gui-formato').value;
+  if(!producto){toast('Escribe el producto','#f44');return;}
+  const btn=document.getElementById('btn-guion'); btn.disabled=true; btn.textContent='Generando...';
+  try{
+    // Usa la API de marketing generar_promo con prompt estructurado
+    const r=await fetch('/api/marketing/generar_promo',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({prompt:producto,marca:producto,formato})});
+    const d=await r.json();
+    if(d.job_id){
+      // Polling status
+      let tries=0;
+      const poll=setInterval(async()=>{
+        tries++;
+        const rs=await fetch('/api/marketing/promo_status/'+d.job_id);
+        const ds=await rs.json();
+        if(ds.status==='done'||tries>20){
+          clearInterval(poll);
+          mostrarResultado('res-guion', ds.guion||ds.resultado||JSON.stringify(ds), 'gui-actions');
+          btn.disabled=false; btn.textContent='Generar guion';
+        }
+      },1500);
+    } else {
+      mostrarResultado('res-guion', d.guion||d.error||JSON.stringify(d), 'gui-actions');
+      btn.disabled=false; btn.textContent='Generar guion';
+    }
+  }catch(e){toast('Error','#f44'); btn.disabled=false; btn.textContent='Generar guion';}
+}
+
+async function generarHashtags(){
+  const tema=document.getElementById('hash-tema').value.trim();
+  const cantidad=document.getElementById('hash-cantidad').value;
+  if(!tema){toast('Escribe el tema','#f44');return;}
+  try{
+    const r=await fetch('/api/marketing/caption_rapido',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({texto:'Genera '+cantidad+' hashtags para: '+tema+'. Solo hashtags, uno por linea.',marca:'',red:'instagram'})});
+    const d=await r.json();
+    mostrarResultado('res-hashtags', d.caption||d.texto||JSON.stringify(d), 'hash-actions');
+  }catch(e){toast('Error','#f44')}
+}
+
+async function generarCampana(){
+  const producto=document.getElementById('cam-producto').value.trim();
+  const objetivo=document.getElementById('cam-objetivo').value;
+  const duracion=document.getElementById('cam-duracion').value;
+  if(!producto){toast('Escribe el producto','#f44');return;}
+  const btn=document.getElementById('btn-campana'); btn.disabled=true; btn.textContent='Generando...';
+  document.getElementById('prog-campana').style.display='block';
+  let pct=0; const progInterval=setInterval(()=>{ pct=Math.min(pct+8,90); document.getElementById('prog-fill').style.width=pct+'%'; },400);
+  try{
+    const prompt=`Campana de marketing para "${producto}". Objetivo: ${objetivo}. Duracion: ${duracion}. Incluye: ideas de posts diarios, copies, hashtags, horarios sugeridos.`;
+    const r=await fetch('/api/marketing/caption_rapido',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({texto:prompt,marca:producto,red:'instagram'})});
+    const d=await r.json();
+    clearInterval(progInterval);
+    document.getElementById('prog-fill').style.width='100%';
+    setTimeout(()=>document.getElementById('prog-campana').style.display='none',500);
+    mostrarResultado('res-campana', d.caption||d.texto||JSON.stringify(d), 'cam-actions');
+  }catch(e){toast('Error','#f44')}
+  btn.disabled=false; btn.textContent='Generar campana';
+}
+
+async function generarCalendario(){
+  const negocio=document.getElementById('cal-negocio').value.trim();
+  const semanas=document.getElementById('cal-semanas').value;
+  if(!negocio){toast('Escribe el giro del negocio','#f44');return;}
+  try{
+    const r=await fetch('/api/marketing/caption_rapido',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({texto:`Crea un calendario de contenido para ${semanas} semanas para: ${negocio}. Formato: Dia | Tipo de post | Tema | Red social sugerida`,marca:negocio,red:'instagram'})});
+    const d=await r.json();
+    mostrarResultado('res-calendario', d.caption||d.texto||JSON.stringify(d));
+  }catch(e){toast('Error','#f44')}
+}
+
+async function analizarMercado(){
+  const producto=document.getElementById('ana-producto').value.trim();
+  if(!producto){toast('Escribe el producto','#f44');return;}
+  const btn=document.getElementById('btn-ana'); btn.disabled=true; btn.textContent='Analizando...';
+  document.getElementById('ana-status').textContent='Buscando en MercadoLibre...';
+  try{
+    const r=await fetch('/api/market/analizar',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({query:producto})});
+    const d=await r.json();
+    if(d.ok){
+      const t=d.stats;
+      mostrarResultado('res-ana',
+        `Producto: ${producto}\n\nPrecio min: $${t.min}\nPrecio max: $${t.max}\nPromedio: $${t.promedio}\nMediana: $${t.mediana}\n\nAnalisis IA:\n${d.analisis||'—'}`
+      );
+      document.getElementById('ana-status').textContent='';
+    } else {
+      mostrarResultado('res-ana', d.error||'Error al analizar');
+    }
+  }catch(e){mostrarResultado('res-ana','Error: '+e.message);}
+  btn.disabled=false; btn.textContent='Analizar en MercadoLibre';
+}
+
+function toast(msg,color='var(--g)'){
+  let t=document.getElementById('_toast');
+  if(!t){t=document.createElement('div');t.id='_toast';t.style.cssText='position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:#1a1a1a;border:1px solid var(--g);color:var(--g);padding:10px 22px;border-radius:10px;font-weight:700;font-size:13px;z-index:9999;opacity:0;transition:.3s;pointer-events:none';document.body.appendChild(t);}
+  t.textContent=msg; t.style.borderColor=color; t.style.color=color; t.style.opacity='1';
+  setTimeout(()=>t.style.opacity='0',2200);
+}
+
+cargarNegocio();
+</script>
+</body>
+</html>

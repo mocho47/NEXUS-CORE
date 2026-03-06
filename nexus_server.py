@@ -386,6 +386,10 @@ async def precios_admin_view(request: Request):
 async def marketing_view(request: Request):
     return templates.TemplateResponse("marketing.html", {"request": request})
 
+@app.get("/marketing/panel", response_class=HTMLResponse)
+async def marketing_panel(request: Request):
+    return templates.TemplateResponse("marketing_panel.html", {"request": request})
+
 # ── VIDEO PROMO ───────────────────────────────────────────────────────────────
 
 class VideoPromoRequest(BaseModel):
@@ -420,6 +424,32 @@ async def api_marketing_caption_rapido(req: CaptionRapidoRequest):
     try:
         from nexus_video_promo import caption_rapido
         return await caption_rapido(req.texto, req.marca, req.red)
+    except Exception as e:
+        return {"ok": False, "error": str(e)}
+
+class MarketAnalizarRequest(BaseModel):
+    query: str
+
+@app.post("/api/market/analizar", response_class=JSONResponse)
+async def api_market_analizar(req: MarketAnalizarRequest):
+    """Analiza precios de mercado usando Groq IA."""
+    try:
+        import os
+        from groq import Groq
+        client = Groq(api_key=os.getenv("GROQ_API_KEY"))
+        prompt = f"""Eres experto en precios de mercado en Mexico. Analiza: "{req.query}"
+Devuelve JSON puro sin markdown:
+{{"stats":{{"min":150,"max":800,"promedio":420,"mediana":380}},"analisis":"recomendacion corta de precio en Guadalajara con oportunidades."}}"""
+        resp = client.chat.completions.create(
+            model="llama-3.3-70b-versatile",
+            messages=[{"role":"user","content":prompt}],
+            max_tokens=400, temperature=0.4
+        )
+        import json as _json
+        raw = resp.choices[0].message.content.strip()
+        start = raw.find('{'); end = raw.rfind('}') + 1
+        data = _json.loads(raw[start:end]) if start >= 0 else {}
+        return {"ok": True, "stats": data.get("stats",{}), "analisis": data.get("analisis","Sin datos")}
     except Exception as e:
         return {"ok": False, "error": str(e)}
 
@@ -902,6 +932,131 @@ async def api_milens_cotizar(data: dict):
         return cotizar_caja(data.get("largo",10), data.get("ancho",10), data.get("alto",5), data.get("material","MDF 2.7mm"))
     except Exception as e:
         return {"error": str(e)}
+
+# ── MILENS FLUJO ──────────────────────────────────────────────────────────────
+
+class MilensOrdenReq(BaseModel):
+    cliente: str
+    whatsapp: str = ""
+    tipo: str = "LASER"
+    descripcion: str
+    precio: float = 0
+    entrega: str = "mañana"
+
+@app.post("/api/milens/orden", response_class=JSONResponse)
+async def api_milens_orden(req: MilensOrdenReq):
+    try:
+        import time, datetime
+        now = datetime.datetime.now()
+        entrega_txt = req.entrega.strip()
+        if "hoy" in entrega_txt.lower():
+            deadline = datetime.datetime.combine(now.date(), datetime.time(20, 0))
+        else:
+            deadline = datetime.datetime.combine(now.date() + datetime.timedelta(days=1), datetime.time(14, 0))
+        order = {
+            "id": int(time.time()),
+            "cliente": req.cliente,
+            "whatsapp": req.whatsapp,
+            "producto": req.descripcion,
+            "tipo": req.tipo,
+            "precio": req.precio,
+            "deadline": deadline.strftime("%Y-%m-%d %H:%M:%S"),
+            "status": "NUEVO",
+            "area": req.tipo,
+            "notified_1h": False,
+            "notified_15m": False,
+            "insistent_level": 0,
+            "last_nag_time": 0.0,
+        }
+        import nexus_db
+        nexus_db.db.upsert_pedido(order)
+        orders_mgr.load_orders()
+        return {"ok": True, "id": order["id"], "mensaje": f"Orden de {req.cliente} creada"}
+    except Exception as e:
+        return {"ok": False, "error": str(e)}
+
+@app.get("/api/milens/tablero", response_class=JSONResponse)
+async def api_milens_tablero():
+    orders_mgr.load_orders()
+    todos = orders_mgr.get_all_orders()
+    resultado = {"NUEVO": [], "PRODUCCION": [], "LISTO": [], "ENTREGADO": []}
+    for o in todos:
+        s = o.get("status", "NUEVO")
+        if s == "PENDIENTE":
+            s = "NUEVO"
+        if s in resultado:
+            resultado[s].append(o)
+        elif s not in ("ENTREGADO",):
+            resultado["NUEVO"].append(o)
+    return resultado
+
+class MilensEstadoReq(BaseModel):
+    id: int
+    status: str
+
+@app.post("/api/milens/estado", response_class=JSONResponse)
+async def api_milens_estado(req: MilensEstadoReq):
+    try:
+        orders_mgr.load_orders()
+        import nexus_db
+        for o in orders_mgr.orders:
+            if o["id"] == req.id:
+                o["status"] = req.status
+                nexus_db.db.upsert_pedido(o)
+                orders_mgr.load_orders()
+                return {"ok": True}
+        return {"ok": False, "error": "Orden no encontrada"}
+    except Exception as e:
+        return {"ok": False, "error": str(e)}
+
+@app.post("/api/milens/sugerir_precio", response_class=JSONResponse)
+async def api_milens_sugerir_precio(data: dict):
+    try:
+        from groq import Groq
+        from dotenv import load_dotenv
+        load_dotenv()
+        import os
+        g = Groq(api_key=os.getenv("GROQ_API_KEY"))
+        desc = data.get("descripcion", "")
+        tipo = data.get("tipo", "LASER")
+        prompt = f"""Eres experto en precios de taller de corte laser y sublimacion en Mexico (Guadalajara).
+El cliente pide: "{desc}" (tipo: {tipo}).
+Da un precio estimado en pesos mexicanos. Responde SOLO con un JSON asi:
+{{"precio_min": 150, "precio_max": 300, "sugerido": 200, "nota": "breve explicacion"}}
+Sin texto extra."""
+        r = g.chat.completions.create(
+            model="llama-3.3-70b-versatile",
+            messages=[{"role":"user","content":prompt}],
+            max_tokens=150
+        )
+        import json
+        txt = r.choices[0].message.content.strip()
+        return json.loads(txt)
+    except Exception as e:
+        return {"precio_min": 0, "precio_max": 0, "sugerido": 0, "nota": str(e)}
+
+@app.post("/api/milens/caption", response_class=JSONResponse)
+async def api_milens_caption(data: dict):
+    try:
+        from groq import Groq
+        from dotenv import load_dotenv
+        load_dotenv()
+        import os
+        g = Groq(api_key=os.getenv("GROQ_API_KEY"))
+        desc = data.get("descripcion", "")
+        tipo = data.get("tipo", "LASER")
+        prompt = f"""Genera un caption corto para Instagram/TikTok para un taller de corte laser y sublimacion en Guadalajara llamado "Creaciones Milens".
+Trabajo realizado: {desc} ({tipo}).
+Caption: entusiasta, mexicano, con emojis, maximo 3 lineas + 5 hashtags relevantes.
+SOLO el caption, sin explicaciones."""
+        r = g.chat.completions.create(
+            model="llama-3.3-70b-versatile",
+            messages=[{"role":"user","content":prompt}],
+            max_tokens=200
+        )
+        return {"ok": True, "caption": r.choices[0].message.content.strip()}
+    except Exception as e:
+        return {"ok": False, "caption": "", "error": str(e)}
 
 # ── VOZ ───────────────────────────────────────────────────────────────────────
 
@@ -1433,6 +1588,34 @@ async def api_teens_familia(user_id: str):
     except Exception as e:
         return {"ok": False, "error": str(e)}
 
+@app.get("/teens/admin", response_class=HTMLResponse)
+async def teens_admin_panel(request: Request):
+    return templates.TemplateResponse("teens_admin.html", {"request": request})
+
+@app.get("/api/teens/admin/usuarios", response_class=JSONResponse)
+async def api_teens_admin_usuarios():
+    try:
+        from nexus_teens import _load_data
+        data = _load_data()
+        usuarios = data.get("usuarios", {})
+        result = []
+        for uid, p in usuarios.items():
+            result.append({
+                "user_id": uid,
+                "nombre": p.get("nombre", uid),
+                "edad": p.get("edad", 0),
+                "rol": p.get("rol", "hijo"),
+                "nivel": p.get("nivel", 1),
+                "xp": p.get("xp", 0),
+                "racha": p.get("racha_dias", 0),
+                "ultimo_acceso": p.get("ultimo_acceso", ""),
+                "familia_id": p.get("familia_id", ""),
+                "activo": p.get("activo", True),
+            })
+        return {"ok": True, "total": len(result), "usuarios": result}
+    except Exception as e:
+        return {"ok": False, "error": str(e)}
+
 @app.get("/api/teens/monitor/{user_id}", response_class=JSONResponse)
 async def api_teens_monitor(user_id: str, pin: str = "0000"):
     try:
@@ -1732,6 +1915,10 @@ async def autoventas_panel(request: Request):
 async def landing_page(request: Request):
     return templates.TemplateResponse("landing.html", {"request": request})
 
+@app.get("/nexus", response_class=HTMLResponse)
+async def nexus_landing(request: Request):
+    return templates.TemplateResponse("nexus_landing.html", {"request": request})
+
 class ProspectoReq(BaseModel):
     nombre:       str
     telefono:     str
@@ -1850,7 +2037,8 @@ async def av_lead_form(
     try:
         from nexus_autoventas import registrar_prospecto
         r = registrar_prospecto(nombre, telefono, tipo_negocio, canal)
-        return RedirectResponse(url="/landing?gracias=1", status_code=303)
+        destino = "/nexus" if canal == "nexus" else "/landing"
+        return RedirectResponse(url=f"{destino}?gracias=1", status_code=303)
     except Exception as e:
         return JSONResponse({"ok": False, "error": str(e)})
 

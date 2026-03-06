@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>NEXUS Teens — Admin</title>
+<style>
+:root{--bg:#0a0a0a;--s:#111;--s2:#1a1a1a;--b:#2a2a2a;--g:#00ff88;--gold:#ffd700;--blue:#00aaff;--t:#f0f0f0;--m:#666}
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:var(--bg);color:var(--t);font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif}
+.topbar{background:var(--s);border-bottom:1px solid var(--b);padding:12px 20px;display:flex;align-items:center;gap:16px;position:sticky;top:0;z-index:100}
+.topbar a{color:var(--m);text-decoration:none;font-size:13px}
+.topbar a:hover{color:var(--g)}
+.topbar h1{font-size:16px;font-weight:800;color:var(--g)}
+.spacer{flex:1}
+.content{padding:20px;max-width:1100px;margin:0 auto}
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px;margin-bottom:24px}
+.kpi{background:var(--s);border:1px solid var(--b);border-radius:12px;padding:18px;text-align:center}
+.kpi .num{font-size:2.2em;font-weight:900;color:var(--g)}
+.kpi .lbl{font-size:11px;color:var(--m);text-transform:uppercase;letter-spacing:1px;margin-top:4px}
+.kpi.gold .num{color:var(--gold)}
+.kpi.blue .num{color:var(--blue)}
+.section-title{font-size:13px;font-weight:800;color:var(--m);text-transform:uppercase;letter-spacing:1px;margin-bottom:12px}
+.tabla{width:100%;border-collapse:collapse;font-size:13px}
+.tabla th{text-align:left;padding:10px 12px;color:var(--m);font-size:11px;text-transform:uppercase;letter-spacing:.5px;border-bottom:1px solid var(--b)}
+.tabla td{padding:10px 12px;border-bottom:1px solid #161616;vertical-align:middle}
+.tabla tr:hover td{background:#111}
+.badge{display:inline-block;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:700}
+.badge-hijo{background:#00aaff18;color:#00aaff}
+.badge-hija{background:#ff66aa18;color:#ff66aa}
+.badge-papa{background:#ffd70018;color:var(--gold)}
+.badge-mama{background:#ff880018;color:#ff8800}
+.badge-demo{background:#ff440018;color:#ff4444}
+.nivel-bar{background:#1a1a1a;border-radius:4px;height:6px;width:80px;display:inline-block;vertical-align:middle;margin-left:6px}
+.nivel-fill{background:var(--g);height:100%;border-radius:4px;transition:.3s}
+.card{background:var(--s);border:1px solid var(--b);border-radius:12px;padding:16px;margin-bottom:16px}
+.btn-sm{border:none;padding:6px 12px;border-radius:7px;font-size:12px;font-weight:700;cursor:pointer;text-decoration:none;display:inline-block}
+.btn-ver{background:#00ff8815;color:var(--g)}
+.btn-ver:hover{background:#00ff8830}
+.tabs{display:flex;border-bottom:1px solid var(--b);margin-bottom:20px}
+.tab{padding:12px 20px;font-size:14px;font-weight:600;color:var(--m);cursor:pointer;border-bottom:2px solid transparent}
+.tab.active{color:var(--g);border-bottom-color:var(--g)}
+.tab-panel{display:none}.tab-panel.active{display:block}
+.empty{color:#333;text-align:center;padding:32px;font-size:14px}
+.monitor-box{background:var(--s2);border:1px solid var(--b);border-radius:10px;padding:16px;margin-top:12px}
+.monitor-row{display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid #1a1a1a;font-size:13px}
+.monitor-row:last-child{border:none}
+.monitor-lbl{color:var(--m)}
+.monitor-val{font-weight:700;color:var(--t)}
+.on{color:var(--g)}.off{color:#444}
+#detalle-nombre{font-size:18px;font-weight:900;margin-bottom:4px}
+</style>
+</head>
+<body>
+<div class="topbar">
+  <a href="/dashboard">&#8592; Panel</a>
+  <h1>&#128081; NEXUS Teens — Admin</h1>
+  <div class="spacer"></div>
+  <span id="badge-total" style="font-size:12px;color:var(--m)">Cargando...</span>
+</div>
+
+<div class="content">
+  <!-- KPIs -->
+  <div class="kpis" id="kpis">
+    <div class="kpi"><div class="num" id="k-total">—</div><div class="lbl">Usuarios</div></div>
+    <div class="kpi gold"><div class="num" id="k-activos">—</div><div class="lbl">Activos hoy</div></div>
+    <div class="kpi blue"><div class="num" id="k-familias">—</div><div class="lbl">Familias</div></div>
+    <div class="kpi"><div class="num" id="k-demos">—</div><div class="lbl">Demos</div></div>
+  </div>
+
+  <div class="tabs">
+    <div class="tab active" onclick="irTab('usuarios')" id="tab-usuarios">Usuarios</div>
+    <div class="tab" onclick="irTab('monitor')" id="tab-monitor">Monitor</div>
+    <div class="tab" onclick="irTab('leaderboard')" id="tab-leaderboard">Ranking</div>
+  </div>
+
+  <!-- USUARIOS -->
+  <div class="tab-panel active" id="panel-usuarios">
+    <div class="section-title">Todos los usuarios registrados</div>
+    <div class="card" style="padding:0;overflow:hidden">
+      <table class="tabla">
+        <thead><tr>
+          <th>Nombre</th><th>Rol</th><th>Nivel / XP</th><th>Racha</th><th>Familia</th><th>Acceso</th><th></th>
+        </tr></thead>
+        <tbody id="tbody-usuarios"><tr><td colspan="7" class="empty">Cargando...</td></tr></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- MONITOR -->
+  <div class="tab-panel" id="panel-monitor">
+    <div class="section-title">Selecciona un usuario para monitorear</div>
+    <select id="sel-usuario" onchange="cargarMonitor()" style="background:var(--s2);border:1px solid var(--b);color:var(--t);padding:10px 14px;border-radius:10px;font-size:14px;width:100%;max-width:400px;outline:none;margin-bottom:16px">
+      <option value="">Selecciona usuario...</option>
+    </select>
+    <div id="monitor-contenido" style="display:none">
+      <div id="detalle-nombre"></div>
+      <div style="color:var(--m);font-size:13px;margin-bottom:16px" id="detalle-rol"></div>
+      <div class="monitor-box" id="monitor-data"></div>
+    </div>
+  </div>
+
+  <!-- LEADERBOARD -->
+  <div class="tab-panel" id="panel-leaderboard">
+    <div class="section-title">Ranking general</div>
+    <div id="leaderboard-lista"><div class="empty">Cargando...</div></div>
+  </div>
+</div>
+
+<script>
+let _usuarios = [];
+
+function irTab(t){
+  document.querySelectorAll('.tab,.tab-panel').forEach(el=>el.classList.remove('active'));
+  document.getElementById('tab-'+t).classList.add('active');
+  document.getElementById('panel-'+t).classList.add('active');
+  if(t==='leaderboard') cargarLeaderboard();
+}
+
+async function cargarUsuarios(){
+  const r = await fetch('/api/teens/admin/usuarios');
+  const d = await r.json();
+  if(!d.ok){ document.getElementById('tbody-usuarios').innerHTML='<tr><td colspan="7" class="empty">Error: '+d.error+'</td></tr>'; return; }
+  _usuarios = d.usuarios;
+
+  // KPIs
+  document.getElementById('k-total').textContent = d.total;
+  const hoy = new Date().toISOString().substring(0,10);
+  const activos = d.usuarios.filter(u=>u.ultimo_acceso&&u.ultimo_acceso.startsWith(hoy)).length;
+  document.getElementById('k-activos').textContent = activos;
+  const familias = new Set(d.usuarios.filter(u=>u.familia_id).map(u=>u.familia_id)).size;
+  document.getElementById('k-familias').textContent = familias;
+  const demos = d.usuarios.filter(u=>u.user_id&&u.user_id.startsWith('demo')).length;
+  document.getElementById('k-demos').textContent = demos;
+  document.getElementById('badge-total').textContent = d.total + ' usuarios';
+
+  // Tabla
+  const rolBadge = r=>({papa:'badge-papa',mama:'badge-mama',hijo:'badge-hijo',hija:'badge-hija'}[r]||'badge-hijo');
+  const xpMax = 1000;
+  document.getElementById('tbody-usuarios').innerHTML = d.usuarios.length
+    ? d.usuarios.map(u=>`<tr>
+        <td><b>${u.nombre||u.user_id}</b></td>
+        <td><span class="badge ${rolBadge(u.rol)}">${u.rol||'hijo'}</span></td>
+        <td>Nv.${u.nivel||1} <div class="nivel-bar"><div class="nivel-fill" style="width:${Math.min(100,(u.xp||0)/xpMax*100)}%"></div></div></td>
+        <td>${u.racha||0} dias</td>
+        <td>${u.familia_id?'<span style="color:var(--g)">'+u.familia_id.substring(0,6)+'</span>':'<span style="color:#333">—</span>'}</td>
+        <td>${u.ultimo_acceso?u.ultimo_acceso.substring(0,10):'<span style="color:#333">Nunca</span>'}</td>
+        <td><button class="btn-sm btn-ver" onclick="verMonitor('${u.user_id}','${u.nombre}','${u.rol}')">Monitor</button></td>
+      </tr>`).join('')
+    : '<tr><td colspan="7" class="empty">Sin usuarios registrados</td></tr>';
+
+  // Llenar selector monitor
+  const sel = document.getElementById('sel-usuario');
+  sel.innerHTML = '<option value="">Selecciona usuario...</option>' +
+    d.usuarios.map(u=>`<option value="${u.user_id}">${u.nombre||u.user_id} (${u.rol||'hijo'})</option>`).join('');
+}
+
+function verMonitor(uid, nombre, rol){
+  irTab('monitor');
+  document.getElementById('sel-usuario').value = uid;
+  cargarMonitor();
+}
+
+async function cargarMonitor(){
+  const uid = document.getElementById('sel-usuario').value;
+  if(!uid){ document.getElementById('monitor-contenido').style.display='none'; return; }
+  const u = _usuarios.find(x=>x.user_id===uid)||{};
+  document.getElementById('detalle-nombre').textContent = u.nombre||uid;
+  document.getElementById('detalle-rol').textContent = (u.rol||'hijo') + ' · Nivel '+u.nivel+' · '+u.xp+' XP · Racha '+u.racha+' dias';
+  document.getElementById('monitor-contenido').style.display='block';
+  document.getElementById('monitor-data').innerHTML = 'Cargando...';
+  try{
+    const r = await fetch(`/api/teens/monitor/${uid}`);
+    const d = await r.json();
+    if(!d.ok){ document.getElementById('monitor-data').innerHTML='<div class="empty">'+d.error+'</div>'; return; }
+    const p = d.perfil||{};
+    const cp = d.control_parental||{};
+    document.getElementById('monitor-data').innerHTML = `
+      <div class="monitor-row"><span class="monitor-lbl">Misiones completadas</span><span class="monitor-val">${p.misiones_completadas||0}</span></div>
+      <div class="monitor-row"><span class="monitor-lbl">Aptitud dominante</span><span class="monitor-val">${p.aptitud_dominante||'—'}</span></div>
+      <div class="monitor-row"><span class="monitor-lbl">Racha actual</span><span class="monitor-val">${p.racha_dias||0} dias</span></div>
+      <div class="monitor-row"><span class="monitor-lbl">Modo estudio</span><span class="monitor-val ${cp.modo_estudio?'on':'off'}">${cp.modo_estudio?'Activo':'Inactivo'}</span></div>
+      <div class="monitor-row"><span class="monitor-lbl">Limite pantalla</span><span class="monitor-val">${cp.limite_pantalla_min||'Sin limite'} min</span></div>
+      <div class="monitor-row"><span class="monitor-lbl">Familia ID</span><span class="monitor-val">${p.familia_id||'Sin familia'}</span></div>
+      <div class="monitor-row"><span class="monitor-lbl">Ultimo acceso</span><span class="monitor-val">${p.ultimo_acceso||'—'}</span></div>
+    `;
+  }catch(e){ document.getElementById('monitor-data').innerHTML='<div class="empty">Error de conexion</div>'; }
+}
+
+async function cargarLeaderboard(){
+  try{
+    const r = await fetch('/api/teens/leaderboard');
+    const d = await r.json();
+    const lista = Array.isArray(d) ? d : (d.leaderboard||[]);
+    document.getElementById('leaderboard-lista').innerHTML = lista.length
+      ? lista.map((u,i)=>`<div class="card" style="display:flex;align-items:center;gap:16px;padding:14px 20px">
+          <div style="font-size:22px;font-weight:900;color:${i===0?'var(--gold)':i===1?'#aaa':i===2?'#cd7f32':'var(--m)';}">${i+1}</div>
+          <div style="flex:1"><div style="font-weight:800">${u.nombre||u.user_id}</div><div style="font-size:12px;color:var(--m)">${u.aptitud_dominante||''}</div></div>
+          <div style="text-align:right"><div style="font-size:18px;font-weight:900;color:var(--g)">${u.xp||0} XP</div><div style="font-size:11px;color:var(--m)">Nivel ${u.nivel||1}</div></div>
+        </div>`).join('')
+      : '<div class="empty">Sin datos de ranking</div>';
+  }catch(e){ document.getElementById('leaderboard-lista').innerHTML='<div class="empty">Error</div>'; }
+}
+
+cargarUsuarios();
+</script>
+</body>
+</html>
