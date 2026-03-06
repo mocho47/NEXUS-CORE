@@ -21,7 +21,7 @@ jobs:
           python-version: '3.12'
 
       - name: Install dependencies
-        run: pip install fastapi uvicorn jinja2 python-multipart groq requests httpx ezdxf reportlab numpy pygame
+        run: pip install fastapi uvicorn jinja2 python-multipart groq requests httpx ezdxf reportlab numpy pygame supabase python-dotenv edge-tts pyautogui
 
       - name: Setup CI config
         run: python setup_ci.py
