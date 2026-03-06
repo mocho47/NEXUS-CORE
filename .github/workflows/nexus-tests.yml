@@ -6,14 +6,11 @@ on:
   pull_request:
     branches: [ main ]
   schedule:
-    - cron: '0 10 * * *'  # Diario 10am UTC
+    - cron: '0 10 * * *'
 
 jobs:
   test:
     runs-on: windows-latest
-    defaults:
-      run:
-        working-directory: ${{ github.workspace }}
 
     steps:
       - uses: actions/checkout@v4
@@ -24,25 +21,10 @@ jobs:
           python-version: '3.12'
 
       - name: Install dependencies
-        run: |
-          pip install fastapi uvicorn jinja2 python-multipart groq requests httpx ezdxf reportlab numpy pygame
+        run: pip install fastapi uvicorn jinja2 python-multipart groq requests httpx ezdxf reportlab numpy pygame
 
-      - name: Create test CONFIG
-        run: |
-          python -c "
-import sys, os
-sys.path.insert(0, os.getcwd())
-import json, datetime, base64 as b64
-os.makedirs('CONFIG', exist_ok=True)
-negocio = {'nombre':'NEXUS Test CI','giro':'Pruebas','telefono':'0000000000','ciudad':'CI','configured':True,'color_marca':'#00ff88'}
-json.dump(negocio, open('CONFIG/negocio.json','w',encoding='utf-8'), ensure_ascii=False)
-from nexus_profiles import set_perfil_activo
-set_perfil_activo('admin')
-lic = {'tipo':'ADMIN','cliente':'CI_TEST','huella':'BYPASS','creada':datetime.datetime.now().isoformat(),'expira':datetime.datetime(2099,1,1).isoformat(),'modulos':['*'],'firma':'CI_BYPASS'}
-raw = json.dumps(lic, ensure_ascii=False).encode()
-open('CONFIG/license.key','wb').write(b64.b64encode(raw))
-print('CONFIG OK')
-"
+      - name: Setup CI config
+        run: python setup_ci.py
 
       - name: Run test suite
         run: python nexus_test_suite.py
