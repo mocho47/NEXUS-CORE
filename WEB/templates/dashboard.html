@@ -1028,30 +1028,60 @@ async function oidConsultar(texto){
         return;
     }
     try{
-        const r=await fetch('/api/asistente',{method:'POST',
+        // ── STREAMING: responde oración por oración mientras Groq genera ──
+        const _resp = await fetch('/api/asistente/stream',{method:'POST',
             headers:{'Content-Type':'application/json'},
             body:JSON.stringify({texto,session_id:'dashboard'})
-        }).then(x=>x.json());
-        const resp=r.respuesta||JSON.stringify(r).substring(0,200);
-        oidBurbuja('NEXUS',resp,false);
+        });
+        const _reader = _resp.body.getReader();
+        const _dec = new TextDecoder();
+        let _fullText = '';
+        let _ttsQueue = [];
+        let _ttsRunning = false;
+
+        async function _processTTS(){
+            if(_ttsRunning || _ttsQueue.length===0) return;
+            _ttsRunning = true;
+            const sentence = _ttsQueue.shift();
+            await nexusHablar(sentence);
+            _ttsRunning = false;
+            _processTTS();
+        }
+
+        let _buf = '';
         oidSetStatus('Respondiendo...');
-        // Detectar si AI ofrece navegar a un módulo → pre-cargar acción pendiente
-        const _rn = resp.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'');
+        while(true){
+            const {done,value} = await _reader.read();
+            if(done) break;
+            _buf += _dec.decode(value,{stream:true});
+            const lines = _buf.split('\n');
+            _buf = lines.pop();
+            for(const line of lines){
+                if(!line.startsWith('data: ')) continue;
+                const data = line.slice(6).trim();
+                if(data==='[FIN]') break;
+                _fullText += (_fullText?' ':'')+data;
+                oidBurbuja('NEXUS',_fullText,false);
+                _ttsQueue.push(data);
+                _processTTS();
+            }
+        }
+        // Detectar si AI ofrece navegar a un módulo
+        const _rn = _fullText.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'');
+        const _MODMAP = {
+            'estudio':()=>window.location='/estudio','laser':()=>window.location='/estudio',
+            'milens':()=>window.location='/milens','pedidos':()=>window.location='/pedidos',
+            'clientes':()=>window.location='/clientes','stock':()=>window.location='/stock',
+            'agenda':()=>window.location='/agenda','teens':()=>window.location='/teens',
+            'atf':()=>window.location='/atf','marketing':()=>window.location='/marketing/panel',
+        };
         if(/redirig|ir al?|abrir?|llevar|naveg|quieres (ir|abrir|ver)/.test(_rn)){
-            const _MODMAP = {
-                'laser':()=>window.location='/estudio','estudio':()=>window.location='/estudio',
-                'milens':()=>document.querySelector('[onclick*="milens"]')?.click(),
-                'pedidos':()=>document.querySelector('[onclick*="pedidos"]')?.click(),
-                'clientes':()=>document.querySelector('[onclick*="clientes"]')?.click(),
-                'stock':()=>document.querySelector('[onclick*="stock"]')?.click(),
-                'agenda':()=>document.querySelector('[onclick*="agenda"]')?.click(),
-                'teens':()=>document.querySelector('[onclick*="teens"]')?.click(),
-            };
             for(const [mod,fn] of Object.entries(_MODMAP)){
                 if(_rn.includes(mod)){ _oidPendingAction=fn; break; }
             }
         }
-        await nexusHablar(resp.substring(0,280));
+        // Esperar a que termine el TTS antes de volver a escuchar
+        await new Promise(res=>{ const _chk=setInterval(()=>{ if(!_ttsRunning&&_ttsQueue.length===0){clearInterval(_chk);res();} },100); });
         oidSetDot('listening');
         oidSetStatus('Escuchando — di "nexus"');
     }catch(e){

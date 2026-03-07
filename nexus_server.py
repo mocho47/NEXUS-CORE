@@ -1172,6 +1172,15 @@ class HablarRequest(BaseModel):
 async def api_hablar(req: HablarRequest):
     if CLOUD_MODE:
         return {"ok": False, "error": "Voz no disponible en modo nube — solo en PC local"}
+    # __stop__ = comando para detener TTS, no leer en voz alta
+    if req.texto.strip() == "__stop__":
+        try:
+            import subprocess
+            subprocess.run(["taskkill", "/F", "/IM", "mpv.exe"], capture_output=True)
+            subprocess.run(["taskkill", "/F", "/IM", "ffplay.exe"], capture_output=True)
+        except Exception:
+            pass
+        return {"ok": True, "stopped": True}
     try:
         import threading
         from nexus_voice import hablar
@@ -2130,6 +2139,96 @@ async def api_asistente_chat(req: AsistenteReq):
         return r if isinstance(r, dict) else {"respuesta": str(r)}
     except Exception as e:
         return {"respuesta": f"Error del asistente: {str(e)}"}
+
+@app.post("/api/asistente/stream")
+async def api_asistente_stream(req: AsistenteReq):
+    """Streaming SSE: emite oraciones conforme Groq las genera."""
+    import json as _json
+    from fastapi.responses import StreamingResponse as _SR
+
+    async def _gen():
+        # Intentar respuesta rápida por keywords primero (sin Groq)
+        t = req.texto.lower().strip()
+        _quick_keys = ["pedido","stock","cliente","venta","sistema","hora","fecha",
+                       "hola","buenos","agenda","cotiz","diagnos","inventario","finanza"]
+        if any(k in t for k in _quick_keys):
+            try:
+                from nexus_assistant import get_respuesta
+                r = get_respuesta(req.texto, req.session_id)
+                resp = r.get("respuesta","") if isinstance(r,dict) else str(r)
+                for oracion in resp.replace("!",".").replace("?",".").split("."):
+                    oracion = oracion.strip()
+                    if oracion:
+                        yield f"data: {oracion}.\n\n"
+            except Exception as e:
+                yield f"data: Error: {e}\n\n"
+            yield "data: [FIN]\n\n"
+            return
+
+        # Groq streaming para preguntas abiertas
+        groq_key = os.environ.get("GROQ_API_KEY","")
+        if not groq_key:
+            try:
+                from nexus_assistant import get_respuesta
+                r = get_respuesta(req.texto, req.session_id)
+                resp = r.get("respuesta","") if isinstance(r,dict) else str(r)
+                yield f"data: {resp}\n\n"
+            except Exception as e:
+                yield f"data: Error: {e}\n\n"
+            yield "data: [FIN]\n\n"
+            return
+
+        try:
+            from groq import Groq
+            try:
+                _cfg = os.path.join(os.path.dirname(os.path.abspath(__file__)),"CONFIG","negocio.json")
+                with open(_cfg,"r",encoding="utf-8") as _f:
+                    _neg = _json.load(_f)
+                _ctx = f"Negocio: {_neg.get('nombre','Negocio')}. Servicios: {_neg.get('servicios','laser, retrofit de faros')}."
+            except Exception:
+                _ctx = "Negocio de servicios: laser, cajas, retrofit de faros (ATF), canbusfix."
+
+            client = Groq(api_key=groq_key)
+            stream = client.chat.completions.create(
+                model="llama-3.3-70b-versatile",
+                messages=[
+                    {"role":"system","content":(
+                        f"Eres NEXUS, asistente IA para un negocio mexicano. {_ctx} "
+                        "Responde en español mexicano, directo y natural. Máximo 3 oraciones."
+                    )},
+                    {"role":"user","content":req.texto}
+                ],
+                max_tokens=200,
+                temperature=0.7,
+                stream=True,
+            )
+            buf = ""
+            for chunk in stream:
+                delta = chunk.choices[0].delta.content or ""
+                buf += delta
+                # Emitir por cada fin de oración
+                while True:
+                    idx = -1
+                    for sep in [".", "!", "?"]:
+                        pos = buf.find(sep)
+                        if pos != -1 and (idx == -1 or pos < idx):
+                            idx = pos
+                    if idx == -1:
+                        break
+                    oracion = buf[:idx+1].strip()
+                    buf = buf[idx+1:]
+                    if oracion:
+                        yield f"data: {oracion}\n\n"
+            if buf.strip():
+                yield f"data: {buf.strip()}\n\n"
+        except Exception as e:
+            yield f"data: Error Groq: {e}\n\n"
+        yield "data: [FIN]\n\n"
+
+    return _SR(_gen(), media_type="text/event-stream", headers={
+        "Cache-Control":"no-cache",
+        "X-Accel-Buffering":"no"
+    })
 
 # Captura de leads desde landing page (POST form)
 @app.post("/api/autoventas/lead")
