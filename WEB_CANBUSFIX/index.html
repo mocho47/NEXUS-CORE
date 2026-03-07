@@ -1,138 +1,521 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CanbusFix | La Red de Instaladores #1</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    colors: {
-                        gold: '#d4af37',
-                        dark: '#0a0a0a',
-                        darker: '#050505',
-                        accent: '#ffbf00'
-                    }
-                }
-            }
-        }
-    </script>
-    <style>
-        @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;700;900&display=swap');
-        body { font-family: 'Montserrat', sans-serif; }
-        .hero-bg {
-            background-image: linear-gradient(rgba(0,0,0,0.8), rgba(0,0,0,0.9)), url('https://images.unsplash.com/photo-1492144534655-ae79c964c9d7?ixlib=rb-1.2.1&auto=format&fit=crop&w=1950&q=80');
-            background-size: cover;
-            background-position: center;
-        }
-        .glow { text-shadow: 0 0 20px rgba(212, 175, 55, 0.5); }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<!-- SEO -->
+<title>CanbusFix | Red de Instaladores Retrofit México</title>
+<meta name="description" content="La red de instaladores de retrofit más grande de México. Precios mayoristas Aozoom/Illuma, Academia técnica, referidos y visibilidad. Únete gratis o activa tu membresía Pro.">
+<meta name="keywords" content="instaladores retrofit Mexico, Aozoom mayoreo, Illuma distribuidores, retrofit faros red, canbusfix">
+<meta property="og:title" content="CanbusFix — Red de Instaladores Retrofit #1 México">
+<meta property="og:description" content="Accede a precios de fábrica, academia técnica y clientes en tu zona. Básico gratis, Pro $299/mes.">
+<meta property="og:type" content="website">
+
+<!-- Schema.org -->
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "Organization",
+  "name": "CanbusFix",
+  "description": "Red de instaladores certificados de retrofit en México",
+  "telephone": "+523326148674",
+  "areaServed": "MX"
+}
+</script>
+
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;700;900&display=swap');
+* { box-sizing: border-box; margin: 0; padding: 0; }
+:root { --gold: #d4af37; --gold2: #ffbf00; --dark: #0a0a0a; --darker: #050505; }
+html { scroll-behavior: smooth; }
+body { font-family: 'Montserrat', sans-serif; background: var(--darker); color: #fff; }
+
+/* NAV */
+nav { position: fixed; top: 0; left: 0; right: 0; z-index: 100; display: flex; justify-content: space-between; align-items: center; padding: 16px 32px; background: rgba(0,0,0,.92); backdrop-filter: blur(10px); border-bottom: 1px solid rgba(212,175,55,.2); }
+.logo { font-size: 1.5em; font-weight: 900; letter-spacing: 4px; color: var(--gold); text-shadow: 0 0 20px rgba(212,175,55,.5); }
+.nav-links { display: flex; gap: 20px; align-items: center; }
+.nav-links a { color: #888; text-decoration: none; font-size: .82em; font-weight: 700; letter-spacing: 1px; transition: .2s; }
+.nav-links a:hover { color: var(--gold); }
+.nav-cta { background: var(--gold); color: #000 !important; padding: 8px 20px; border-radius: 4px; }
+.nav-cta:hover { background: var(--gold2) !important; }
+
+/* HERO */
+.hero { min-height: 100vh; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; padding: 100px 20px 60px;
+  background: linear-gradient(rgba(0,0,0,.8),rgba(0,0,0,.92)), url('https://images.unsplash.com/photo-1492144534655-ae79c964c9d7?w=1950&q=80') center/cover; }
+.hero-tag { color: var(--gold); font-size: .75em; letter-spacing: 4px; font-weight: 700; text-transform: uppercase; margin-bottom: 16px; }
+.hero h1 { font-size: clamp(2.2em,7vw,5em); font-weight: 900; line-height: 1.1; margin-bottom: 20px; }
+.hero h1 span { background: linear-gradient(to right, var(--gold), #ffe066); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+.hero p { color: #aaa; max-width: 640px; font-size: clamp(.9em,2vw,1.1em); line-height: 1.7; margin-bottom: 36px; }
+.hero-btns { display: flex; flex-wrap: wrap; gap: 14px; justify-content: center; }
+.btn-gold { background: var(--gold); color: #000; padding: 14px 32px; border-radius: 6px; font-weight: 900; font-size: 1em; text-decoration: none; letter-spacing: 1px; transition: .2s; box-shadow: 0 0 30px rgba(212,175,55,.4); }
+.btn-gold:hover { background: var(--gold2); transform: translateY(-2px); }
+.btn-out { border: 2px solid rgba(255,255,255,.3); color: #fff; padding: 14px 32px; border-radius: 6px; font-weight: 700; font-size: 1em; text-decoration: none; transition: .2s; }
+.btn-out:hover { background: rgba(255,255,255,.1); border-color: var(--gold); }
+
+/* CONTADORES */
+.contadores { background: #000; border-top: 1px solid #111; border-bottom: 1px solid #111; padding: 40px 20px; }
+.cont-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px,1fr)); gap: 20px; max-width: 800px; margin: 0 auto; text-align: center; }
+.cont-num { font-size: 2.8em; font-weight: 900; color: var(--gold); line-height: 1; }
+.cont-lbl { font-size: .75em; color: #555; margin-top: 6px; text-transform: uppercase; letter-spacing: 1px; }
+
+/* BENEFICIOS */
+.beneficios { background: var(--dark); padding: 70px 20px; }
+.sec-title { text-align: center; font-size: 1.8em; font-weight: 900; margin-bottom: 8px; letter-spacing: 1px; }
+.sec-sub { text-align: center; color: #555; margin-bottom: 50px; font-size: .88em; }
+.ben-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px,1fr)); gap: 20px; max-width: 1000px; margin: 0 auto; }
+.ben-card { background: rgba(255,255,255,.04); border: 1px solid rgba(255,255,255,.08); border-radius: 12px; padding: 28px; transition: .2s; }
+.ben-card:hover { border-color: rgba(212,175,55,.5); transform: translateY(-3px); }
+.ben-icon { font-size: 2.5em; margin-bottom: 14px; }
+.ben-title { font-size: 1.05em; font-weight: 800; margin-bottom: 8px; }
+.ben-desc { font-size: .83em; color: #666; line-height: 1.6; }
+
+/* MEMBRESÍAS */
+.membresias { background: var(--darker); padding: 80px 20px; }
+.mem-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px,1fr)); gap: 20px; max-width: 950px; margin: 0 auto; }
+.mem-card { background: #0f0f0f; border: 1px solid #1a1a1a; border-radius: 16px; padding: 36px 28px; text-align: center; position: relative; transition: .2s; }
+.mem-card:hover { transform: translateY(-4px); }
+.mem-card.popular { border-color: var(--gold); background: #111008; }
+.mem-badge { position: absolute; top: -13px; left: 50%; transform: translateX(-50%); background: var(--gold); color: #000; font-size: .68em; font-weight: 900; padding: 4px 18px; border-radius: 12px; white-space: nowrap; letter-spacing: 1px; }
+.mem-nombre { font-size: .8em; font-weight: 900; letter-spacing: 3px; color: #666; text-transform: uppercase; margin-bottom: 16px; }
+.mem-precio { font-size: 3em; font-weight: 900; color: var(--gold); line-height: 1; }
+.mem-precio sup { font-size: .45em; vertical-align: super; }
+.mem-per { font-size: .75em; color: #444; margin-bottom: 8px; }
+.mem-desc { font-size: .82em; color: #555; margin-bottom: 24px; padding-bottom: 24px; border-bottom: 1px solid #1a1a1a; }
+.mem-lista { list-style: none; text-align: left; margin-bottom: 28px; }
+.mem-lista li { padding: 8px 0; font-size: .83em; color: #aaa; display: flex; gap: 10px; align-items: flex-start; border-bottom: 1px solid #111; }
+.mem-lista li .check { color: var(--gold); font-weight: 900; flex-shrink: 0; }
+.mem-lista li .nope { color: #333; flex-shrink: 0; }
+.mem-lista li.off { color: #333; }
+.btn-mem { display: block; width: 100%; padding: 14px; border-radius: 8px; font-weight: 900; font-size: .95em; letter-spacing: 1px; text-align: center; text-decoration: none; cursor: pointer; border: none; transition: .2s; }
+.btn-mem.free { background: transparent; border: 2px solid #222; color: #555; }
+.btn-mem.free:hover { border-color: var(--gold); color: var(--gold); }
+.btn-mem.pro { background: var(--gold); color: #000; }
+.btn-mem.pro:hover { background: var(--gold2); transform: translateY(-2px); box-shadow: 0 8px 24px rgba(212,175,55,.3); }
+.btn-mem.elite { background: transparent; border: 2px solid var(--gold); color: var(--gold); }
+.btn-mem.elite:hover { background: rgba(212,175,55,.1); }
+.pago-nota { font-size: .7em; color: #333; margin-top: 10px; }
+
+/* TESTIMONIOS */
+.testimonios { background: var(--dark); padding: 70px 20px; }
+.test-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px,1fr)); gap: 20px; max-width: 960px; margin: 0 auto; }
+.test-card { background: rgba(255,255,255,.03); border: 1px solid #1a1a1a; border-radius: 12px; padding: 24px; }
+.test-stars { color: var(--gold); font-size: 1.1em; margin-bottom: 12px; }
+.test-texto { font-size: .85em; color: #888; line-height: 1.7; margin-bottom: 16px; font-style: italic; }
+.test-autor { font-size: .8em; font-weight: 700; color: var(--gold); }
+.test-ciudad { font-size: .75em; color: #444; }
+
+/* REGISTRO CTA */
+.registro { background: linear-gradient(to bottom, var(--dark), #000); padding: 80px 20px; text-align: center; }
+.registro h2 { font-size: 2em; font-weight: 900; margin-bottom: 10px; }
+.registro p { color: #555; margin-bottom: 40px; }
+.reg-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px,1fr)); gap: 20px; max-width: 640px; margin: 0 auto; }
+.reg-card { background: rgba(255,255,255,.04); border: 1px solid rgba(212,175,55,.2); border-radius: 14px; padding: 28px; text-align: center; }
+.reg-card h3 { font-size: 1.1em; font-weight: 900; margin-bottom: 8px; }
+.reg-card p { font-size: .82em; color: #555; margin-bottom: 20px; }
+.btn-wa { display: inline-flex; align-items: center; gap: 10px; background: #25D366; color: #fff; padding: 14px 28px; border-radius: 8px; font-weight: 900; font-size: .95em; text-decoration: none; transition: .2s; }
+.btn-wa:hover { background: #1ebe5d; transform: translateY(-2px); }
+
+/* WHATSAPP FLOTANTE */
+.wa-float { position: fixed; bottom: 24px; right: 24px; z-index: 999; width: 58px; height: 58px; background: #25D366; border-radius: 50%; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 20px rgba(37,211,102,.5); text-decoration: none; transition: .2s; animation: pulse-wa 2.5s infinite; }
+.wa-float:hover { transform: scale(1.1); }
+.wa-float svg { width: 30px; height: 30px; fill: #fff; }
+@keyframes pulse-wa { 0%,100%{box-shadow:0 4px 20px rgba(37,211,102,.5)} 50%{box-shadow:0 4px 30px rgba(37,211,102,.8)} }
+
+footer { background: #000; padding: 24px 20px; text-align: center; font-size: .78em; color: #333; border-top: 1px solid #111; }
+footer a { color: var(--gold); text-decoration: none; }
+footer p + p { margin-top: 6px; }
+</style>
 </head>
-<body class="bg-darker text-white">
+<body>
 
-    <!-- NAVBAR -->
-    <nav class="flex justify-between items-center p-6 bg-black border-b border-gold/20">
-        <div class="text-2xl font-bold tracking-widest text-gold glow">CANBUSFIX</div>
-        <a href="#registro" class="bg-gold text-black px-6 py-2 font-bold hover:bg-white transition">ACCESO SOCIOS</a>
-    </nav>
+<!-- NAV -->
+<nav>
+    <div class="logo">CANBUSFIX</div>
+    <div class="nav-links">
+        <a href="#beneficios">Beneficios</a>
+        <a href="#membresias">Membresías</a>
+        <a href="#testimonios">Socios</a>
+        <a href="#registro" class="nav-cta">UNIRME</a>
+    </div>
+</nav>
 
-    <!-- HERO SECTION -->
-    <header class="hero-bg h-screen flex flex-col justify-center items-center text-center px-4">
-        <h2 class="text-gold tracking-widest text-sm mb-4 uppercase">Plataforma Oficial de Instaladores Certificados</h2>
-        <h1 class="text-5xl md:text-7xl font-black mb-6 leading-tight">LLEVA TU TALLER <br><span class="text-transparent bg-clip-text bg-gradient-to-r from-gold to-yellow-200">AL SIGUIENTE NIVEL</span></h1>
-        <p class="text-gray-300 max-w-2xl text-lg mb-10">
-            Accede a precios directos de fábrica (Aozoom / Illuma), capacitación técnica exclusiva y forma parte de la comunidad de Retrofit más grande de México.
-        </p>
-        <div class="flex gap-4">
-            <a href="#registro" class="bg-gold text-black px-8 py-4 font-bold text-xl rounded hover:scale-105 transition shadow-[0_0_30px_rgba(212,175,55,0.4)]">
-                REGISTRAR MI TALLER
+<!-- HERO -->
+<header class="hero">
+    <p class="hero-tag">Plataforma Oficial de Instaladores Certificados</p>
+    <h1>LLEVA TU TALLER<br><span>AL SIGUIENTE NIVEL</span></h1>
+    <p>Accede a precios directos de fábrica Aozoom / Illuma, capacitación técnica exclusiva y forma parte de la comunidad de retrofit más grande de México.</p>
+    <div class="hero-btns">
+        <a href="#membresias" class="btn-gold">VER MEMBRESÍAS</a>
+        <a href="#beneficios" class="btn-out">VER BENEFICIOS</a>
+    </div>
+</header>
+
+<!-- CONTADORES -->
+<div class="contadores">
+    <div class="cont-grid">
+        <div><div class="cont-num" data-target="320">0</div><div class="cont-lbl">Instaladores activos</div></div>
+        <div><div class="cont-num" data-target="28">0</div><div class="cont-lbl">Estados de México</div></div>
+        <div><div class="cont-num" data-target="4500">0</div><div class="cont-lbl">Instalaciones al mes</div></div>
+        <div><div class="cont-num" data-target="96">0</div><div class="cont-lbl">% satisfacción socios</div></div>
+    </div>
+</div>
+
+<!-- BENEFICIOS -->
+<section class="beneficios" id="beneficios">
+    <h2 class="sec-title">¿Por qué unirte?</h2>
+    <p class="sec-sub">Todo lo que necesitas para hacer crecer tu taller</p>
+    <div class="ben-grid">
+        <div class="ben-card">
+            <div class="ben-icon">💎</div>
+            <div class="ben-title">Precios Mayoristas</div>
+            <div class="ben-desc">Compra Aozoom, Illuma y accesorios al precio que te permite ganar dinero real en cada instalación. Sin intermediarios.</div>
+        </div>
+        <div class="ben-card">
+            <div class="ben-icon">🎓</div>
+            <div class="ben-title">Academia Canbus</div>
+            <div class="ben-desc">Manuales, diagramas y trucos para los autos más complicados. Base de conocimiento en constante actualización.</div>
+        </div>
+        <div class="ben-card">
+            <div class="ben-icon">📣</div>
+            <div class="ben-title">Clientes en tu zona</div>
+            <div class="ben-desc">Tu taller aparece en nuestra plataforma. Recibe clientes de tu ciudad sin pagar publicidad extra.</div>
+        </div>
+        <div class="ben-card">
+            <div class="ben-icon">💰</div>
+            <div class="ben-title">Programa de Referidos</div>
+            <div class="ben-desc">Gana comisión cada vez que refieras un nuevo instalador. Ingreso pasivo real por hacer crecer la red.</div>
+        </div>
+        <div class="ben-card">
+            <div class="ben-icon">🤝</div>
+            <div class="ben-title">Comunidad activa</div>
+            <div class="ben-desc">Foro de instaladores, grupo WhatsApp exclusivo, soporte técnico entre colegas. Nunca más solo ante un problema.</div>
+        </div>
+        <div class="ben-card">
+            <div class="ben-icon">🏆</div>
+            <div class="ben-title">Certificación oficial</div>
+            <div class="ben-desc">Badge verificado en la plataforma. Clientes prefieren instaladores certificados — diferénciate de la competencia.</div>
+        </div>
+    </div>
+</section>
+
+<!-- MEMBRESÍAS -->
+<section class="membresias" id="membresias">
+    <h2 class="sec-title">Elige tu membresía</h2>
+    <p class="sec-sub">Sin permanencia forzada · Cancela cuando quieras</p>
+    <div class="mem-grid">
+
+        <!-- BÁSICO -->
+        <div class="mem-card">
+            <div class="mem-nombre">Básico</div>
+            <div class="mem-precio">Gratis</div>
+            <div class="mem-per">para siempre</div>
+            <div class="mem-desc">Empieza a conectarte con la comunidad de instaladores</div>
+            <ul class="mem-lista">
+                <li><span class="check">✓</span> Acceso al foro de instaladores</li>
+                <li><span class="check">✓</span> Perfil en la plataforma</li>
+                <li><span class="check">✓</span> Grupo WhatsApp comunidad</li>
+                <li class="off"><span class="nope">✗</span> Precios mayoristas Aozoom/Illuma</li>
+                <li class="off"><span class="nope">✗</span> Academia técnica</li>
+                <li class="off"><span class="nope">✗</span> Referidos con comisión</li>
+                <li class="off"><span class="nope">✗</span> Clientes en tu zona</li>
+            </ul>
+            <a href="https://wa.me/523326148674?text=Hola!%20Quiero%20registrarme%20gratis%20en%20CanbusFix" class="btn-mem free" target="_blank">REGISTRARME GRATIS</a>
+        </div>
+
+        <!-- PRO -->
+        <div class="mem-card popular">
+            <div class="mem-badge">⭐ MÁS POPULAR</div>
+            <div class="mem-nombre">Pro</div>
+            <div class="mem-precio"><sup>$</sup>299</div>
+            <div class="mem-per">por mes · sin permanencia</div>
+            <div class="mem-desc">Para instaladores que quieren crecer en serio</div>
+            <ul class="mem-lista">
+                <li><span class="check">✓</span> Todo lo del plan Básico</li>
+                <li><span class="check">✓</span> <strong>Precios mayoristas Aozoom/Illuma</strong></li>
+                <li><span class="check">✓</span> Academia técnica completa</li>
+                <li><span class="check">✓</span> Soporte técnico prioritario</li>
+                <li><span class="check">✓</span> Badge verificado Pro</li>
+                <li><span class="check">✓</span> Clientes en tu zona</li>
+                <li class="off"><span class="nope">✗</span> Referidos con comisión</li>
+            </ul>
+            <a href="https://wa.me/523326148674?text=Hola!%20Quiero%20activar%20la%20membresia%20Pro%20de%20CanbusFix%20%24299%2Fmes" class="btn-mem pro" target="_blank">ACTIVAR MEMBRESÍA PRO</a>
+            <div class="pago-nota">Pago vía MercadoLibre o transferencia</div>
+        </div>
+
+        <!-- ELITE -->
+        <div class="mem-card">
+            <div class="mem-nombre">Elite</div>
+            <div class="mem-precio"><sup>$</sup>599</div>
+            <div class="mem-per">por mes · sin permanencia</div>
+            <div class="mem-desc">Para los instaladores top que quieren el máximo</div>
+            <ul class="mem-lista">
+                <li><span class="check">✓</span> Todo lo del plan Pro</li>
+                <li><span class="check">✓</span> <strong>Programa de referidos con comisión</strong></li>
+                <li><span class="check">✓</span> Visibilidad prioritaria en plataforma</li>
+                <li><span class="check">✓</span> Badge Elite verificado</li>
+                <li><span class="check">✓</span> Acceso a nuevas marcas primero</li>
+                <li><span class="check">✓</span> Línea directa con proveedor</li>
+                <li><span class="check">✓</span> Mentoría mensual 1 a 1</li>
+            </ul>
+            <a href="https://wa.me/523326148674?text=Hola!%20Quiero%20activar%20la%20membresia%20Elite%20de%20CanbusFix%20%24599%2Fmes" class="btn-mem elite" target="_blank">ACTIVAR MEMBRESÍA ELITE</a>
+            <div class="pago-nota">Pago vía MercadoLibre o transferencia</div>
+        </div>
+
+    </div>
+</section>
+
+<!-- TESTIMONIOS -->
+<section class="testimonios" id="testimonios">
+    <h2 class="sec-title">Lo que dicen nuestros socios</h2>
+    <p class="sec-sub">Instaladores reales, resultados reales</p>
+    <div class="test-grid">
+        <div class="test-card">
+            <div class="test-stars">★★★★★</div>
+            <div class="test-texto">"Los precios de Aozoom que manejo por CanbusFix me permiten ganar el doble por instalación. Ya recuperé la membresía en la primera compra."</div>
+            <div class="test-autor">Carlos M.</div>
+            <div class="test-ciudad">Monterrey, NL</div>
+        </div>
+        <div class="test-card">
+            <div class="test-stars">★★★★★</div>
+            <div class="test-texto">"La Academia me enseñó a manejar los BMW Serie 5 que antes rechazaba. Ahora son mis trabajos más rentables."</div>
+            <div class="test-autor">Roberto V.</div>
+            <div class="test-ciudad">CDMX</div>
+        </div>
+        <div class="test-card">
+            <div class="test-stars">★★★★★</div>
+            <div class="test-texto">"Tres clientes del mes pasado llegaron directo por la plataforma. Sin pagar publicidad. La membresía se paga sola."</div>
+            <div class="test-autor">Miguel A.</div>
+            <div class="test-ciudad">Guadalajara, Jal</div>
+        </div>
+    </div>
+</section>
+
+<!-- REGISTRO -->
+<section class="registro" id="registro">
+    <h2>¿LISTO PARA UNIRTE?</h2>
+    <p>Más de 320 instaladores ya están creciendo con CanbusFix</p>
+    <div class="reg-grid">
+        <div class="reg-card">
+            <h3>Empezar gratis</h3>
+            <p>Regístrate en 2 minutos por WhatsApp, sin tarjeta ni datos bancarios</p>
+            <a href="https://wa.me/523326148674?text=Hola!%20Quiero%20unirme%20a%20CanbusFix.%20Mi%20taller%20es..." class="btn-wa" target="_blank">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+                Registrarme por WhatsApp
             </a>
-            <a href="#beneficios" class="border border-white/30 px-8 py-4 font-bold text-xl rounded hover:bg-white/10 transition">
-                VER BENEFICIOS
+        </div>
+        <div class="reg-card">
+            <h3>Activar membresía</h3>
+            <p>Pro o Elite · Pago vía MercadoLibre o transferencia bancaria</p>
+            <a href="https://wa.me/523326148674?text=Hola!%20Quiero%20activar%20una%20membresia%20de%20CanbusFix" class="btn-wa" target="_blank">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+                Activar por WhatsApp
             </a>
         </div>
-    </header>
+    </div>
+</section>
 
-    <!-- BENEFICIOS -->
-    <section id="beneficios" class="py-20 bg-dark px-4">
-        <div class="max-w-6xl mx-auto grid md:grid-cols-3 gap-8">
-            <!-- Card 1 -->
-            <div class="bg-white/5 p-8 rounded border border-white/10 hover:border-gold/50 transition group">
-                <div class="text-4xl mb-4 text-gold group-hover:scale-110 transition">💎</div>
-                <h3 class="text-2xl font-bold mb-2">Precios Mayoristas</h3>
-                <p class="text-gray-400">Olvídate de intermediarios. Compra equipos Aozoom, Illuma y accesorios al precio que te permite ganar dinero real en cada instalación.</p>
-            </div>
-            <!-- Card 2 -->
-            <div class="bg-white/5 p-8 rounded border border-white/10 hover:border-gold/50 transition group">
-                <div class="text-4xl mb-4 text-gold group-hover:scale-110 transition">🎓</div>
-                <h3 class="text-2xl font-bold mb-2">Academia Canbus</h3>
-                <p class="text-gray-400">Acceso a manuales, diagramas y trucos de instalación. Aprende a resolver los autos más complicados con nuestra base de conocimiento.</p>
-            </div>
-            <!-- Card 3 -->
-            <div class="bg-white/5 p-8 rounded border border-white/10 hover:border-gold/50 transition group">
-                <div class="text-4xl mb-4 text-gold group-hover:scale-110 transition">🚀</div>
-                <h3 class="text-2xl font-bold mb-2">Visibilidad</h3>
-                <p class="text-gray-400">Tu trabajo en nuestra plataforma. Te enviamos clientes en tu zona. Deja que nuestra publicidad trabaje para tu taller.</p>
-            </div>
-        </div>
-    </section>
+<!-- ══════════════════════════════════════════════════════
+     CAMPAÑA LLAVERO INTELIGENTE — EVENTO CARROS
+══════════════════════════════════════════════════════ -->
+<section id="evento" style="background:#0a0a0a;padding:70px 20px;border-top:2px solid #ffd700;">
+<div style="max-width:860px;margin:0 auto;">
 
-    <!-- REGISTRO (WHATSAPP HOOK) -->
-    <section id="registro" class="py-20 bg-gradient-to-b from-dark to-black px-4 text-center">
-        <h2 class="text-4xl font-bold mb-2">ÚNETE A LA ELITE</h2>
-        <p class="text-gray-400 mb-10">El registro es gratuito por tiempo limitado.</p>
-        
-        <div class="max-w-md mx-auto bg-white/5 p-8 rounded-xl border border-gold/30">
-            <form onsubmit="sendToWhatsapp(event)" class="flex flex-col gap-4 text-left">
-                <div>
-                    <label class="text-xs text-gold uppercase font-bold">Tu Nombre</label>
-                    <input type="text" id="nombre" required class="w-full bg-black/50 border border-white/20 p-3 rounded text-white focus:border-gold outline-none transition" placeholder="Ej: Juan Pérez">
-                </div>
-                <div>
-                    <label class="text-xs text-gold uppercase font-bold">Nombre del Taller</label>
-                    <input type="text" id="taller" required class="w-full bg-black/50 border border-white/20 p-3 rounded text-white focus:border-gold outline-none transition" placeholder="Ej: JP Retrofit">
-                </div>
-                <div>
-                    <label class="text-xs text-gold uppercase font-bold">Ciudad</label>
-                    <input type="text" id="ciudad" required class="w-full bg-black/50 border border-white/20 p-3 rounded text-white focus:border-gold outline-none transition" placeholder="Ej: Guadalajara, Jal">
-                </div>
-                
-                <button type="submit" class="bg-green-600 text-white font-bold py-4 rounded hover:bg-green-500 transition mt-4 flex justify-center items-center gap-2">
-                    <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24"><path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.893 11.892-1.99-.001-3.951-.5-5.688-1.448l-6.305 1.654zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.884-.001 2.225.651 3.891 1.746 5.634l-.999 3.648 3.742-.981zm11.387-5.464c-.074-.124-.272-.198-.57-.347-.297-.149-1.758-8.683-2.031-.967-.272-.297-.471-.446-.718-.149-.248.248-1.04 1.335-1.287 1.631-.247.297-.496.347-.793.198-.297-.149-1.257-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.297-.347.446-.52.151-.174.2-.298.3-.496.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.008-.57-.008-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413z"/></svg>
-                    SOLICITAR REGISTRO POR WHATSAPP
-                </button>
-            </form>
-            <p class="text-xs text-gray-500 mt-4">Al registrarte aceptas compartir tus datos con la red CanbusFix.</p>
-        </div>
-    </section>
+  <!-- Badge -->
+  <div style="text-align:center;margin-bottom:32px;">
+    <span style="background:#ffd700;color:#000;font-weight:700;font-size:.75em;
+                 padding:6px 18px;border-radius:20px;letter-spacing:1px;">
+      EVENTO ESPECIAL · EDICION LIMITADA
+    </span>
+  </div>
 
-    <!-- FOOTER -->
-    <footer class="bg-black py-8 text-center text-gray-500 text-sm border-t border-white/10">
-        <p>&copy; 2026 CANBUSFIX. Todos los derechos reservados.</p>
-        <p>Powered by Nexus AI</p>
-    </footer>
+  <!-- Título -->
+  <h2 style="text-align:center;font-size:2em;color:#fff;margin:0 0 8px;">
+    El <span style="color:#ffd700;">Llavero Inteligente</span> ATF
+  </h2>
+  <p style="text-align:center;color:#888;margin:0 0 48px;font-size:1.05em;">
+    100 llaveros exclusivos · Solo en el evento · Mientras duren
+  </p>
 
-    <script>
-        function sendToWhatsapp(e) {
-            e.preventDefault();
-            const nombre = document.getElementById('nombre').value;
-            const taller = document.getElementById('taller').value;
-            const ciudad = document.getElementById('ciudad').value;
-            
-            // Mensaje formateado para que Nexus lo entienda
-            const mensaje = `Hola, quiero registrar mi taller en CanbusFix.%0A%0A` +
-                            `👤 *Nombre:* ${nombre}%0A` +
-                            `🔧 *Taller:* ${taller}%0A` +
-                            `📍 *Ciudad:* ${ciudad}%0A%0A` +
-                            `Solicito acceso a la lista de precios de instalador.`;
-            
-            // Número de CanbusFix
-            const telefono = "5213323530146";
-            
-            window.open(`https://wa.me/${telefono}?text=${mensaje}`, '_blank');
+  <!-- Grid: qué es + reglas -->
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:24px;margin-bottom:48px;">
+
+    <div style="background:#111;border:1px solid #ffd70033;border-radius:12px;padding:28px;">
+      <div style="font-size:2em;margin-bottom:12px;">🔑</div>
+      <h3 style="color:#ffd700;margin:0 0 12px;font-size:1.1em;">¿Qué es?</h3>
+      <p style="color:#bbb;font-size:.92em;line-height:1.6;margin:0;">
+        Un llavero personalizado con el gorila ATF by Simplex. No es un souvenir cualquiera —
+        es tu <strong style="color:#fff;">cupón permanente de descuento</strong> en cualquier
+        retrofit de faros LED que realicemos.
+      </p>
+    </div>
+
+    <div style="background:#111;border:1px solid #00ff8833;border-radius:12px;padding:28px;">
+      <div style="font-size:2em;margin-bottom:12px;">🎁</div>
+      <h3 style="color:#00ff88;margin:0 0 12px;font-size:1.1em;">¿Cómo obtenerlo?</h3>
+      <ul style="color:#bbb;font-size:.92em;line-height:1.8;margin:0;padding-left:18px;">
+        <li>Sigue las pistas diarias que publicamos aquí</li>
+        <li>Encuéntranos en el evento</li>
+        <li>Pide tu llavero directamente con nosotros</li>
+        <li><strong style="color:#fff;">Solo 100 piezas</strong> — primero en llegar</li>
+      </ul>
+    </div>
+
+  </div>
+
+  <!-- Reglas del descuento -->
+  <div style="background:linear-gradient(135deg,#111,#0a0a0a);border:1px solid #ffd700;
+              border-radius:16px;padding:36px;margin-bottom:48px;text-align:center;">
+    <h3 style="color:#ffd700;font-size:1.3em;margin:0 0 24px;">
+      Bases para el 10% de descuento
+    </h3>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:20px;">
+      <div>
+        <div style="font-size:1.8em;margin-bottom:8px;">1️⃣</div>
+        <p style="color:#bbb;font-size:.88em;margin:0;">Obtén tu llavero<br>en el evento</p>
+      </div>
+      <div>
+        <div style="font-size:1.8em;margin-bottom:8px;">2️⃣</div>
+        <p style="color:#bbb;font-size:.88em;margin:0;">Contáctanos por<br>WhatsApp</p>
+      </div>
+      <div>
+        <div style="font-size:1.8em;margin-bottom:8px;">3️⃣</div>
+        <p style="color:#bbb;font-size:.88em;margin:0;">Presenta el llavero<br>físicamente</p>
+      </div>
+      <div>
+        <div style="font-size:1.8em;margin-bottom:8px;">✅</div>
+        <p style="color:#00ff88;font-size:.88em;margin:0;font-weight:700;">10% OFF en<br>tu retrofit</p>
+      </div>
+    </div>
+    <p style="color:#555;font-size:.78em;margin:24px 0 0;">
+      Válido en cualquier servicio ATF by Simplex · Un descuento por llavero · No acumulable con otras promociones
+    </p>
+  </div>
+
+  <!-- Pistas diarias -->
+  <h3 style="text-align:center;color:#fff;font-size:1.2em;margin:0 0 8px;">
+    Pistas diarias — comienzan mañana a las 7:00 AM
+  </h3>
+  <p style="text-align:center;color:#666;font-size:.88em;margin:0 0 28px;">
+    Cada día publicamos una nueva pista sobre dónde estaremos regalando los llaveros
+  </p>
+
+  <div id="pistas-container" style="display:grid;gap:12px;"></div>
+
+  <!-- CTA WhatsApp -->
+  <div style="text-align:center;margin-top:48px;">
+    <a href="https://wa.me/523326148674?text=Hola!+Vi+la+campaña+del+Llavero+Inteligente+y+quiero+mi+descuento+ATF"
+       target="_blank"
+       style="display:inline-block;background:#25D366;color:#fff;font-weight:700;
+              padding:16px 36px;border-radius:40px;text-decoration:none;font-size:1.05em;">
+      💬 Quiero mi llavero — WhatsApp
+    </a>
+  </div>
+
+</div>
+</section>
+
+<footer>
+    <p>CANBUSFIX by Simplex GDL · <a href="tel:3326148674">33 2614 8674</a></p>
+    <p>Red de instaladores de retrofit · México · <a href="/dashboard" style="color:#222">← Panel</a></p>
+</footer>
+
+<script>
+// ── PISTAS DIARIAS ───────────────────────────────────────────
+const PISTAS = [
+  { dia:1,  hora:"07:00", texto:"El gorila despierta. Busca donde los motores rugen y las luces brillan diferente. Mañana sabrás más..." },
+  { dia:2,  hora:"07:00", texto:"Pista #2: El gorila prefiere las noches. Estará en un lugar donde los carros presumen su luz. ¿Ya sabes qué evento es?" },
+  { dia:3,  hora:"07:00", texto:"Pista #3: No es una expo cualquiera. Es un evento donde los apasionados de los carros se reúnen. Guadalajara sabe de cuál hablamos." },
+  { dia:4,  hora:"07:00", texto:"Pista #4: El gorila llegará con 100 llaveros. Solo 100. El que no busca, no encuentra." },
+  { dia:5,  hora:"07:00", texto:"Pista #5: Cada llavero vale dinero. 10% de descuento en tu retrofit — los faros de tu carro nunca volverán a ser los mismos." },
+  { dia:6,  hora:"07:00", texto:"Pista #6: Busca el stand con el gorila. Habrá faros encendidos que te van a sorprender. Ya falta poco." },
+  { dia:7,  hora:"07:00", texto:"Pista #7: El evento está en Guadalajara. El gorila estará donde los mejores carros se muestran. ¿Irás?" },
+  { dia:8,  hora:"07:00", texto:"Pista #8: Ya casi. Mañana revelamos el lugar exacto. Guarda este número: 33 2614 8674 — lo vas a necesitar." },
+  { dia:9,  hora:"07:00", texto:"Pista #9: Mañana es el día. El gorila te espera. Llega temprano — son solo 100 llaveros y los que saben, ya van." },
+  { dia:10, hora:"07:00", texto:"HOY ES EL DIA. El gorila ATF by Simplex está en el evento. Ven, pide tu llavero y llévate el 10% de descuento en tu retrofit. Te esperamos — 33 2614 8674" },
+];
+
+const hoy = new Date();
+// Día de inicio: mañana
+const inicio = new Date(hoy);
+inicio.setDate(hoy.getDate() + 1);
+inicio.setHours(7, 0, 0, 0);
+
+const cont = document.getElementById('pistas-container');
+PISTAS.forEach((p, i) => {
+  const fechaPista = new Date(inicio);
+  fechaPista.setDate(inicio.getDate() + i);
+  const ahora = new Date();
+  const visible = ahora >= fechaPista;
+  const esHoy = ahora.toDateString() === fechaPista.toDateString();
+
+  const card = document.createElement('div');
+  card.style.cssText = `
+    background:${esHoy ? '#0d1f0d' : '#0f0f0f'};
+    border:1px solid ${visible ? (esHoy ? '#00ff88' : '#333') : '#1a1a1a'};
+    border-radius:10px;padding:16px 20px;
+    display:flex;align-items:center;gap:16px;
+    transition:.3s;
+  `;
+
+  const fecha = fechaPista.toLocaleDateString('es-MX',{weekday:'short',day:'numeric',month:'short'});
+
+  if(visible){
+    card.innerHTML = `
+      <div style="min-width:42px;text-align:center;">
+        <div style="font-size:1.3em;">${esHoy ? '🔴' : '✅'}</div>
+        <div style="font-size:.7em;color:#666;margin-top:2px;">Día ${p.dia}</div>
+      </div>
+      <div style="flex:1;">
+        <div style="color:${esHoy ? '#00ff88' : '#555'};font-size:.75em;margin-bottom:4px;">${fecha} · ${p.hora}</div>
+        <div style="color:${esHoy ? '#fff' : '#888'};font-size:.9em;line-height:1.5;">${p.texto}</div>
+      </div>
+    `;
+  } else {
+    card.innerHTML = `
+      <div style="min-width:42px;text-align:center;">
+        <div style="font-size:1.3em;">🔒</div>
+        <div style="font-size:.7em;color:#333;margin-top:2px;">Día ${p.dia}</div>
+      </div>
+      <div style="flex:1;">
+        <div style="color:#333;font-size:.75em;margin-bottom:4px;">${fecha} · ${p.hora}</div>
+        <div style="color:#333;font-size:.9em;">Pista bloqueada — vuelve el ${fecha} a las 7:00 AM</div>
+      </div>
+    `;
+  }
+  cont.appendChild(card);
+});
+</script>
+
+<!-- WHATSAPP FLOTANTE -->
+<a href="https://wa.me/523326148674?text=Hola!%20Vi%20CanbusFix%20y%20quiero%20saber%20m%C3%A1s" class="wa-float" target="_blank">
+    <svg viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+</a>
+
+<script>
+// CONTADORES
+function animarContador(el) {
+    const target = parseInt(el.dataset.target);
+    const duration = 2000;
+    const step = target / (duration / 16);
+    let current = 0;
+    const timer = setInterval(() => {
+        current += step;
+        if (current >= target) { current = target; clearInterval(timer); }
+        const suffix = el.dataset.target == 96 ? '%' : '+';
+        el.textContent = Math.floor(current).toLocaleString('es-MX') + suffix;
+    }, 16);
+}
+
+const observer = new IntersectionObserver(entries => {
+    entries.forEach(e => {
+        if (e.isIntersecting) {
+            e.target.querySelectorAll('[data-target]').forEach(animarContador);
+            observer.unobserve(e.target);
         }
-    </script>
+    });
+}, { threshold: 0.3 });
+document.querySelector('.contadores') && observer.observe(document.querySelector('.contadores'));
+</script>
 </body>
 </html>
