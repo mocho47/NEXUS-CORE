@@ -1392,7 +1392,8 @@ setInterval(cargarKPIs, 30000);
                 });
             }
         } else {
-            // MODO COMANDO: aceptar siempre (el usuario habla deliberadamente)
+            // MODO COMANDO: bloquear eco de TTS, ignorar mientras NEXUS habla
+            if(_speechCooldown) return;
             clearTimeout(window._globalOidTimeout);
             oidEsperando = false;
             oidBurbuja('tú', raw, true);
