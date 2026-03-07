@@ -248,6 +248,12 @@
             <button class="btn" id="btn-activar-mic" onclick="activarMicManual()"
                     style="display:none;background:#00ff8820;border:1px solid #00ff88;color:#00ff88;white-space:nowrap;font-weight:700">🎤 Activar voz</button>
         </div>
+        <div style="margin-top:8px;display:flex;align-items:center;gap:8px">
+            <select id="mic-device-sel" style="flex:1;background:#111;border:1px solid #222;color:#666;padding:5px 8px;border-radius:6px;font-size:.78rem" onchange="cambiarDispositivoMic(this.value)">
+                <option value="">🎙️ Dispositivo de mic...</option>
+            </select>
+            <button onclick="listarDispositivosMic()" style="background:transparent;border:1px solid #222;color:#555;padding:5px 10px;border-radius:6px;font-size:.75rem;cursor:pointer;white-space:nowrap">Buscar</button>
+        </div>
         <div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:8px" id="oid-chips"></div>
     </div>
 </div>
@@ -880,16 +886,64 @@ function navegarPorVoz(texto) {
         return 'Ok, cancelado.';
     }
 
-    // Navegación directa a módulos
+    // Navegación directa a módulos — COMPLETA (todos los endpoints NEXUS)
     const PANELES = [
-        { keys:['laser','estudio','grabar','corte','grabad','vectori'], action:()=>window.location='/estudio', label:'Estudio / Laser' },
-        { keys:['milens','milen'], action:()=>{ document.querySelector('[onclick*="milens"]')?.click(); }, label:'Milens' },
-        { keys:['pedido','orden','pedidos'], action:()=>{ document.querySelector('[onclick*="pedidos"]')?.click(); }, label:'Pedidos' },
-        { keys:['cliente','clientes'], action:()=>{ document.querySelector('[onclick*="clientes"]')?.click(); }, label:'Clientes' },
-        { keys:['stock','inventario'], action:()=>{ document.querySelector('[onclick*="stock"]')?.click(); }, label:'Stock' },
-        { keys:['cotizar','cotizacion','presupuesto'], action:()=>{ document.querySelector('[onclick*="cotizar"]')?.click(); }, label:'Cotizar' },
-        { keys:['agenda','cita','citas'], action:()=>{ document.querySelector('[onclick*="agenda"]')?.click(); }, label:'Agenda' },
-        { keys:['teens','samantha'], action:()=>{ document.querySelector('[onclick*="teens"]')?.click(); }, label:'Teens' },
+        // ── Estudio / Producción ──
+        { keys:['estudio','laser','corte','grabad','vectori'], action:()=>window.location='/estudio', label:'Estudio' },
+        { keys:['cartooniz','cartoon','dibujo animado'], action:()=>window.location='/cartoonizer', label:'Cartoonizer' },
+        // ── Milens ──
+        { keys:['milens','milen','taller'], action:()=>window.location='/milens', label:'Milens' },
+        // ── CRM / Pedidos ──
+        { keys:['nuevo pedido','nueva orden','crear pedido'], action:()=>window.location='/nuevo_pedido_form', label:'Nuevo Pedido' },
+        { keys:['pedido','orden','ordenes'], action:()=>window.location='/pedidos', label:'Pedidos' },
+        { keys:['nuevo cliente','agregar cliente'], action:()=>window.location='/nuevo_cliente_form', label:'Nuevo Cliente' },
+        { keys:['cliente','clientes'], action:()=>window.location='/clientes', label:'Clientes' },
+        { keys:['stock','inventario','material','agregar stock'], action:()=>window.location='/stock', label:'Stock' },
+        // ── Cotizar ──
+        { keys:['cotizar rapido','cotizacion rapida'], action:()=>window.location='/cotizar-rapido', label:'Cotizador Rápido' },
+        { keys:['cotizar','cotizacion','presupuesto'], action:()=>window.location='/cotizar', label:'Cotizar' },
+        // ── Agenda ──
+        { keys:['agenda','cita','citas','agendar'], action:()=>window.location='/agenda', label:'Agenda' },
+        // ── Marketing ──
+        { keys:['marketing','caption','hashtag','promo','guion','calendario','publicar'], action:()=>window.location='/marketing/panel', label:'Marketing' },
+        // ── AutoVentas / CRM ventas ──
+        { keys:['autovent','pipeline','prospecto','seguimiento','bandeja'], action:()=>window.location='/autoventas', label:'AutoVentas' },
+        // ── ATF ──
+        { keys:['galeria atf','videos atf','galeria faros'], action:()=>window.location='/atf/galeria', label:'Galería ATF' },
+        { keys:['atf','faros','retrofit','faro'], action:()=>window.location='/atf', label:'ATF' },
+        // ── Canbusfix ──
+        { keys:['catalogo canbus','catalogo canbusfix'], action:()=>window.location='/canbusfix/catalogo', label:'Catálogo Canbusfix' },
+        { keys:['canbusfix','canbus','instalador','instaladores'], action:()=>window.location='/canbusfix', label:'Canbusfix' },
+        // ── Teens ──
+        { keys:['teens admin','admin teens'], action:()=>window.location='/teens/admin', label:'Teens Admin' },
+        { keys:['teens','samantha','rocio'], action:()=>window.location='/teens', label:'Teens' },
+        // ── Reportes / Historial ──
+        { keys:['reporte','reportes','informe'], action:()=>window.location='/reporte', label:'Reporte' },
+        { keys:['historial','log','registro'], action:()=>window.location='/historial', label:'Historial' },
+        // ── Tienda / Catálogo ──
+        { keys:['tienda','shop','catalogo','catálogo'], action:()=>window.location='/tienda', label:'Tienda' },
+        // ── Mercado / ML ──
+        { keys:['mercado libre','mercadolibre','meli','ml'], action:()=>window.location='/mercado', label:'Mercado' },
+        // ── Licencias / Demo ──
+        { keys:['demo','modo demo','activar demo'], action:()=>window.location='/demo', label:'Demo' },
+        { keys:['licencia','licencias'], action:()=>window.location='/licencias', label:'Licencias' },
+        { keys:['modulos','módulos'], action:()=>window.location='/modulos', label:'Módulos' },
+        // ── Admin ──
+        { keys:['admin','administrador','administracion'], action:()=>window.location='/admin', label:'Admin' },
+        { keys:['precios','precio admin','tabla precios'], action:()=>window.location='/precios_admin', label:'Precios' },
+        // ── Config ──
+        { keys:['configuracion','config negocio','configurar negocio'], action:()=>window.location='/config_negocio', label:'Configuración' },
+        { keys:['setup','configurar','instalacion inicial'], action:()=>window.location='/setup', label:'Setup' },
+        // ── Paranormal ──
+        { keys:['paranormal','modo paranormal'], action:()=>window.location='/paranormal', label:'Paranormal' },
+        // ── Comandos de voz ──
+        { keys:['comando','comandos','que puedes hacer','que sabes hacer'], action:()=>window.location='/comandos', label:'Comandos' },
+        // ── NEXUS landing ──
+        { keys:['landing','presentacion','mostrar nexus'], action:()=>window.open('/nexus','_blank'), label:'NEXUS' },
+        // ── Dashboard ──
+        { keys:['dashboard','inicio','panel principal'], action:()=>window.location='/dashboard', label:'Dashboard' },
+        // ── QR ──
+        { keys:['qr','codigo qr','generar qr'], action:()=>window.location='/qr', label:'QR' },
     ];
     for(const p of PANELES){
         if(p.keys.some(k=>t.includes(k))){
@@ -1256,19 +1310,16 @@ setInterval(cargarKPIs, 30000);
             oidEsperando=true;
             oidSetDot('processing');
             oidBurbuja('NEXUS','Mande.',false);
-            const _utt2 = new SpeechSynthesisUtterance('Mande.');
-            _utt2.lang='es-MX'; _utt2.rate=1.3; _utt2.pitch=1.05;
-            const _vz2=getVozNexus(); if(_vz2) _utt2.voice=_vz2;
-            _utt2.onend=()=>{ setTimeout(()=>{
-                oidHablando=false; _speechCooldown=false;
-                oidSetStatus('Escuchando tu comando...');
-                window._globalOidTimeout=setTimeout(()=>{
-                    if(oidEsperando){oidEsperando=false;oidSetDot('listening');oidSetStatus('Escuchando — di "nexus"');}
-                },4000);
-            },200);};
             oidHablando=true; _speechCooldown=true;
-            window.speechSynthesis.cancel();
-            window.speechSynthesis.speak(_utt2);
+            nexusHablar('Mande.').finally(()=>{
+                setTimeout(()=>{
+                    oidHablando=false; _speechCooldown=false;
+                    oidSetStatus('Escuchando tu comando...');
+                    window._globalOidTimeout=setTimeout(()=>{
+                        if(oidEsperando){oidEsperando=false;oidSetDot('listening');oidSetStatus('Escuchando — di "nexus"');}
+                    },4000);
+                },200);
+            });
             return;
         }
 
@@ -1299,12 +1350,8 @@ setInterval(cargarKPIs, 30000);
                 oidSetDot('processing');
                 oidSetStatus('NEXUS activo — di el comando');
                 oidBurbuja('NEXUS','Mande.',false);
-                // Respuesta rápida: TTS del navegador directo, sin red
-                oidHablando = true; _speechCooldown = true; // bloquear mic mientras habla
-                const _utt = new SpeechSynthesisUtterance('Mande.');
-                _utt.lang = 'es-MX'; _utt.rate = 1.3; _utt.pitch = 1.05;
-                const _vz = getVozNexus(); if(_vz) _utt.voice = _vz;
-                _utt.onend = ()=>{
+                oidHablando = true; _speechCooldown = true;
+                nexusHablar('Mande.').finally(()=>{
                     setTimeout(()=>{
                         oidHablando = false; _speechCooldown = false;
                         oidSetStatus('Escuchando tu comando...');
@@ -1312,9 +1359,7 @@ setInterval(cargarKPIs, 30000);
                             if(oidEsperando){ oidEsperando=false; oidSetDot('listening'); oidSetStatus('Escuchando — di "nexus"'); }
                         }, 4000);
                     }, 200);
-                };
-                window.speechSynthesis.cancel();
-                window.speechSynthesis.speak(_utt);
+                });
             }
         } else {
             // MODO COMANDO: aceptar siempre (el usuario habla deliberadamente)
@@ -1360,8 +1405,8 @@ setInterval(cargarKPIs, 30000);
     }
 })();
 
-// Voz de arranque
-setTimeout(()=>nexusHablar('Nexus en línea.'), 1000);
+// Voz de arranque — delay suficiente para que el mic ya esté listo
+setTimeout(()=>nexusHablar('Nexus en línea.'), 3500);
 
 // ─── Perfil + nombre negocio en topbar ───────────────────────────────────────
 (async function cargarPerfil(){
@@ -1432,6 +1477,71 @@ function cambiarQR(tipo){
     });
 }
 document.addEventListener('keydown', e=>{ if(e.key==='Escape') cerrarQR(); });
+
+// ─── Selector de dispositivo de micrófono ────────────────────────────────────
+let _micDeviceId = null;
+
+async function listarDispositivosMic(){
+    try {
+        // Pedir permiso primero para que aparezcan los labels
+        await navigator.mediaDevices.getUserMedia({audio: true});
+        const devices = await navigator.mediaDevices.enumerateDevices();
+        const mics = devices.filter(d => d.kind === 'audioinput');
+        const sel = document.getElementById('mic-device-sel');
+        sel.innerHTML = '<option value="">— elige dispositivo —</option>';
+        mics.forEach(d => {
+            const opt = document.createElement('option');
+            opt.value = d.deviceId;
+            opt.textContent = d.label || 'Mic ' + d.deviceId.substring(0,8);
+            if(d.label.toLowerCase().includes('wo mic') || d.label.toLowerCase().includes('womic'))
+                opt.textContent = '✅ ' + opt.textContent;
+            sel.appendChild(opt);
+        });
+        sel.style.color = '#00ff88';
+        oidSetStatus(mics.length + ' dispositivos encontrados — elige WO Mic');
+    } catch(e) {
+        oidSetStatus('Error al listar dispositivos: ' + e.message);
+    }
+}
+
+async function cambiarDispositivoMic(deviceId){
+    if(!deviceId) return;
+    _micDeviceId = deviceId;
+    oidSetStatus('Dispositivo seleccionado — iniciando...');
+    // Reiniciar SpeechRecognition con el nuevo dispositivo
+    // SpeechRecognition usa el dispositivo predeterminado del sistema,
+    // así que primero tomamos el stream con getUserMedia para "forzar" el dispositivo
+    try {
+        if(window._micStream) window._micStream.getTracks().forEach(t => t.stop());
+        window._micStream = await navigator.mediaDevices.getUserMedia({
+            audio: { deviceId: { exact: deviceId } }
+        });
+        oidSetStatus('WO Mic activo — iniciando NEXUS...');
+        oidSetDot('listening');
+        // Ahora SpeechRecognition detecta el dispositivo activo
+        const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+        if(!SR) return;
+        const mic = new SR();
+        mic.lang = 'es-MX'; mic.continuous = false; mic.interimResults = true; mic.maxAlternatives = 3;
+        mic.onresult = window._globalMicOnResult;
+        mic.onerror = e => { if(e.error==='no-speech'||e.error==='aborted') return; oidSetStatus('Error mic: '+e.error); };
+        mic.onend = () => { setTimeout(()=>{ try{ mic.start(); }catch(ex){} }, 300); };
+        mic.onstart = () => { oidSetStatus('Escuchando — di "Nexus"'); oidSetDot('listening'); };
+        mic.start();
+        if(window._globalMic) try{ window._globalMic.stop(); }catch(ex){}
+        window._globalMic = mic;
+    } catch(e) {
+        oidSetStatus('Error: ' + e.message);
+    }
+}
+
+// Listar dispositivos automatico al cargar (sin pedir permiso todavia)
+navigator.mediaDevices.enumerateDevices().then(devices => {
+    const mics = devices.filter(d => d.kind === 'audioinput');
+    const sel = document.getElementById('mic-device-sel');
+    if(!sel) return;
+    sel.innerHTML = '<option value="">🎙️ ' + mics.length + ' mic(s) — clic Buscar para ver</option>';
+});
 
 // ─── Activar mic (requiere clic del usuario) ─────────────────────────────────
 function activarMicManual(){
