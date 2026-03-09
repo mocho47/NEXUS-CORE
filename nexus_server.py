@@ -2639,4 +2639,5 @@ if __name__ == "__main__":
         _bot.send("🟢 <b>NEXUS iniciado</b>\nServidor activo en puerto 8000.")
     except Exception as _e:
         print(f"[Telegram] No se pudo iniciar bot: {_e}")
-    uvicorn.run(app, host="0.0.0.0", port=8000)
+    port = int(os.environ.get("PORT", 8000))
+    uvicorn.run(app, host="0.0.0.0", port=port)
