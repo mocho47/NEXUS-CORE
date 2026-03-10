@@ -1,0 +1,505 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>NEXUS — Merch Design</title>
+<style>
+:root{
+  --bg:#0a0a0a;--surface:#111;--surface2:#1a1a1a;--border:#2a2a2a;
+  --green:#00ff88;--blue:#00aaff;--gold:#ffd700;--red:#ff4444;
+  --muted:#555;--text:#f0f0f0;--r:10px;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:var(--bg);color:var(--text);font-family:-apple-system,'Segoe UI',sans-serif}
+.header{background:var(--surface);border-bottom:1px solid var(--border);padding:14px 20px;display:flex;align-items:center;gap:14px}
+.header h1{font-size:18px;font-weight:700;color:var(--green)}
+.header span{font-size:12px;color:var(--muted)}
+.back-btn{padding:6px 14px;background:transparent;border:1px solid var(--border);color:var(--muted);border-radius:6px;cursor:pointer;font-size:12px;text-decoration:none}
+.main{max-width:960px;margin:0 auto;padding:20px}
+
+/* TABS */
+.tabs{display:flex;gap:4px;background:var(--surface);border-radius:var(--r);padding:6px;margin-bottom:16px;border:1px solid var(--border)}
+.tab{flex:1;padding:10px;border-radius:6px;border:none;cursor:pointer;font-weight:700;font-size:13px;color:var(--muted);background:transparent;transition:.2s;display:flex;flex-direction:column;align-items:center;gap:4px}
+.tab .icon{font-size:20px}
+.tab:hover{color:var(--text)}
+.tab.active{background:var(--surface2);color:var(--green)}
+.panel{display:none}
+.panel.active{display:block}
+
+/* FORM */
+.form-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:18px;margin-bottom:14px}
+.form-card h3{font-size:14px;font-weight:700;color:var(--blue);margin-bottom:14px}
+.field-row{display:grid;grid-template-columns:140px 1fr;gap:10px;align-items:center;margin-bottom:10px}
+.field-row label{font-size:12px;color:var(--muted)}
+.field-row input,.field-row select{background:var(--surface2);border:1px solid var(--border);color:var(--text);padding:8px 10px;border-radius:6px;font-size:13px;width:100%}
+.color-row{display:flex;gap:8px;flex-wrap:wrap}
+.color-opt{padding:6px 14px;border-radius:20px;border:2px solid var(--border);cursor:pointer;font-size:12px;font-weight:700;transition:.2s}
+.color-opt.active{border-color:var(--green)}
+
+/* NEGOCIO CARDS */
+.negocio-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:16px}
+.neg-card{background:var(--surface2);border:2px solid var(--border);border-radius:var(--r);padding:14px;cursor:pointer;text-align:center;transition:.2s}
+.neg-card:hover,.neg-card.active{border-color:var(--green)}
+.neg-card.active{background:rgba(0,255,136,.08)}
+.neg-card .icon{font-size:28px;margin-bottom:6px}
+.neg-card .name{font-size:13px;font-weight:700}
+.neg-card .desc{font-size:11px;color:var(--muted);margin-top:4px}
+
+/* PREVIEW */
+.preview-area{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:18px;margin-top:14px}
+.preview-area h3{font-size:14px;font-weight:700;margin-bottom:14px;color:var(--gold)}
+.preview-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px}
+.preview-item{background:var(--surface2);border-radius:8px;overflow:hidden;border:1px solid var(--border)}
+.preview-item img{width:100%;height:160px;object-fit:contain;background:#000;padding:8px}
+.preview-item .lbl{padding:8px;font-size:11px;color:var(--muted);text-align:center;border-top:1px solid var(--border)}
+.preview-item .size{font-size:10px;color:var(--green);margin-top:2px}
+
+/* PLAYERA VISUAL */
+.tshirt-wrap{position:relative;display:inline-block}
+.tshirt-svg{width:220px;height:240px;opacity:.3}
+.tshirt-zones{position:absolute;top:0;left:0;width:100%;height:100%}
+.zone-badge{position:absolute;background:rgba(0,255,136,.15);border:1px dashed var(--green);border-radius:4px;font-size:9px;color:var(--green);display:flex;align-items:center;justify-content:center;text-align:center;cursor:pointer;transition:.2s}
+.zone-badge:hover{background:rgba(0,255,136,.3)}
+
+/* BOTONES */
+.btn{padding:11px 22px;border-radius:6px;border:none;cursor:pointer;font-weight:700;font-size:13px;transition:.2s}
+.btn-primary{background:var(--green);color:#000}
+.btn-primary:hover{background:#00cc6a}
+.btn-primary:disabled{background:var(--muted);cursor:not-allowed}
+.btn-secondary{background:transparent;border:1px solid var(--blue);color:var(--blue)}
+.btn-gold{background:var(--gold);color:#000}
+.action-bar{display:flex;gap:10px;margin-top:16px;flex-wrap:wrap}
+
+/* SPINNER */
+.spinner{width:16px;height:16px;border:2px solid var(--border);border-top-color:var(--green);border-radius:50%;animation:spin .8s linear infinite;display:inline-block}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* RESULTADOS DESCARGA */
+.dl-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:10px;margin-top:12px}
+.dl-item{background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:12px;text-align:center}
+.dl-item .tipo{font-size:20px}
+.dl-item .nombre{font-size:11px;color:var(--muted);margin:6px 0}
+.dl-btn{display:block;padding:6px;background:var(--green);color:#000;border-radius:4px;font-size:11px;font-weight:700;text-decoration:none;margin-top:6px}
+.dl-btn:hover{background:#00cc6a}
+.dl-btn.pdf{background:var(--red)}
+.dl-btn.pdf:hover{background:#cc2222}
+
+.toast{position:fixed;bottom:20px;right:20px;background:var(--green);color:#000;padding:12px 20px;border-radius:8px;font-weight:700;font-size:13px;opacity:0;transition:.3s;pointer-events:none;z-index:999}
+.toast.show{opacity:1}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <a href="/dashboard" class="back-btn">← Dashboard</a>
+  <div>
+    <h1>👕 Merch Design</h1>
+    <span>Genera diseños a 300 DPI listos para DTF, serigrafía y corte láser</span>
+  </div>
+</div>
+
+<div class="main">
+
+  <!-- TABS -->
+  <div class="tabs">
+    <button class="tab active" onclick="setTab('playera')" id="tabPlayera">
+      <span class="icon">👕</span><span>Playera</span>
+    </button>
+    <button class="tab" onclick="setTab('iman')" id="tabIman">
+      <span class="icon">🔲</span><span>Imán</span>
+    </button>
+    <button class="tab" onclick="setTab('llavero')" id="tabLlavero">
+      <span class="icon">🗝️</span><span>Llavero</span>
+    </button>
+    <button class="tab" onclick="setTab('kit')" id="tabKit">
+      <span class="icon">📦</span><span>Kit Completo</span>
+    </button>
+  </div>
+
+  <!-- ── PANEL PLAYERA ── -->
+  <div class="panel active" id="panelPlayera">
+    <div class="form-card">
+      <h3>👕 Configuración de Playera</h3>
+
+      <div style="margin-bottom:14px">
+        <div style="font-size:12px;color:var(--muted);margin-bottom:8px">Negocio</div>
+        <div class="negocio-grid">
+          <div class="neg-card active" onclick="selNegocio(this,'atf')" data-neg="atf">
+            <div class="icon">💡</div>
+            <div class="name">ATF by Simplex</div>
+            <div class="desc">Retrofit Faros LED</div>
+          </div>
+          <div class="neg-card" onclick="selNegocio(this,'canbusfix')" data-neg="canbusfix">
+            <div class="icon">🔧</div>
+            <div class="name">CanbusFix</div>
+            <div class="desc">Red Instaladores</div>
+          </div>
+          <div class="neg-card" onclick="selNegocio(this,'milens')" data-neg="milens">
+            <div class="icon">✂️</div>
+            <div class="name">Milens</div>
+            <div class="desc">Corte Láser</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="field-row">
+        <label>Nombre en marca</label>
+        <input type="text" id="p_marca" value="ATF by Simplex">
+      </div>
+      <div class="field-row">
+        <label>Color playera</label>
+        <div class="color-row">
+          <div class="color-opt active" style="background:#141414;color:#fff" onclick="selColor(this,'playera',[20,20,20])"  data-color="negro">Negro</div>
+          <div class="color-opt" style="background:#fff;color:#000"            onclick="selColor(this,'playera',[240,240,240])" data-color="blanco">Blanco</div>
+          <div class="color-opt" style="background:#1a1a4e;color:#fff"         onclick="selColor(this,'playera',[26,26,78])" data-color="azul">Azul marino</div>
+          <div class="color-opt" style="background:#3a0a0a;color:#fff"         onclick="selColor(this,'playera',[58,10,10])" data-color="rojo">Rojo oscuro</div>
+        </div>
+      </div>
+
+      <div style="margin-top:12px;background:var(--surface2);border-radius:8px;padding:12px">
+        <div style="font-size:11px;color:var(--muted);margin-bottom:8px">Vista de zonas (300 DPI para DTF/serigrafía)</div>
+        <div style="display:flex;gap:16px;flex-wrap:wrap;align-items:flex-start">
+          <div>
+            <div style="font-size:11px;color:var(--green);margin-bottom:4px">ESPALDA (30×30cm)</div>
+            <div style="width:120px;height:120px;background:#1a1a1a;border:1px dashed var(--green);border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:24px">🏷️</div>
+          </div>
+          <div>
+            <div style="font-size:11px;color:var(--green);margin-bottom:4px">PECHO (8×8cm)</div>
+            <div style="width:60px;height:60px;background:#1a1a1a;border:1px dashed var(--green);border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:16px">♥</div>
+          </div>
+          <div>
+            <div style="font-size:11px;color:var(--gold);margin-bottom:4px">MANGA IZQ (10×10cm)</div>
+            <div style="width:60px;height:60px;background:#1a1a1a;border:1px dashed var(--gold);border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:20px">🦍</div>
+            <div style="font-size:9px;color:var(--muted);margin-top:2px">Gorila ATF</div>
+          </div>
+          <div>
+            <div style="font-size:11px;color:var(--gold);margin-bottom:4px">MANGA DER (10×7cm)</div>
+            <div style="width:60px;height:42px;background:#1a1a1a;border:1px dashed var(--gold);border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:20px">🇲🇽</div>
+            <div style="font-size:9px;color:var(--muted);margin-top:2px">Bandera México</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="action-bar">
+      <button class="btn btn-primary" id="btnGenPlayera" onclick="generarPlayera()">
+        🎨 Generar diseños de playera
+      </button>
+    </div>
+    <div id="resultPlayera"></div>
+  </div>
+
+  <!-- ── PANEL IMÁN ── -->
+  <div class="panel" id="panelIman">
+    <div class="form-card">
+      <h3>🔲 Configuración de Imán</h3>
+      <div class="field-row">
+        <label>Tamaño</label>
+        <select id="i_tamano">
+          <option value="grande">Grande — 9×6cm</option>
+          <option value="mediano">Mediano — 7×5cm</option>
+          <option value="chico">Chico — 6×6cm</option>
+          <option value="redondo">Redondo — 7×7cm</option>
+        </select>
+      </div>
+      <div class="field-row">
+        <label>Texto principal</label>
+        <input type="text" id="i_texto" value="ATF by Simplex">
+      </div>
+      <div class="field-row">
+        <label>Subtexto</label>
+        <input type="text" id="i_sub" value="Retrofit Faros LED • GDL">
+      </div>
+      <div class="field-row">
+        <label>Teléfono</label>
+        <input type="text" id="i_tel" value="3326148674">
+      </div>
+      <div class="field-row">
+        <label>Negocio</label>
+        <select id="i_negocio">
+          <option value="atf">ATF by Simplex</option>
+          <option value="canbusfix">CanbusFix</option>
+          <option value="milens">Milens</option>
+        </select>
+      </div>
+    </div>
+    <div class="action-bar">
+      <button class="btn btn-primary" onclick="generarIman()">🎨 Generar imán</button>
+    </div>
+    <div id="resultIman"></div>
+  </div>
+
+  <!-- ── PANEL LLAVERO ── -->
+  <div class="panel" id="panelLlavero">
+    <div class="form-card">
+      <h3>🗝️ Configuración de Llavero</h3>
+      <div style="background:var(--surface2);border-radius:6px;padding:10px;margin-bottom:12px;font-size:11px;color:var(--muted)">
+        Llavero MDF 3mm — 8×4cm doble cara | Frente: logo + contacto | Reverso: descuento
+      </div>
+      <div class="field-row">
+        <label>Marca</label>
+        <input type="text" id="l_marca" value="ATF by Simplex">
+      </div>
+      <div class="field-row">
+        <label>Subtexto</label>
+        <input type="text" id="l_sub" value="Retrofit • GDL">
+      </div>
+      <div class="field-row">
+        <label>Teléfono</label>
+        <input type="text" id="l_tel" value="3326148674">
+      </div>
+      <div class="field-row">
+        <label>Descuento reverso</label>
+        <input type="text" id="l_desc" value="10% OFF">
+      </div>
+      <div class="field-row">
+        <label>Negocio</label>
+        <select id="l_negocio">
+          <option value="atf">ATF by Simplex</option>
+          <option value="canbusfix">CanbusFix</option>
+          <option value="milens">Milens</option>
+        </select>
+      </div>
+    </div>
+    <div class="action-bar">
+      <button class="btn btn-primary" onclick="generarLlavero()">🎨 Generar llavero</button>
+    </div>
+    <div id="resultLlavero"></div>
+  </div>
+
+  <!-- ── PANEL KIT COMPLETO ── -->
+  <div class="panel" id="panelKit">
+    <div class="form-card">
+      <h3>📦 Kit Completo — Playera + Imán + Llavero</h3>
+      <div style="margin-bottom:14px">
+        <div style="font-size:12px;color:var(--muted);margin-bottom:8px">Selecciona el negocio</div>
+        <div class="negocio-grid">
+          <div class="neg-card active" onclick="selNegocioKit(this,'atf')">
+            <div class="icon">💡</div>
+            <div class="name">ATF by Simplex</div>
+          </div>
+          <div class="neg-card" onclick="selNegocioKit(this,'canbusfix')">
+            <div class="icon">🔧</div>
+            <div class="name">CanbusFix</div>
+          </div>
+          <div class="neg-card" onclick="selNegocioKit(this,'milens')">
+            <div class="icon">✂️</div>
+            <div class="name">Milens</div>
+          </div>
+        </div>
+      </div>
+      <div class="field-row">
+        <label>Teléfono</label>
+        <input type="text" id="k_tel" value="3326148674">
+      </div>
+    </div>
+    <div class="action-bar">
+      <button class="btn btn-gold" id="btnKit" onclick="generarKit()">
+        📦 Generar kit completo (playera + imán + llavero)
+      </button>
+    </div>
+    <div id="resultKit"></div>
+  </div>
+
+</div><!-- /main -->
+
+<div class="toast" id="toast"></div>
+
+<script>
+let negocioSelPlayera = 'atf';
+let colorPlayera = [20, 20, 20];
+let negocioKit = 'atf';
+
+function setTab(t) {
+  document.querySelectorAll('.tab').forEach(x => x.classList.remove('active'));
+  document.querySelectorAll('.panel').forEach(x => x.classList.remove('active'));
+  document.getElementById('tab' + t.charAt(0).toUpperCase() + t.slice(1)).classList.add('active');
+  document.getElementById('panel' + t.charAt(0).toUpperCase() + t.slice(1)).classList.add('active');
+}
+
+function selNegocio(el, neg) {
+  document.querySelectorAll('#panelPlayera .neg-card').forEach(x => x.classList.remove('active'));
+  el.classList.add('active');
+  negocioSelPlayera = neg;
+  const nombres = {atf:'ATF by Simplex', canbusfix:'CanbusFix by Simplex', milens:'Milens by Simplex'};
+  document.getElementById('p_marca').value = nombres[neg] || neg;
+}
+
+function selNegocioKit(el, neg) {
+  document.querySelectorAll('#panelKit .neg-card').forEach(x => x.classList.remove('active'));
+  el.classList.add('active');
+  negocioKit = neg;
+}
+
+function selColor(el, tipo, rgb) {
+  document.querySelectorAll(`#panel${tipo.charAt(0).toUpperCase()+tipo.slice(1)} .color-opt`).forEach(x => x.classList.remove('active'));
+  el.classList.add('active');
+  colorPlayera = rgb;
+}
+
+function toast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 3000);
+}
+
+function spinnerBtn(id, text) {
+  const b = document.getElementById(id);
+  if (b) { b.disabled = true; b.innerHTML = `<span class="spinner"></span> ${text}`; }
+}
+function resetBtn(id, text) {
+  const b = document.getElementById(id);
+  if (b) { b.disabled = false; b.innerHTML = text; }
+}
+
+function renderDescargas(container, data, titulo) {
+  let html = `<div style="background:var(--surface);border:1px solid var(--green);border-radius:var(--r);padding:16px;margin-top:14px">`;
+  html += `<div style="font-size:14px;font-weight:700;color:var(--green);margin-bottom:10px">✅ ${titulo}</div>`;
+  html += `<div class="dl-grid">`;
+
+  const mapas = {
+    espalda:       {icon:'👕', label:'Espalda 30×30cm'},
+    pecho:         {icon:'♥', label:'Pecho 8×8cm'},
+    manga_izquierda:{icon:'💪', label:'Manga Izq. Gorila'},
+    manga_derecha: {icon:'🇲🇽', label:'Manga Der. Bandera'},
+    pdf:           {icon:'📄', label:'PDF Planilla'},
+    archivo:       {icon:'🖼️', label:'Imagen'},
+    pdf_planilla:  {icon:'📄', label:'PDF Planilla'},
+    frente:        {icon:'🗝️', label:'Llavero Frente'},
+    reverso:       {icon:'🗝️', label:'Llavero Reverso'},
+  };
+
+  for (const [key, val] of Object.entries(data)) {
+    if (!val || typeof val !== 'string' || !val.startsWith('/')) continue;
+    const m = mapas[key] || {icon:'📁', label: key};
+    const isPdf = key === 'pdf' || key.includes('pdf') || key.includes('planilla');
+    html += `<div class="dl-item">
+      <div class="tipo">${m.icon}</div>
+      <div class="nombre">${m.label}</div>
+      <a href="${val}" download class="dl-btn ${isPdf?'pdf':''}">⬇️ Descargar</a>
+    </div>`;
+  }
+  html += `</div></div>`;
+  container.innerHTML = html;
+}
+
+async function generarPlayera() {
+  spinnerBtn('btnGenPlayera', 'Generando...');
+  try {
+    const r = await fetch('/api/merch/playera', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({
+        negocio: negocioSelPlayera,
+        nombre_marca: document.getElementById('p_marca').value,
+        color_playera: colorPlayera,
+      })
+    });
+    const d = await r.json();
+    if (!d.ok) throw new Error(d.error);
+    renderDescargas(document.getElementById('resultPlayera'), d.archivos, 'Playera generada — 300 DPI');
+    toast('✅ Playera generada correctamente');
+  } catch(e) {
+    document.getElementById('resultPlayera').innerHTML = `<div style="color:var(--red);padding:10px">❌ ${e.message}</div>`;
+  }
+  resetBtn('btnGenPlayera', '🎨 Generar diseños de playera');
+}
+
+async function generarIman() {
+  try {
+    const r = await fetch('/api/merch/iman', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({
+        negocio: document.getElementById('i_negocio').value,
+        tamano: document.getElementById('i_tamano').value,
+        texto_principal: document.getElementById('i_texto').value,
+        subtexto: document.getElementById('i_sub').value,
+        telefono: document.getElementById('i_tel').value,
+      })
+    });
+    const d = await r.json();
+    if (!d.ok) throw new Error(d.error);
+    renderDescargas(document.getElementById('resultIman'), {
+      archivo: d.archivo,
+      pdf_planilla: d.pdf_planilla,
+    }, `Imán ${d.tamano} — 300 DPI`);
+    toast('✅ Imán generado correctamente');
+  } catch(e) {
+    document.getElementById('resultIman').innerHTML = `<div style="color:var(--red);padding:10px">❌ ${e.message}</div>`;
+  }
+}
+
+async function generarLlavero() {
+  try {
+    const r = await fetch('/api/merch/llavero', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({
+        negocio: document.getElementById('l_negocio').value,
+        texto: document.getElementById('l_marca').value,
+        subtexto: document.getElementById('l_sub').value,
+        telefono: document.getElementById('l_tel').value,
+        descuento: document.getElementById('l_desc').value,
+      })
+    });
+    const d = await r.json();
+    if (!d.ok) throw new Error(d.error);
+    renderDescargas(document.getElementById('resultLlavero'), {
+      frente: d.frente,
+      reverso: d.reverso,
+      pdf_planilla: d.pdf_planilla,
+    }, 'Llavero 8×4cm — 300 DPI — MDF 3mm');
+    toast('✅ Llavero generado correctamente');
+  } catch(e) {
+    document.getElementById('resultLlavero').innerHTML = `<div style="color:var(--red);padding:10px">❌ ${e.message}</div>`;
+  }
+}
+
+async function generarKit() {
+  spinnerBtn('btnKit', 'Generando kit completo...');
+  try {
+    const r = await fetch('/api/merch/kit', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({
+        negocio: negocioKit,
+        telefono: document.getElementById('k_tel').value,
+      })
+    });
+    const d = await r.json();
+    if (!d.ok) throw new Error(d.error);
+
+    let html = '';
+    // Playera
+    html += `<div style="margin-top:14px"><b style="color:var(--green)">👕 Playera</b></div>`;
+    const tmpP = document.createElement('div');
+    renderDescargas(tmpP, d.playera?.archivos || {}, '');
+    html += tmpP.innerHTML;
+    // Imán
+    html += `<div style="margin-top:10px"><b style="color:var(--blue)">🔲 Imán</b></div>`;
+    const tmpI = document.createElement('div');
+    renderDescargas(tmpI, {archivo: d.iman?.archivo, pdf_planilla: d.iman?.pdf_planilla}, '');
+    html += tmpI.innerHTML;
+    // Llavero
+    html += `<div style="margin-top:10px"><b style="color:var(--gold)">🗝️ Llavero</b></div>`;
+    const tmpL = document.createElement('div');
+    renderDescargas(tmpL, {frente: d.llavero?.frente, reverso: d.llavero?.reverso, pdf_planilla: d.llavero?.pdf_planilla}, '');
+    html += tmpL.innerHTML;
+
+    document.getElementById('resultKit').innerHTML = `
+      <div style="background:var(--surface);border:2px solid var(--gold);border-radius:var(--r);padding:16px;margin-top:14px">
+        <div style="font-size:16px;font-weight:700;color:var(--gold);margin-bottom:12px">📦 Kit completo generado — 300 DPI</div>
+        ${html}
+      </div>`;
+    toast('✅ Kit completo generado');
+  } catch(e) {
+    document.getElementById('resultKit').innerHTML = `<div style="color:var(--red);padding:10px">❌ ${e.message}</div>`;
+  }
+  resetBtn('btnKit', '📦 Generar kit completo (playera + imán + llavero)');
+}
+</script>
+</body>
+</html>

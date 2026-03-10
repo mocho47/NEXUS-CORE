@@ -348,23 +348,65 @@ def get_respuesta(texto: str, session_id: str = "default") -> dict:
         sal = "Buenos días" if ahora < 12 else ("Buenas tardes" if ahora < 19 else "Buenas noches")
         return {"respuesta": f"{sal}. NEXUS en línea y listo. ¿Qué necesitas?"}
 
-    # ── NEXUS CORE — intenta process_conversation como fallback ───────────────
-    try:
-        import sys, os
-        sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-        # Captura la salida de nexus_core si está disponible
-        from nexus_core import process_conversation as _pc
-        # process_conversation habla en voz, no devuelve texto — solo como referencia
-        # para comandos no cubiertos aquí, delegamos al core y retornamos genérico
-    except Exception:
-        pass
+    # ── FALLBACK IA GENERATIVA (Groq — llama-3.3-70b) ────────────────────────
+    groq_key = os.environ.get("GROQ_API_KEY", "")
+    if groq_key:
+        try:
+            from groq import Groq
+            import json as _json
 
-    # ── FALLBACK ──────────────────────────────────────────────────────────────
+            # Contexto del negocio para respuestas personalizadas
+            try:
+                _cfg_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "CONFIG", "negocio.json")
+                with open(_cfg_path, "r", encoding="utf-8") as _f:
+                    _neg = _json.load(_f)
+                _ctx = f"Negocio: {_neg.get('nombre','Negocio')}. Servicios: {_neg.get('servicios','laser, retrofit de faros')}."
+            except Exception:
+                _ctx = "Negocio de servicios: laser, cajas personalizadas, retrofit de faros (ATF), canbusfix."
+
+            # Estilo de trabajo del propietario
+            try:
+                from nexus_estilo_trabajo import get_perfil
+                _perfil = get_perfil()
+                _estilo = (
+                    "ESTILO DE TRABAJO DEL PROPIETARIO (Anuar, Simplex GDL): "
+                    "Impresión siempre a 300 DPI. Salida siempre PDF + PNG. "
+                    "Dimensiones en centímetros. Sin preguntar innecesariamente — actuar directo. "
+                    "Cotizaciones incluyen precio distribuidor, precio público y ganancia neta. "
+                    "Planillas: calcular máximo de piezas. Abrir archivo al terminar. "
+                    "3 negocios: ATF (retrofit faros LED), Milens (corte láser), CanbusFix (red instaladores). "
+                    "Tel: 3326148674. Ciudad: Guadalajara."
+                )
+            except Exception:
+                _estilo = ""
+
+            client = Groq(api_key=groq_key)
+            r = client.chat.completions.create(
+                model="llama-3.3-70b-versatile",
+                messages=[
+                    {"role": "system", "content": (
+                        f"Eres NEXUS, asistente de IA para un negocio mexicano. {_ctx} "
+                        f"{_estilo} "
+                        "Respondes en español mexicano, directo y natural. "
+                        "Cuando el usuario pide generar algo (planilla, cotización, etiqueta), "
+                        "describes cómo lo harías usando el estilo de trabajo del propietario. "
+                        "Respuestas cortas (máximo 3 oraciones) para voz."
+                    )},
+                    {"role": "user", "content": texto}
+                ],
+                max_tokens=200,
+                temperature=0.7,
+            )
+            respuesta = r.choices[0].message.content.strip()
+            return {"respuesta": respuesta}
+        except Exception as e:
+            return {"respuesta": f"Error de IA: {e}. Configura GROQ_API_KEY en el archivo .env"}
+
+    # Sin Groq — respuesta básica
     return {
         "respuesta": (
-            f"Escuché: '{texto}'. "
-            "Puedo ayudarte con pedidos, stock, clientes, ventas, sistema, "
-            "marketing, agenda, paranormal o finanzas. ¿Qué necesitas?"
+            "Para respuestas generativas (chistes, consejos, conversación libre), "
+            "agrega GROQ_API_KEY en C:\\nexus\\.env — es gratis en console.groq.com"
         )
     }
 

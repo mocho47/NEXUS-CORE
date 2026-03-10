@@ -2626,6 +2626,213 @@ async def api_health_reparar():
         return {"ok": False, "error": str(e)}
 
 
+# ── VIDEO STUDIO ──────────────────────────────────────────────────────────────
+@app.get("/video-studio", response_class=HTMLResponse)
+async def page_video_studio(request: Request):
+    return templates.TemplateResponse("video_studio.html", {"request": request})
+
+@app.post("/api/video_studio/crear_job")
+async def api_vs_crear_job(video: UploadFile = File(...), negocio: str = Form("ATF faros retrofit")):
+    try:
+        from nexus_video_studio import crear_job, UPLOAD_DIR
+        import aiofiles
+        dest = UPLOAD_DIR / video.filename
+        async with aiofiles.open(str(dest), "wb") as f:
+            await f.write(await video.read())
+        return crear_job(str(dest), negocio)
+    except Exception as e:
+        return {"ok": False, "error": str(e)}
+
+@app.get("/api/video_studio/detectar_escenas/{job_id}")
+async def api_vs_detectar(job_id: str, threshold: float = 27.0):
+    try:
+        from nexus_video_studio import job_detectar_escenas
+        return job_detectar_escenas(job_id, threshold)
+    except Exception as e:
+        return {"ok": False, "error": str(e)}
+
+@app.get("/api/video_studio/thumbnails/{job_id}")
+async def api_vs_thumbs(job_id: str):
+    try:
+        from nexus_video_studio import job_generar_thumbnails
+        return job_generar_thumbnails(job_id)
+    except Exception as e:
+        return {"ok": False, "error": str(e)}
+
+class VSSegmentosReq(BaseModel):
+    segmentos: list
+    redes: list = ["tiktok", "reels"]
+    negocio: str = "ATF faros retrofit"
+
+@app.post("/api/video_studio/set_segmentos/{job_id}")
+async def api_vs_set_segmentos(job_id: str, req: VSSegmentosReq):
+    try:
+        from nexus_video_studio import job_set_segmentos, _jobs
+        r = job_set_segmentos(job_id, req.segmentos)
+        if job_id in _jobs:
+            _jobs[job_id]["redes"] = req.redes
+            _jobs[job_id]["negocio"] = req.negocio
+        return r
+    except Exception as e:
+        return {"ok": False, "error": str(e)}
+
+@app.post("/api/video_studio/procesar/{job_id}")
+async def api_vs_procesar(job_id: str):
+    try:
+        from nexus_video_studio import job_iniciar_proceso
+        return job_iniciar_proceso(job_id)
+    except Exception as e:
+        return {"ok": False, "error": str(e)}
+
+@app.get("/api/video_studio/estado/{job_id}")
+async def api_vs_estado(job_id: str):
+    try:
+        from nexus_video_studio import job_estado
+        return job_estado(job_id)
+    except Exception as e:
+        return {"ok": False, "error": str(e)}
+
+@app.get("/api/video_studio/jobs")
+async def api_vs_listar():
+    try:
+        from nexus_video_studio import listar_jobs
+        return {"ok": True, "jobs": listar_jobs()}
+    except Exception as e:
+        return {"ok": False, "error": str(e)}
+
+# Servir archivos VIDEO_STUDIO
+from fastapi.staticfiles import StaticFiles as _SF2
+import os as _os2
+_vs_out = _os2.path.join(_os2.path.dirname(__file__), "VIDEO_STUDIO")
+_os2.makedirs(_vs_out, exist_ok=True)
+app.mount("/VIDEO_STUDIO", _SF2(directory=_vs_out, html=False), name="video_studio_files")
+
+# ── MERCH DESIGN ──────────────────────────────────────────────────────────────
+@app.get("/merch-design", response_class=HTMLResponse)
+async def page_merch_design(request: Request):
+    return templates.TemplateResponse("merch_design.html", {"request": request})
+
+class MerchPlayeraReq(BaseModel):
+    negocio: str = "atf"
+    nombre_marca: str = "ATF by Simplex"
+    color_playera: list = [20, 20, 20]
+
+@app.post("/api/merch/playera")
+async def api_merch_playera(req: MerchPlayeraReq):
+    try:
+        from nexus_merch_design import generar_playera, MERCH_OUT
+        r = generar_playera(nombre_marca=req.nombre_marca, color_playera=tuple(req.color_playera))
+        if r.get("ok") and r.get("archivos"):
+            base = str(MERCH_OUT)
+            for k, v in r["archivos"].items():
+                if v and isinstance(v, str):
+                    r["archivos"][k] = "/MERCH/" + v.replace(base, "").replace("\\", "/").lstrip("/")
+        return r
+    except Exception as e:
+        return {"ok": False, "error": str(e)}
+
+class MerchImanReq(BaseModel):
+    negocio: str = "atf"
+    tamano: str = "grande"
+    texto_principal: str = "ATF by Simplex"
+    subtexto: str = "Retrofit Faros LED • GDL"
+    telefono: str = "3326148674"
+
+@app.post("/api/merch/iman")
+async def api_merch_iman(req: MerchImanReq):
+    try:
+        from nexus_merch_design import generar_iman, MERCH_OUT
+        r = generar_iman(tamano=req.tamano, texto_principal=req.texto_principal,
+                          subtexto=req.subtexto, telefono=req.telefono)
+        base = str(MERCH_OUT)
+        for k in ["archivo", "pdf_planilla"]:
+            if r.get(k):
+                r[k] = "/MERCH/" + r[k].replace(base, "").replace("\\", "/").lstrip("/")
+        return r
+    except Exception as e:
+        return {"ok": False, "error": str(e)}
+
+class MerchLlaveroReq(BaseModel):
+    negocio: str = "atf"
+    texto: str = "ATF by Simplex"
+    subtexto: str = "Retrofit • GDL"
+    telefono: str = "3326148674"
+    descuento: str = "10% OFF"
+
+@app.post("/api/merch/llavero")
+async def api_merch_llavero(req: MerchLlaveroReq):
+    try:
+        from nexus_merch_design import generar_llavero, MERCH_OUT
+        r = generar_llavero(texto=req.texto, subtexto=req.subtexto,
+                             telefono=req.telefono, descuento=req.descuento)
+        base = str(MERCH_OUT)
+        for k in ["frente", "reverso", "pdf_planilla"]:
+            if r.get(k):
+                r[k] = "/MERCH/" + r[k].replace(base, "").replace("\\", "/").lstrip("/")
+        return r
+    except Exception as e:
+        return {"ok": False, "error": str(e)}
+
+class MerchKitReq(BaseModel):
+    negocio: str = "atf"
+    telefono: str = "3326148674"
+
+@app.post("/api/merch/kit")
+async def api_merch_kit(req: MerchKitReq):
+    try:
+        from nexus_merch_design import generar_kit_completo, MERCH_OUT
+        r = generar_kit_completo(negocio=req.negocio, telefono=req.telefono)
+        base = str(MERCH_OUT)
+        def _fix_paths(d):
+            if isinstance(d, dict):
+                for k, v in d.items():
+                    if isinstance(v, str) and v.startswith(str(MERCH_OUT)):
+                        d[k] = "/MERCH/" + v.replace(base, "").replace("\\", "/").lstrip("/")
+                    elif isinstance(v, dict):
+                        _fix_paths(v)
+        _fix_paths(r)
+        return r
+    except Exception as e:
+        return {"ok": False, "error": str(e)}
+
+# Servir archivos MERCH
+_merch_out = _os2.path.join(_os2.path.dirname(__file__), "MERCH_OUTPUT")
+_os2.makedirs(_merch_out, exist_ok=True)
+app.mount("/MERCH", _SF2(directory=_merch_out, html=False), name="merch_files")
+
+# ── VOZ ESCUCHA ───────────────────────────────────────────────────────────────
+@app.post("/api/voz/iniciar")
+async def api_voz_iniciar():
+    try:
+        from nexus_voz_escucha import iniciar
+        return iniciar()
+    except Exception as e:
+        return {"ok": False, "error": str(e)}
+
+@app.post("/api/voz/detener")
+async def api_voz_detener():
+    try:
+        from nexus_voz_escucha import detener
+        return detener()
+    except Exception as e:
+        return {"ok": False, "error": str(e)}
+
+@app.get("/api/voz/estado")
+async def api_voz_estado():
+    try:
+        from nexus_voz_escucha import estado
+        return estado()
+    except Exception as e:
+        return {"ok": False, "error": str(e)}
+
+@app.get("/api/voz/eventos")
+async def api_voz_eventos():
+    try:
+        from nexus_voz_escucha import eventos_pendientes
+        return {"ok": True, "eventos": eventos_pendientes()}
+    except Exception as e:
+        return {"ok": False, "error": str(e)}
+
 if __name__ == "__main__":
     from nexus_autopilot import autopilot as _ap
     _ap.iniciar()

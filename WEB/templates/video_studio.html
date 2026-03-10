@@ -1,0 +1,500 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>NEXUS — Video Studio</title>
+<style>
+:root{
+  --bg:#0a0a0a;--surface:#111;--surface2:#1a1a1a;--border:#2a2a2a;
+  --green:#00ff88;--blue:#00aaff;--gold:#ffd700;--red:#ff4444;
+  --purple:#b39ddb;--muted:#555;--text:#f0f0f0;--r:10px;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:var(--bg);color:var(--text);font-family:-apple-system,'Segoe UI',sans-serif;min-height:100vh}
+
+.header{background:var(--surface);border-bottom:1px solid var(--border);padding:14px 20px;display:flex;align-items:center;gap:14px}
+.header h1{font-size:18px;font-weight:700;color:var(--green)}
+.header span{font-size:12px;color:var(--muted)}
+.back-btn{padding:6px 14px;background:transparent;border:1px solid var(--border);color:var(--muted);border-radius:6px;cursor:pointer;font-size:12px;text-decoration:none}
+
+.main{max-width:1200px;margin:0 auto;padding:20px}
+
+/* ZONA DE UPLOAD */
+.upload-zone{border:2px dashed var(--border);border-radius:var(--r);padding:40px;text-align:center;cursor:pointer;transition:.3s;background:var(--surface)}
+.upload-zone:hover,.upload-zone.drag-over{border-color:var(--green);background:rgba(0,255,136,.05)}
+.upload-zone.has-file{border-color:var(--blue);border-style:solid}
+.upload-icon{font-size:48px;margin-bottom:12px}
+.upload-zone h2{font-size:16px;margin-bottom:6px}
+.upload-zone p{font-size:12px;color:var(--muted)}
+#fileInput{display:none}
+
+/* INFO VIDEO */
+.video-info{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:14px;margin-top:14px;display:none}
+.info-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-top:10px}
+.info-item{background:var(--surface2);border-radius:6px;padding:10px;text-align:center}
+.info-item .val{font-size:18px;font-weight:700;color:var(--green)}
+.info-item .lbl{font-size:10px;color:var(--muted);margin-top:2px}
+
+/* MODO SELECTOR */
+.mode-bar{display:flex;gap:10px;margin-top:16px}
+.mode-btn{flex:1;padding:12px;border:1px solid var(--border);border-radius:var(--r);cursor:pointer;background:var(--surface);text-align:center;transition:.2s}
+.mode-btn:hover{border-color:var(--green);background:rgba(0,255,136,.05)}
+.mode-btn.active{border-color:var(--green);background:rgba(0,255,136,.1)}
+.mode-btn .icon{font-size:24px;margin-bottom:6px}
+.mode-btn .title{font-size:13px;font-weight:700}
+.mode-btn .desc{font-size:11px;color:var(--muted);margin-top:4px}
+
+/* PANEL OPCIONES */
+.options-panel{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:16px;margin-top:14px}
+.options-panel h3{font-size:14px;font-weight:700;margin-bottom:12px;color:var(--green)}
+.opt-row{display:flex;gap:12px;align-items:center;margin-bottom:10px;flex-wrap:wrap}
+.opt-row label{font-size:12px;color:var(--muted);min-width:120px}
+.opt-row input,.opt-row select{background:var(--surface2);border:1px solid var(--border);color:var(--text);padding:7px 10px;border-radius:6px;font-size:13px;flex:1;min-width:160px}
+.checkbox-group{display:flex;gap:10px;flex-wrap:wrap}
+.checkbox-group label{display:flex;align-items:center;gap:6px;font-size:12px;cursor:pointer;padding:5px 10px;border:1px solid var(--border);border-radius:6px;transition:.2s}
+.checkbox-group input[type=checkbox]{accent-color:var(--green)}
+.checkbox-group label:has(input:checked){border-color:var(--green);background:rgba(0,255,136,.08)}
+
+/* TIMELINE */
+.timeline-section{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:16px;margin-top:14px;display:none}
+.timeline-section h3{font-size:14px;font-weight:700;margin-bottom:12px;color:var(--blue)}
+
+.thumbs-strip{display:flex;gap:2px;overflow-x:auto;background:var(--surface2);padding:8px;border-radius:6px;min-height:70px;position:relative}
+.thumb-img{width:80px;height:50px;object-fit:cover;border-radius:3px;cursor:pointer;flex-shrink:0;opacity:.7;transition:.2s;border:2px solid transparent}
+.thumb-img:hover{opacity:1;border-color:var(--green)}
+.thumb-img.selected{border-color:var(--gold);opacity:1}
+
+.markers-row{position:relative;height:20px;margin-top:6px;background:rgba(0,170,255,.1);border-radius:4px;border:1px solid var(--border)}
+.marker{position:absolute;width:3px;background:var(--gold);height:100%;cursor:ew-resize;top:0;transform:translateX(-50%)}
+.marker:hover{background:var(--red);width:4px}
+
+.segments-list{margin-top:12px}
+.segment-item{background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:10px;margin-bottom:6px;display:flex;gap:10px;align-items:center}
+.seg-time{font-size:11px;color:var(--green);font-family:monospace;white-space:nowrap}
+.seg-label{flex:1;background:var(--surface);border:1px solid var(--border);color:var(--text);padding:5px 8px;border-radius:4px;font-size:12px}
+.seg-caption{flex:2;background:var(--surface);border:1px solid var(--border);color:var(--text);padding:5px 8px;border-radius:4px;font-size:11px;color:var(--muted)}
+.seg-del{background:transparent;border:1px solid var(--red);color:var(--red);padding:4px 8px;border-radius:4px;cursor:pointer;font-size:11px}
+.seg-del:hover{background:var(--red);color:#000}
+
+.add-seg-btn{width:100%;padding:8px;background:transparent;border:1px dashed var(--border);color:var(--muted);border-radius:6px;cursor:pointer;font-size:12px;transition:.2s}
+.add-seg-btn:hover{border-color:var(--blue);color:var(--blue)}
+
+/* BOTONES ACCIÓN */
+.action-bar{display:flex;gap:10px;margin-top:16px;flex-wrap:wrap}
+.btn{padding:10px 20px;border-radius:6px;border:none;cursor:pointer;font-weight:700;font-size:13px;transition:.2s}
+.btn-primary{background:var(--green);color:#000}
+.btn-primary:hover{background:#00cc6a}
+.btn-primary:disabled{background:var(--muted);cursor:not-allowed;color:#333}
+.btn-secondary{background:transparent;border:1px solid var(--blue);color:var(--blue)}
+.btn-secondary:hover{background:rgba(0,170,255,.1)}
+.btn-danger{background:transparent;border:1px solid var(--red);color:var(--red)}
+.btn-gold{background:var(--gold);color:#000}
+
+/* PROGRESS */
+.progress-section{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:16px;margin-top:14px;display:none}
+.progress-bar-bg{background:var(--surface2);border-radius:6px;height:12px;overflow:hidden;margin:10px 0}
+.progress-bar-fill{background:linear-gradient(90deg,var(--green),var(--blue));height:100%;transition:width .4s;border-radius:6px}
+.progress-log{background:var(--surface2);border-radius:6px;padding:10px;font-family:monospace;font-size:11px;color:var(--muted);max-height:120px;overflow-y:auto;margin-top:8px}
+
+/* RESULTADO */
+.result-section{background:var(--surface);border:1px solid var(--green);border-radius:var(--r);padding:20px;margin-top:14px;display:none;text-align:center}
+.result-section h2{color:var(--green);font-size:20px;margin-bottom:6px}
+.result-section p{color:var(--muted);font-size:13px;margin-bottom:16px}
+.download-btn{display:inline-flex;align-items:center;gap:8px;padding:14px 28px;background:var(--green);color:#000;border-radius:8px;text-decoration:none;font-weight:700;font-size:15px}
+.download-btn:hover{background:#00cc6a}
+
+/* SPINNER */
+.spinner{width:16px;height:16px;border:2px solid var(--border);border-top-color:var(--green);border-radius:50%;animation:spin .8s linear infinite;display:inline-block}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* TABS MODO */
+.panel{display:none}
+.panel.active{display:block}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <a href="/dashboard" class="back-btn">← Dashboard</a>
+  <div>
+    <h1>🎬 Video Studio</h1>
+    <span>Sube un video → divide en capítulos → exporta para TikTok, Reels, Facebook</span>
+  </div>
+</div>
+
+<div class="main">
+
+  <!-- UPLOAD -->
+  <div class="upload-zone" id="uploadZone">
+    <div class="upload-icon">🎥</div>
+    <h2>Arrastra tu video aquí</h2>
+    <p>MP4, MOV, AVI — Máximo 2GB</p>
+    <p style="margin-top:8px;color:var(--blue)">o haz clic para seleccionar</p>
+    <input type="file" id="fileInput" accept="video/*">
+  </div>
+
+  <!-- INFO VIDEO -->
+  <div class="video-info" id="videoInfo">
+    <div style="font-size:13px;font-weight:700;color:var(--blue)">📹 Video cargado</div>
+    <div class="info-grid" id="infoGrid"></div>
+  </div>
+
+  <!-- MODO -->
+  <div class="mode-bar" id="modeBar" style="display:none">
+    <div class="mode-btn active" onclick="setMode('auto')" id="btnAuto">
+      <div class="icon">🤖</div>
+      <div class="title">Detección Automática</div>
+      <div class="desc">IA detecta cambios de escena</div>
+    </div>
+    <div class="mode-btn" onclick="setMode('manual')" id="btnManual">
+      <div class="icon">✂️</div>
+      <div class="title">Corte Manual</div>
+      <div class="desc">Tú marcas los puntos de corte</div>
+    </div>
+    <div class="mode-btn" onclick="setMode('asistido')" id="btnAsistido">
+      <div class="icon">🤝</div>
+      <div class="title">Asistido</div>
+      <div class="desc">IA sugiere, tú apruebas</div>
+    </div>
+  </div>
+
+  <!-- OPCIONES -->
+  <div class="options-panel" id="optionsPanel" style="display:none">
+    <h3>Configuración</h3>
+    <div class="opt-row">
+      <label>Negocio / Contexto</label>
+      <input type="text" id="inNegocio" value="ATF faros retrofit Guadalajara" placeholder="Ej: ATF faros LED GDL">
+    </div>
+    <div class="opt-row" id="rowThreshold" style="display:none">
+      <label>Sensibilidad detección</label>
+      <input type="range" id="inThreshold" min="10" max="50" value="27" style="flex:1">
+      <span id="threshVal" style="font-size:12px;color:var(--gold);min-width:30px">27</span>
+    </div>
+    <div class="opt-row">
+      <label>Exportar para</label>
+      <div class="checkbox-group">
+        <label><input type="checkbox" name="red" value="tiktok" checked> TikTok</label>
+        <label><input type="checkbox" name="red" value="reels" checked> Reels</label>
+        <label><input type="checkbox" name="red" value="facebook"> Facebook</label>
+        <label><input type="checkbox" name="red" value="shorts"> YouTube Shorts</label>
+        <label><input type="checkbox" name="red" value="story"> Story 15s</label>
+      </div>
+    </div>
+  </div>
+
+  <!-- TIMELINE (modo manual/asistido) -->
+  <div class="timeline-section" id="timelineSection">
+    <h3>⏱️ Timeline — Haz clic en una miniatura para agregar un corte</h3>
+    <div class="thumbs-strip" id="thumbsStrip">
+      <div style="color:var(--muted);font-size:12px;align-self:center;padding:10px">Generando miniaturas...</div>
+    </div>
+    <div id="segmentsContainer">
+      <div class="segments-list" id="segmentsList"></div>
+      <button class="add-seg-btn" onclick="addSegManual()">+ Agregar segmento manualmente</button>
+    </div>
+  </div>
+
+  <!-- AUTO: botón detectar -->
+  <div id="autoPanel" class="panel active">
+    <div class="action-bar" id="actionBar" style="display:none">
+      <button class="btn btn-secondary" id="btnDetect" onclick="detectarEscenas()">
+        🔍 Detectar escenas automáticamente
+      </button>
+      <button class="btn btn-primary" id="btnProcesar" onclick="iniciarProceso()" disabled>
+        🚀 Procesar y exportar
+      </button>
+    </div>
+  </div>
+
+  <!-- PROGRESS -->
+  <div class="progress-section" id="progressSection">
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:6px">
+      <div class="spinner"></div>
+      <span style="font-size:13px;font-weight:700">Procesando video...</span>
+      <span id="progressPct" style="margin-left:auto;color:var(--green);font-weight:700">0%</span>
+    </div>
+    <div class="progress-bar-bg">
+      <div class="progress-bar-fill" id="progressFill" style="width:0%"></div>
+    </div>
+    <div class="progress-log" id="progressLog"></div>
+  </div>
+
+  <!-- RESULTADO -->
+  <div class="result-section" id="resultSection">
+    <div style="font-size:40px;margin-bottom:10px">🎉</div>
+    <h2>¡Serie lista!</h2>
+    <p id="resultDesc">Tus clips están listos para publicar</p>
+    <a href="#" id="downloadLink" class="download-btn">⬇️ Descargar ZIP</a>
+    <div style="margin-top:16px">
+      <button class="btn btn-secondary" onclick="reiniciar()">Procesar otro video</button>
+    </div>
+  </div>
+
+</div><!-- /main -->
+
+<script>
+let jobId = null;
+let currentMode = 'auto';
+let duracionTotal = 0;
+let thumbsData = [];
+let segmentos = [];
+let pollTimer = null;
+
+// ── UPLOAD ─────────────────────────────────────────────────────────────────
+const zone = document.getElementById('uploadZone');
+const fileInput = document.getElementById('fileInput');
+
+zone.addEventListener('click', () => fileInput.click());
+zone.addEventListener('dragover', e => { e.preventDefault(); zone.classList.add('drag-over'); });
+zone.addEventListener('dragleave', () => zone.classList.remove('drag-over'));
+zone.addEventListener('drop', e => {
+  e.preventDefault();
+  zone.classList.remove('drag-over');
+  const f = e.dataTransfer.files[0];
+  if (f) subirVideo(f);
+});
+fileInput.addEventListener('change', () => {
+  if (fileInput.files[0]) subirVideo(fileInput.files[0]);
+});
+
+async function subirVideo(file) {
+  zone.classList.add('has-file');
+  zone.innerHTML = `<div class="upload-icon">⏳</div><h2>Subiendo ${file.name}...</h2><p>${(file.size/1024/1024).toFixed(1)} MB</p>`;
+
+  const fd = new FormData();
+  fd.append('video', file);
+  fd.append('negocio', document.getElementById('inNegocio')?.value || 'ATF faros retrofit');
+
+  try {
+    const r = await fetch('/api/video_studio/crear_job', {method:'POST', body: fd});
+    const d = await r.json();
+    if (!d.ok) throw new Error(d.error);
+    jobId = d.job_id;
+    mostrarInfo(d.info);
+    zone.innerHTML = `<div class="upload-icon">✅</div><h2>${file.name}</h2><p>Video listo para procesar</p>`;
+  } catch(e) {
+    zone.innerHTML = `<div class="upload-icon">❌</div><h2>Error</h2><p>${e.message}</p>`;
+  }
+}
+
+function mostrarInfo(info) {
+  if (!info) return;
+  duracionTotal = info.duracion || 0;
+  const mins = Math.floor(duracionTotal/60);
+  const segs = Math.floor(duracionTotal%60);
+  document.getElementById('videoInfo').style.display = 'block';
+  document.getElementById('infoGrid').innerHTML = `
+    <div class="info-item"><div class="val">${mins}:${String(segs).padStart(2,'0')}</div><div class="lbl">Duración</div></div>
+    <div class="info-item"><div class="val">${info.w||'?'}×${info.h||'?'}</div><div class="lbl">Resolución</div></div>
+    <div class="info-item"><div class="val">${Math.round(info.fps||30)}</div><div class="lbl">FPS</div></div>
+    <div class="info-item"><div class="val">${info.size_mb||'?'} MB</div><div class="lbl">Tamaño</div></div>
+  `;
+  document.getElementById('modeBar').style.display = 'flex';
+  document.getElementById('optionsPanel').style.display = 'block';
+  document.getElementById('actionBar').style.display = 'flex';
+}
+
+// ── MODO ───────────────────────────────────────────────────────────────────
+function setMode(m) {
+  currentMode = m;
+  ['auto','manual','asistido'].forEach(x => {
+    document.getElementById('btn'+x.charAt(0).toUpperCase()+x.slice(1))?.classList.remove('active');
+  });
+  document.getElementById('btn'+m.charAt(0).toUpperCase()+m.slice(1)).classList.add('active');
+
+  const rowThr = document.getElementById('rowThreshold');
+  const tl = document.getElementById('timelineSection');
+
+  if (m === 'auto') {
+    rowThr.style.display = 'flex';
+    tl.style.display = 'none';
+  } else {
+    rowThr.style.display = 'none';
+    tl.style.display = 'block';
+    if (m === 'manual' || m === 'asistido') cargarThumbs();
+    if (m === 'asistido') detectarEscenas();
+  }
+}
+
+document.getElementById('inThreshold').addEventListener('input', function() {
+  document.getElementById('threshVal').textContent = this.value;
+});
+
+// ── DETECTAR ESCENAS ───────────────────────────────────────────────────────
+async function detectarEscenas() {
+  if (!jobId) return;
+  const btn = document.getElementById('btnDetect');
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner"></span> Detectando...';
+
+  try {
+    const thr = document.getElementById('inThreshold').value;
+    const r = await fetch(`/api/video_studio/detectar_escenas/${jobId}?threshold=${thr}`);
+    const d = await r.json();
+    if (!d.ok) throw new Error(d.error);
+    segmentos = d.segmentos;
+    renderSegmentos();
+    document.getElementById('timelineSection').style.display = 'block';
+    document.getElementById('btnProcesar').disabled = false;
+    btn.innerHTML = `🔍 ${segmentos.length} escenas detectadas`;
+    cargarThumbs();
+  } catch(e) {
+    btn.innerHTML = `❌ Error: ${e.message}`;
+    btn.disabled = false;
+  }
+}
+
+// ── THUMBNAILS ─────────────────────────────────────────────────────────────
+async function cargarThumbs() {
+  if (!jobId) return;
+  try {
+    const r = await fetch(`/api/video_studio/thumbnails/${jobId}`);
+    const d = await r.json();
+    if (!d.ok) return;
+    thumbsData = d.thumbs;
+    renderThumbs();
+  } catch(e) {}
+}
+
+function renderThumbs() {
+  const strip = document.getElementById('thumbsStrip');
+  strip.innerHTML = thumbsData.map((url, i) => {
+    const t = (i * duracionTotal / thumbsData.length).toFixed(1);
+    return `<img class="thumb-img" src="${url}" title="${t}s" data-t="${t}" onclick="thumbClick(this, ${t})">`;
+  }).join('');
+}
+
+function thumbClick(el, t) {
+  // Modo manual: clic en thumb agrega marcador de corte
+  document.querySelectorAll('.thumb-img').forEach(x => x.classList.remove('selected'));
+  el.classList.add('selected');
+  if (currentMode === 'manual') agregarCorteEn(t);
+}
+
+function agregarCorteEn(t) {
+  // Encontrar el segmento donde cae t y dividirlo
+  const ti = parseFloat(t);
+  const idx = segmentos.findIndex(s => s.inicio <= ti && s.fin > ti);
+  if (idx < 0) {
+    if (segmentos.length === 0) {
+      segmentos.push({idx:0, inicio:0, fin:duracionTotal, duracion:duracionTotal, label:'Segmento 1', caption:''});
+    } else return;
+  } else {
+    const seg = segmentos[idx];
+    if (ti <= seg.inicio + 0.5 || ti >= seg.fin - 0.5) return;
+    const nuevo = {idx: idx+1, inicio: ti, fin: seg.fin, duracion: seg.fin - ti, label:`Segmento ${segmentos.length+1}`, caption:''};
+    seg.fin = ti;
+    seg.duracion = ti - seg.inicio;
+    segmentos.splice(idx + 1, 0, nuevo);
+    segmentos.forEach((s, i) => s.idx = i);
+  }
+  renderSegmentos();
+  document.getElementById('btnProcesar').disabled = segmentos.length === 0;
+}
+
+function addSegManual() {
+  const ultimo = segmentos[segmentos.length - 1];
+  const inicio = ultimo ? ultimo.fin : 0;
+  const fin = duracionTotal;
+  if (inicio >= fin) return;
+  segmentos.push({idx: segmentos.length, inicio, fin, duracion: fin-inicio, label:`Segmento ${segmentos.length+1}`, caption:''});
+  renderSegmentos();
+  document.getElementById('btnProcesar').disabled = false;
+}
+
+function renderSegmentos() {
+  const list = document.getElementById('segmentsList');
+  if (!segmentos.length) {
+    list.innerHTML = '<p style="color:var(--muted);font-size:12px;padding:8px">Sin segmentos. Detecta escenas o agrega manualmente.</p>';
+    return;
+  }
+  list.innerHTML = segmentos.map((s, i) => `
+    <div class="segment-item" id="seg_${i}">
+      <div class="seg-time">Ep${String(i+1).padStart(2,'0')} | ${fmt(s.inicio)} → ${fmt(s.fin)} (${fmt(s.duracion)})</div>
+      <input class="seg-label" value="${s.label}" onchange="segmentos[${i}].label=this.value" placeholder="Título">
+      <input class="seg-caption" value="${s.caption||''}" onchange="segmentos[${i}].caption=this.value" placeholder="Caption (dejar vacío = genera con IA)">
+      <button class="seg-del" onclick="eliminarSeg(${i})">✕</button>
+    </div>
+  `).join('');
+}
+
+function eliminarSeg(i) {
+  segmentos.splice(i, 1);
+  segmentos.forEach((s, idx) => s.idx = idx);
+  renderSegmentos();
+}
+
+function fmt(s) {
+  const m = Math.floor(s/60), sec = Math.floor(s%60);
+  return `${m}:${String(sec).padStart(2,'0')}`;
+}
+
+// ── PROCESAR ───────────────────────────────────────────────────────────────
+async function iniciarProceso() {
+  if (!jobId || !segmentos.length) return;
+
+  // Guardar segmentos editados
+  const redes = [...document.querySelectorAll('input[name=red]:checked')].map(c => c.value);
+  if (!redes.length) { alert('Selecciona al menos una red social'); return; }
+
+  const negocio = document.getElementById('inNegocio').value;
+
+  try {
+    await fetch(`/api/video_studio/set_segmentos/${jobId}`, {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({segmentos, redes, negocio})
+    });
+    const r = await fetch(`/api/video_studio/procesar/${jobId}`, {method:'POST'});
+    const d = await r.json();
+    if (!d.ok) throw new Error(d.error);
+  } catch(e) {
+    alert('Error: ' + e.message); return;
+  }
+
+  document.getElementById('progressSection').style.display = 'block';
+  document.getElementById('btnProcesar').disabled = true;
+  document.getElementById('btnProcesar').innerHTML = '<span class="spinner"></span> Procesando...';
+  pollTimer = setInterval(pollEstado, 1500);
+}
+
+async function pollEstado() {
+  try {
+    const r = await fetch(`/api/video_studio/estado/${jobId}`);
+    const d = await r.json();
+    if (!d.ok) return;
+
+    document.getElementById('progressFill').style.width = d.progreso + '%';
+    document.getElementById('progressPct').textContent = d.progreso + '%';
+
+    if (d.log?.length) {
+      document.getElementById('progressLog').innerHTML = d.log.join('<br>');
+      document.getElementById('progressLog').scrollTop = 9999;
+    }
+
+    if (d.estado === 'listo') {
+      clearInterval(pollTimer);
+      mostrarResultado(d);
+    }
+  } catch(e) {}
+}
+
+function mostrarResultado(d) {
+  document.getElementById('progressSection').style.display = 'none';
+  const res = document.getElementById('resultSection');
+  res.style.display = 'block';
+  const total = (d.segmentos?.length||0);
+  document.getElementById('resultDesc').textContent =
+    `${total} clips procesados y listos para publicar`;
+  document.getElementById('downloadLink').href = d.zip_url || '#';
+  res.scrollIntoView({behavior:'smooth'});
+}
+
+function reiniciar() {
+  jobId = null; segmentos = []; thumbsData = [];
+  clearInterval(pollTimer);
+  location.reload();
+}
+</script>
+</body>
+</html>
