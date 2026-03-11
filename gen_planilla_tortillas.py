@@ -63,9 +63,9 @@ doc.close()
 print(f"Sticker renderizado: {sticker_img.size}  modo: {sticker_img.mode}")
 
 # ── CREAR PLANILLA ────────────────────────────────────────────────────────────
-print("Generando planilla...")
-# Fondo blanco
-planilla = Image.new("RGB", (PLAN_W_PX, PLAN_H_PX), (255, 255, 255))
+print("Generando planilla (fondo transparente — sin fondo)...")
+# Fondo TRANSPARENTE — solo el diseño, sin fondo blanco
+planilla = Image.new("RGBA", (PLAN_W_PX, PLAN_H_PX), (255, 255, 255, 0))
 draw = ImageDraw.Draw(planilla)
 
 # Lineas de guia muy suaves (gris claro para corte)
@@ -116,24 +116,25 @@ except:
 OUT_PDF = "C:/nexus/MERCH_OUTPUT/Planilla_Tortillas_33x48.pdf"
 OUT_PNG = "C:/nexus/MERCH_OUTPUT/Planilla_Tortillas_33x48.png"
 
-print("Guardando PNG...")
+print("Guardando PNG (con transparencia)...")
+# PNG con canal alpha — sin fondo blanco
 planilla.save(OUT_PNG, dpi=(DPI, DPI), optimize=False)
 
-print("Guardando PDF...")
-# Crear PDF con las dimensiones exactas en puntos (1pt = 1/72 pulgada)
+print("Guardando PDF (fondo transparente)...")
 from reportlab.lib.units import cm as rl_cm
 from reportlab.pdfgen import canvas as rl_canvas
 
-W_pt = PLAN_W_CM * rl_cm   # puntos reportlab
+W_pt = PLAN_W_CM * rl_cm
 H_pt = PLAN_H_CM * rl_cm
 
 cv = rl_canvas.Canvas(OUT_PDF, pagesize=(W_pt, H_pt))
+# Imagen con mascara de transparencia
 cv.drawImage(OUT_PNG, 0, 0, width=W_pt, height=H_pt,
-             preserveAspectRatio=True)
+             preserveAspectRatio=True, mask='auto')
 cv.setFont("Helvetica", 6)
-cv.setFillColorRGB(0.6, 0.6, 0.6)
+cv.setFillColorRGB(0.5, 0.5, 0.5)
 cv.drawString(0.5*rl_cm, 0.3*rl_cm,
-    f"Planilla {PLAN_W_CM}x{PLAN_H_CM}cm | {total} etiquetas {STICK_CM}cm | {DPI} DPI | ATF by Simplex")
+    f"Planilla {PLAN_W_CM}x{PLAN_H_CM}cm | {total} etiquetas {STICK_CM}cm | {DPI} DPI | sin fondo")
 cv.save()
 
 print(f"\nLISTO:")

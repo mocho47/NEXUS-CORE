@@ -14,10 +14,12 @@ import os
 
 # ── CONFIGURACION ─────────────────────────────────────────────────────────────
 DPI       = 300
-W_CM      = 4.0   # ancho
-H_CM      = 8.0   # alto
-W_PX      = int(W_CM / 2.54 * DPI)   # 472 px
-H_PX      = int(H_CM / 2.54 * DPI)   # 945 px
+W_CM      = 4.0   # ancho total
+H_CM      = 8.0   # alto total
+MARGIN_MM = 4     # margen interior 4mm — letras separadas del borde
+W_PX      = int(W_CM / 2.54 * DPI)
+H_PX      = int(H_CM / 2.54 * DPI)
+MARGIN_PX = int(MARGIN_MM / 10 / 2.54 * DPI)  # 4mm en px (~47px)
 
 SRC_JPG   = "C:/Users/Administrador/Downloads/aguas frescas .jpeg"
 OUT_PNG   = "C:/nexus/MERCH_OUTPUT/Aguas_Frescas_4x8cm_300dpi.png"
@@ -44,11 +46,26 @@ else:
 
 img_scaled = img.resize((new_w, new_h), Image.LANCZOS)
 
-# Centrar y recortar al marco exacto
-base = Image.new("RGB", (W_PX, H_PX), (255, 255, 255))
-offset_x = (W_PX - new_w) // 2
-offset_y = (H_PX - new_h) // 2
-base.paste(img_scaled, (offset_x, offset_y))
+# Area util (con margen 4mm por todos lados)
+area_w = W_PX - 2 * MARGIN_PX
+area_h = H_PX - 2 * MARGIN_PX
+
+# Reescalar imagen para que quepa en el area util
+img_ratio2 = img_scaled.width / img_scaled.height
+if img_ratio2 > area_w / area_h:
+    fit_w = area_w
+    fit_h = int(area_w / img_ratio2)
+else:
+    fit_h = area_h
+    fit_w = int(area_h * img_ratio2)
+img_fit = img_scaled.resize((fit_w, fit_h), Image.LANCZOS)
+
+# Crear base con fondo del color dominante del borde del diseño (rosa)
+base = Image.new("RGB", (W_PX, H_PX), (220, 20, 100))
+# Pegar imagen centrada dentro del area util
+offset_x = MARGIN_PX + (area_w - fit_w) // 2
+offset_y = MARGIN_PX + (area_h - fit_h) // 2
+base.paste(img_fit, (offset_x, offset_y))
 
 print(f"Resultado: {base.size}  ({W_CM}x{H_CM}cm a {DPI}DPI)")
 
