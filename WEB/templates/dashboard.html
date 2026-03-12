@@ -186,6 +186,7 @@
     <div class="tab"         onclick="go('marketing')">📣 Marketing</div>
     <div class="tab"         onclick="window.location='/finanzas'">💰 Finanzas</div>
     <div class="tab"         onclick="go('autoventas')">🚀 AutoVentas</div>
+    <div class="tab"         onclick="go('autonomo');cargarAutonomo()">🧠 Autónomo</div>
     <div class="tab"         onclick="go('comandos_tab')">📋 Comandos</div>
     <div class="tab"         onclick="go('historial')">📂 Historial</div>
     <div class="tab"         onclick="go('sistema')">🖥️ Sistema</div>
@@ -372,6 +373,27 @@
 <div class="card">
     <div class="card-title">🎣 Hooks virales de hoy</div>
     <div id="av-hooks" style="color:#555;font-size:.85rem">Cargando...</div>
+</div>
+</div>
+
+<!-- ░░ AUTONOMO ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░ -->
+<div class="panel" id="panel-autonomo">
+<div class="card">
+    <div class="card-title">🧠 NEXUS Autónomo</div>
+    <div id="aut-estado" style="color:#555;font-size:.82rem;margin-bottom:10px">Cargando estado...</div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px">
+        <button class="btn" onclick="cargarAutonomo()" style="font-size:.8rem;padding:6px 14px">↺ Actualizar</button>
+        <button class="btn" onclick="autEjecutarCiclo()" style="font-size:.8rem;padding:6px 14px;background:#001a0a;border-color:#004d1a">⚡ Ejecutar ciclo</button>
+    </div>
+    <div id="aut-log" style="background:#050d08;border:1px solid #0a2010;border-radius:8px;padding:10px;font-size:.78rem;font-family:monospace;color:#4a8c6a;max-height:120px;overflow-y:auto"></div>
+</div>
+<div class="card">
+    <div class="card-title">💡 Sugerencias Pendientes</div>
+    <div id="aut-sugerencias" style="color:#555;font-size:.82rem">Cargando...</div>
+</div>
+<div class="card">
+    <div class="card-title">📚 Correcciones Recientes</div>
+    <div id="aut-correcciones" style="color:#555;font-size:.82rem">Cargando...</div>
 </div>
 </div>
 
@@ -1294,6 +1316,62 @@ async function nexusEjecutar(accion, params){
         oidBurbuja('ML',r.ok?`${r.respondidas} preguntas respondidas.`:`Error: ${r.error}`,false); return;
     }
 
+    // ── Autónomo ───────────────────────────────────────────────────────────
+    if(accion==='autonomo_estado'){
+        const r=await fetch('/api/autonomo/estado').then(x=>x.json()).catch(()=>({}));
+        const msg=`Autónomo: ${r.ciclos_ejecutados||0} ciclos, ${r.aprendizajes_total||0} aprendizajes, ${r.sugerencias_pendientes||0} sugerencias pendientes.`;
+        oidBurbuja('AUTO',msg,false);
+        go('autonomo'); cargarAutonomo();
+        return;
+    }
+    if(accion==='autonomo_ciclo'){
+        oidBurbuja('AUTO','Ejecutando ciclo autónomo completo...',false);
+        const r=await fetch('/api/autonomo/ciclo',{method:'POST'}).then(x=>x.json()).catch(()=>({}));
+        oidBurbuja('AUTO',r.ok?`Ciclo OK: ${r.seguimientos||0} seguimientos, ${r.aprendizajes||0} aprendizajes, ${r.correcciones||0} correcciones.`:`Error: ${r.error}`,false);
+        return;
+    }
+
+    // ── Doctor ────────────────────────────────────────────────────────────
+    if(accion==='doctor_nexus'){
+        oidBurbuja('DOC','Ejecutando diagnóstico profundo...',false);
+        const r=await fetch('/api/doctor').then(x=>x.json()).catch(()=>({}));
+        if(r.ok && r.reporte){
+            const rep=r.reporte;
+            const resumen=`Doctor: local=${rep.local?.ok?'OK':'FAIL'}, cloud=${rep.cloud?.ok?'OK':'FAIL'}. ${rep.summary||''}`;
+            oidBurbuja('DOC',resumen,false);
+        } else { oidBurbuja('DOC',r.error||'Error en diagnóstico',false); }
+        return;
+    }
+
+    // ── Coder ─────────────────────────────────────────────────────────────
+    if(accion==='coder_nexus'){
+        const desc=params.descripcion||params.texto||'';
+        if(!desc){ oidBurbuja('CODE','¿Qué script quieres generar?',false); return; }
+        oidBurbuja('CODE',`Generando script: "${desc.slice(0,60)}"...`,false);
+        const r=await fetch('/api/coder/generar',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({descripcion:desc})}).then(x=>x.json()).catch(()=>({}));
+        if(r.ok && r.codigo){
+            oidBurbuja('CODE',`Script generado (${r.codigo.length} chars). Guardado en LABORATORIO/`,false);
+        } else { oidBurbuja('CODE',r.error||'No se pudo generar',false); }
+        return;
+    }
+
+    // ── Watchtower ────────────────────────────────────────────────────────
+    if(accion==='watchtower'){
+        const r=await fetch('/api/watchtower/mensajes').then(x=>x.json()).catch(()=>({}));
+        const msg=r.total>0?`${r.total} mensajes en bandeja: ${r.mensajes.map(m=>m.text||m.source||'').slice(0,2).join(' | ')}`:'Bandeja vacía.';
+        oidBurbuja('WT',msg,false); return;
+    }
+
+    // ── Legal ─────────────────────────────────────────────────────────────
+    if(accion==='legal_privacidad'){
+        window.open('/legal/privacidad','_blank'); return;
+    }
+
+    // ── Vault (navegar a admin) ───────────────────────────────────────────
+    if(accion==='vault'){
+        window.location='/admin'; return;
+    }
+
     // Accion desconocida — solo mostrar respuesta sin crash
     console.log('[NEXUS] Accion no mapeada:', accion, params);
 }
@@ -1327,6 +1405,9 @@ async function oidConsultar(texto){
 
         // 3. Ejecutar el modulo correspondiente
         await nexusEjecutar(accion, params);
+
+        // 4. Registrar para auto-aprendizaje (en background, no bloquea)
+        _registrarInteraccion(texto, respText, accion);
 
     }catch(e){
         oidBurbuja('NEXUS','Error: '+e.message,false);
@@ -2180,6 +2261,112 @@ function autopilotToggle(activo) {
     fetch('/api/agent/autopilot',{method:'POST',headers:{'Content-Type':'application/json'},
         body:JSON.stringify({tipo:'general',activo})})
     .then(r=>r.json()).then(()=>cargarSistema());
+}
+
+// ─── NEXUS Autónomo ──────────────────────────────────────────────────────────
+async function cargarAutonomo() {
+    try {
+        const [est, sug, cor] = await Promise.all([
+            fetch('/api/autonomo/estado').then(r=>r.json()),
+            fetch('/api/autonomo/sugerencias').then(r=>r.json()),
+            fetch('/api/autonomo/correcciones').then(r=>r.json()),
+        ]);
+
+        // Estado
+        const estDiv = document.getElementById('aut-estado');
+        if (estDiv && est) {
+            const activo = est.activo ? '🟢 Activo' : '🔴 Detenido';
+            const ciclos = est.ciclos_ejecutados || 0;
+            const ult    = est.ultimo_ciclo ? new Date(est.ultimo_ciclo).toLocaleString('es-MX') : 'Nunca';
+            const apren  = est.aprendizajes_total || 0;
+            const pend   = est.sugerencias_pendientes || 0;
+            estDiv.innerHTML = `
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px">
+                    <span>${activo}</span><span>Ciclos: <b style="color:#00ff88">${ciclos}</b></span>
+                    <span>Último: ${ult.split(',')[1]||ult}</span><span>Aprendizajes: <b style="color:#00cfff">${apren}</b></span>
+                    <span>Sugerencias: <b style="color:#ffaa00">${pend}</b></span><span>Correcciones: <b style="color:#ff8888">${est.correcciones_total||0}</b></span>
+                </div>`;
+        }
+
+        // Log reciente
+        const logDiv = document.getElementById('aut-log');
+        if (logDiv && est.log_reciente) {
+            logDiv.innerHTML = est.log_reciente.reverse().map(l =>
+                `<div>[${l.ts.slice(11,16)}] <span style="color:#00ff88">${l.tipo}</span>: ${l.detalle}</div>`
+            ).join('') || '<div style="color:#333">Sin actividad reciente</div>';
+        }
+
+        // Sugerencias
+        const sugDiv = document.getElementById('aut-sugerencias');
+        if (sugDiv) {
+            const items = sug.items || [];
+            if (!items.length) {
+                sugDiv.innerHTML = '<div style="color:#333">Sin sugerencias pendientes</div>';
+            } else {
+                sugDiv.innerHTML = items.slice(0,6).map(s => `
+                    <div style="background:#0a1a0f;border:1px solid #1a3020;border-radius:6px;padding:8px;margin-bottom:6px;display:flex;justify-content:space-between;align-items:flex-start">
+                        <div>
+                            <span style="color:#00ff88">${s.icono||'💡'}</span>
+                            <span style="color:#b0ffda;font-size:.82rem;margin-left:4px">${(s.texto||s.mensaje_sugerido||'').slice(0,100)}</span>
+                            ${s.nombre ? `<div style="color:#555;font-size:.75rem;margin-top:2px">${s.nombre} ${s.horas_sin_contacto ? '('+s.horas_sin_contacto+'h sin contacto)':''}</div>` : ''}
+                        </div>
+                        <button onclick="autAtender('${s.ts||''}')" style="background:none;border:1px solid #1a3020;color:#555;font-size:.7rem;padding:2px 8px;border-radius:4px;cursor:pointer;white-space:nowrap;margin-left:8px">✓ Atender</button>
+                    </div>`).join('');
+            }
+        }
+
+        // Correcciones
+        const corrDiv = document.getElementById('aut-correcciones');
+        if (corrDiv) {
+            const items = cor.items || [];
+            if (!items.length) {
+                corrDiv.innerHTML = '<div style="color:#333">Sin correcciones registradas — NEXUS responde bien 👍</div>';
+            } else {
+                corrDiv.innerHTML = items.slice(0,4).map(c => `
+                    <div style="border-left:2px solid #331100;padding-left:8px;margin-bottom:8px">
+                        <div style="color:#ff8888;font-size:.78rem">${c.error || 'Error desconocido'}</div>
+                        <div style="color:#4a8c6a;font-size:.78rem">→ ${c.correcto || 'No analizado'}</div>
+                        <div style="color:#333;font-size:.72rem">${c.ts ? c.ts.slice(0,16) : ''}</div>
+                    </div>`).join('');
+            }
+        }
+
+    } catch(e) {
+        console.error('cargarAutonomo:', e);
+    }
+}
+
+async function autEjecutarCiclo() {
+    const btn = event.target;
+    btn.disabled = true;
+    btn.textContent = 'Ejecutando...';
+    try {
+        const r = await fetch('/api/autonomo/ciclo', {method:'POST'}).then(x=>x.json());
+        btn.textContent = r.ok ? `✓ Ciclo OK (${r.seguimientos||0} sug, ${r.aprendizajes||0} apr)` : '✗ Error';
+        btn.style.color = r.ok ? '#00ff88' : '#ff8888';
+        setTimeout(() => { btn.disabled=false; btn.textContent='⚡ Ejecutar ciclo'; btn.style.color=''; cargarAutonomo(); }, 4000);
+    } catch(e) {
+        btn.textContent = '✗ Error de red';
+        btn.disabled = false;
+    }
+}
+
+async function autAtender(ts) {
+    try {
+        await fetch('/api/autonomo/atender/'+encodeURIComponent(ts), {method:'POST'});
+        cargarAutonomo();
+    } catch(e) {}
+}
+
+// Registrar interaccion con NEXUS para auto-aprendizaje (llamar desde oidConsultar)
+async function _registrarInteraccion(usuario, nexus, accion) {
+    try {
+        await fetch('/api/autonomo/registrar_interaccion', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({usuario, nexus, accion: accion||''})
+        });
+    } catch(e) {}
 }
 
 // ─── Licencias ───────────────────────────────────────────────────────────────

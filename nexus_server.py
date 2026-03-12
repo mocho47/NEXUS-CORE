@@ -1071,6 +1071,63 @@ async def api_briefing_texto():
     except Exception as e:
         return {"ok": False, "error": str(e)}
 
+# ── NEXUS AUTONOMO ────────────────────────────────────────────────────────────
+@app.get("/api/autonomo/estado", response_class=JSONResponse)
+async def api_autonomo_estado():
+    try:
+        from nexus_autonomo import estado
+        return estado()
+    except Exception as e:
+        return {"ok": False, "error": str(e)}
+
+@app.get("/api/autonomo/sugerencias", response_class=JSONResponse)
+async def api_autonomo_sugerencias(solo_pendientes: bool = True):
+    try:
+        from nexus_autonomo import sugerencias
+        return {"ok": True, "items": sugerencias(solo_pendientes)}
+    except Exception as e:
+        return {"ok": False, "error": str(e), "items": []}
+
+@app.post("/api/autonomo/atender/{ts}", response_class=JSONResponse)
+async def api_autonomo_atender(ts: str):
+    try:
+        from nexus_autonomo import marcar_atendida
+        return marcar_atendida(ts)
+    except Exception as e:
+        return {"ok": False, "error": str(e)}
+
+@app.get("/api/autonomo/correcciones", response_class=JSONResponse)
+async def api_autonomo_correcciones():
+    try:
+        from nexus_autonomo import correcciones_recientes
+        return {"ok": True, "items": correcciones_recientes(10)}
+    except Exception as e:
+        return {"ok": False, "error": str(e), "items": []}
+
+@app.post("/api/autonomo/ciclo", response_class=JSONResponse)
+async def api_autonomo_ciclo():
+    """Ejecuta un ciclo completo de forma manual (admin)."""
+    try:
+        from nexus_autonomo import ejecutar_ciclo_ahora
+        return ejecutar_ciclo_ahora()
+    except Exception as e:
+        return {"ok": False, "error": str(e)}
+
+@app.post("/api/autonomo/registrar_interaccion", response_class=JSONResponse)
+async def api_autonomo_registrar(request: Request):
+    """Endpoint para que el frontend registre cada interaccion con NEXUS."""
+    try:
+        body = await request.json()
+        from nexus_autonomo import registrar_interaccion
+        resultado = registrar_interaccion(
+            body.get("usuario", ""),
+            body.get("nexus", ""),
+            body.get("accion", ""),
+        )
+        return {"ok": True, "correccion": resultado}
+    except Exception as e:
+        return {"ok": False, "error": str(e)}
+
 # ── MERCADOLIBRE ──────────────────────────────────────────────────────────────
 @app.get("/api/meli/estado", response_class=JSONResponse)
 async def api_meli_estado():
@@ -3095,9 +3152,122 @@ async def api_monitor_eventos():
     })
 
 
+# ── DOCTOR ────────────────────────────────────────────────────────────────────
+@app.get("/api/doctor", response_class=JSONResponse)
+async def api_doctor():
+    try:
+        from nexus_doctor import run_doctor
+        from nexus_self_heal import healthcheck
+        import os as _os
+        BASE = _os.path.dirname(_os.path.abspath(__file__))
+        reporte = run_doctor(
+            BASE, _os.path.join(BASE, "CONFIG"),
+            cloud_allowed=True,
+            local_healthcheck_fn=healthcheck,
+        )
+        return {"ok": True, "reporte": reporte}
+    except Exception as e:
+        return {"ok": False, "error": str(e)}
+
+# ── CODER ──────────────────────────────────────────────────────────────────────
+@app.post("/api/coder/generar", response_class=JSONResponse)
+async def api_coder_generar(request: Request):
+    try:
+        body = await request.json()
+        descripcion = body.get("descripcion", "").strip()
+        if not descripcion:
+            return {"ok": False, "error": "descripcion requerida"}
+        from nexus_coder import NexusCoder
+        coder = NexusCoder()
+        codigo = coder.generate_code(descripcion)
+        return {"ok": True, "codigo": codigo or "", "descripcion": descripcion}
+    except Exception as e:
+        return {"ok": False, "error": str(e)}
+
+# ── WATCHTOWER ─────────────────────────────────────────────────────────────────
+@app.get("/api/watchtower/mensajes", response_class=JSONResponse)
+async def api_watchtower_mensajes():
+    try:
+        from nexus_watchtower import Watchtower
+        wt = Watchtower()
+        wt.scan()
+        msgs = wt.pop_unread()
+        return {"ok": True, "mensajes": msgs, "total": len(msgs)}
+    except Exception as e:
+        return {"ok": False, "error": str(e), "mensajes": []}
+
+# ── LEGAL ──────────────────────────────────────────────────────────────────────
+@app.get("/legal/privacidad", response_class=HTMLResponse)
+async def legal_privacidad():
+    try:
+        from nexus_legal import AVISO_PRIVACIDAD
+        html = f"<pre style='font-family:monospace;padding:2rem;max-width:800px;margin:auto'>{AVISO_PRIVACIDAD}</pre>"
+        return HTMLResponse(html)
+    except Exception as e:
+        return HTMLResponse(f"<p>Error: {e}</p>")
+
+@app.get("/legal/terminos", response_class=HTMLResponse)
+async def legal_terminos():
+    try:
+        from nexus_legal import TERMINOS_USO
+        html = f"<pre style='font-family:monospace;padding:2rem;max-width:800px;margin:auto'>{TERMINOS_USO}</pre>"
+        return HTMLResponse(html)
+    except Exception as e:
+        return HTMLResponse(f"<p>Error: {e}</p>")
+
+@app.get("/api/legal", response_class=JSONResponse)
+async def api_legal():
+    try:
+        from nexus_legal import AVISO_PRIVACIDAD, TERMINOS_USO, VERSION_AVISO, VERSION_TERMINOS
+        return {
+            "ok": True,
+            "version_aviso": VERSION_AVISO,
+            "version_terminos": VERSION_TERMINOS,
+            "aviso_url": "/legal/privacidad",
+            "terminos_url": "/legal/terminos",
+        }
+    except Exception as e:
+        return {"ok": False, "error": str(e)}
+
+# ── NEXUS LOGS API ─────────────────────────────────────────────────────────────
+@app.get("/api/logs/bitacora", response_class=JSONResponse)
+async def api_logs_bitacora(n: int = 50):
+    """Retorna las últimas N líneas del log del mes actual."""
+    try:
+        import datetime as _dt
+        mes = _dt.datetime.now().strftime("%Y-%m")
+        import os as _os
+        log_paths = [
+            _os.path.join(_os.path.dirname(_os.path.abspath(__file__)), "logs", f"nexus_log_{mes}.txt"),
+            _os.path.join(_os.path.dirname(_os.path.abspath(__file__)), "LOGS", f"nexus_log_{mes}.txt"),
+        ]
+        lineas = []
+        for lp in log_paths:
+            if _os.path.exists(lp):
+                with open(lp, "r", encoding="utf-8", errors="replace") as f:
+                    lineas = f.readlines()
+                break
+        return {"ok": True, "lineas": [l.rstrip() for l in lineas[-n:]], "total": len(lineas)}
+    except Exception as e:
+        return {"ok": False, "error": str(e), "lineas": []}
+
+
 if __name__ == "__main__":
     from nexus_autopilot import autopilot as _ap
     _ap.iniciar()
+    # Arrancar sistema autonomo
+    try:
+        from nexus_autonomo import iniciar as _autonomo_iniciar
+        _autonomo_iniciar()
+    except Exception as _e:
+        print(f"[Autonomo] No se pudo iniciar: {_e}")
+    # Arrancar supabase keepalive
+    try:
+        from nexus_supabase_keepalive import SupabaseKeepAlive
+        _kl = SupabaseKeepAlive()
+        _kl.start()
+    except Exception as _e:
+        print(f"[Keepalive] {_e}")
     # Arrancar bot de Telegram
     try:
         from dotenv import load_dotenv

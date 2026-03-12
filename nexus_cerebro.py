@@ -230,6 +230,20 @@ ver_logs          | Ver logs del servidor. params: {}
 ver_config        | Configuracion del negocio. params: {}
 admin             | Panel de administracion. params: {}
 setup             | Asistente de configuracion inicial. params: {}
+doctor_nexus      | Diagnostico profundo: cloud, DNS, modulos, env vars. params: {}
+                  | Usar cuando: "diagnostico completo", "verifica conexion cloud", "doctor nexus"
+coder_nexus       | Genera scripts Python con IA bajo demanda. params: {descripcion}
+                  | Usar cuando: "genera un script para", "automatiza", "programa que haga"
+autonomo_estado   | Estado del sistema autonomo: aprendizajes, sugerencias, correcciones. params: {}
+                  | Usar cuando: "que aprendio nexus", "sugerencias autonomas", "estado autonomo"
+autonomo_ciclo    | Ejecuta ciclo autonomo manual ahora. params: {}
+                  | Usar cuando: "ejecuta ciclo", "corre el autonomo", "analiza el negocio ahora"
+vault             | Acceso a secretos y credenciales protegidas. params: {accion: "listar"|"ver"}
+                  | Solo para admin. Usar cuando: "mis credenciales", "secretos del sistema"
+watchtower        | Mensajes/eventos en la bandeja de entrada DROP_IN. params: {}
+                  | Usar cuando: "mensajes entrantes", "bandeja de entrada", "que llego"
+legal_privacidad  | Mostrar aviso de privacidad LFPDPPP. params: {}
+                  | Usar cuando: "aviso de privacidad", "datos personales", "terminos de uso"
 
 --- SOCIAL Y COMUNICACION ---
 social_templates  | Templates para redes sociales. params: {red?}
