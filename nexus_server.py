@@ -16,6 +16,29 @@ from nexus_stock import manager as stock_mgr
 
 app = FastAPI(title="Nexus Mobile")
 
+# ── VOZ v2 — Módulo independiente ─────────────────────────────────────────────
+try:
+    from nexus_voz_router import router as voz_router
+    app.include_router(voz_router)
+    print("[VOZ v2] Router adjuntado OK")
+except Exception as _e:
+    print(f"[VOZ v2] No disponible: {_e}")
+
+# ── CARTOON — Módulo independiente ────────────────────────────────────────────
+try:
+    from nexus_cartoon_module import setup_routes as _cartoon_setup
+    _cartoon_setup(app)
+    print("[CARTOON] Módulo adjuntado OK — /cartoonizer, /api/cartoon/procesar")
+except Exception as _e:
+    print(f"[CARTOON] No disponible: {_e}")
+
+# ── STUDIO — Módulo independiente ─────────────────────────────────────────────
+try:
+    from nexus_studio_module import setup_routes as _studio_setup
+    _studio_setup(app)
+except Exception as _e:
+    print(f"[STUDIO] No disponible: {_e}")
+
 # Detectar modo nube — features desktop deshabilitadas en Linux/Render
 CLOUD_MODE = os.getenv("CLOUD_MODE", "false").lower() == "true"
 
@@ -2832,6 +2855,156 @@ async def api_voz_eventos():
         return {"ok": True, "eventos": eventos_pendientes()}
     except Exception as e:
         return {"ok": False, "error": str(e)}
+
+# ════════════════════════════════════════════════════════════
+# MONITOR CLIENTE — Señalética digital
+# ════════════════════════════════════════════════════════════
+import asyncio
+from pathlib import Path as _Path
+
+_MONITOR_DIR_DEFAULT = str(_Path("C:/nexus/MONITOR_VIDEOS").resolve())
+_MONITOR_EXTENSIONS  = {".mp4", ".webm", ".mov", ".avi", ".mkv", ".m4v"}
+
+_monitor_state = {
+    "suspendido": False,
+    "carpeta":    _MONITOR_DIR_DEFAULT,
+    "volumen":    0.8,
+    "videos":     [],
+    "idx":        0,
+}
+_monitor_clients: list = []   # colas SSE activas
+
+def _scan_monitor_videos(carpeta: str) -> list:
+    p = _Path(carpeta)
+    if not p.exists():
+        return []
+    return sorted([
+        f.name for f in p.iterdir()
+        if f.is_file() and f.suffix.lower() in _MONITOR_EXTENSIONS
+    ])
+
+def _monitor_push(data: dict):
+    """Envía estado a todos los clientes SSE conectados."""
+    import json as _json
+    msg = f"data: {_json.dumps(data)}\n\n"
+    for q in list(_monitor_clients):
+        try:
+            q.put_nowait(msg)
+        except Exception:
+            pass
+
+# Montar carpeta de videos
+try:
+    _mon_dir = _Path(_MONITOR_DIR_DEFAULT)
+    _mon_dir.mkdir(parents=True, exist_ok=True)
+    from fastapi.staticfiles import StaticFiles as _SFMon
+    app.mount("/monitor_videos", _SFMon(directory=str(_mon_dir), html=False), name="monitor_videos")
+except Exception as _me:
+    print(f"[Monitor] No se pudo montar carpeta: {_me}")
+
+@app.get("/monitor", response_class=HTMLResponse)
+async def page_monitor(request: Request):
+    return templates.TemplateResponse("monitor.html", {"request": request})
+
+@app.get("/monitor/control", response_class=HTMLResponse)
+async def page_monitor_control(request: Request):
+    return templates.TemplateResponse("monitor_control.html", {"request": request})
+
+@app.get("/api/monitor/videos", response_class=JSONResponse)
+async def api_monitor_videos():
+    if not _monitor_state["videos"]:
+        _monitor_state["videos"] = _scan_monitor_videos(_monitor_state["carpeta"])
+    return {
+        "ok":      True,
+        "videos":  _monitor_state["videos"],
+        "volumen": _monitor_state["volumen"],
+        "carpeta": _monitor_state["carpeta"],
+    }
+
+@app.get("/api/monitor/estado", response_class=JSONResponse)
+async def api_monitor_estado():
+    if not _monitor_state["videos"]:
+        _monitor_state["videos"] = _scan_monitor_videos(_monitor_state["carpeta"])
+    return {"ok": True, **_monitor_state, "total": len(_monitor_state["videos"])}
+
+@app.post("/api/monitor/toggle", response_class=JSONResponse)
+async def api_monitor_toggle():
+    _monitor_state["suspendido"] = not _monitor_state["suspendido"]
+    _monitor_push({
+        "suspendido": _monitor_state["suspendido"],
+        "volumen":    _monitor_state["volumen"],
+    })
+    return {"ok": True, **_monitor_state, "total": len(_monitor_state["videos"])}
+
+@app.post("/api/monitor/siguiente", response_class=JSONResponse)
+async def api_monitor_siguiente():
+    _monitor_push({"accion": "siguiente", "suspendido": _monitor_state["suspendido"], "volumen": _monitor_state["volumen"]})
+    return {"ok": True}
+
+@app.post("/api/monitor/reload", response_class=JSONResponse)
+async def api_monitor_reload():
+    _monitor_state["videos"] = _scan_monitor_videos(_monitor_state["carpeta"])
+    _monitor_push({"accion": "reload_playlist", "suspendido": _monitor_state["suspendido"], "volumen": _monitor_state["volumen"]})
+    return {"ok": True, "total": len(_monitor_state["videos"])}
+
+@app.post("/api/monitor/volumen", response_class=JSONResponse)
+async def api_monitor_volumen(body: dict):
+    vol = float(body.get("volumen", 0.8))
+    _monitor_state["volumen"] = max(0.0, min(1.0, vol))
+    _monitor_push({"suspendido": _monitor_state["suspendido"], "volumen": _monitor_state["volumen"]})
+    return {"ok": True, "volumen": _monitor_state["volumen"]}
+
+@app.post("/api/monitor/carpeta", response_class=JSONResponse)
+async def api_monitor_carpeta(body: dict):
+    carpeta = body.get("carpeta", "").strip()
+    if not carpeta:
+        return {"ok": False, "error": "Carpeta vacía"}
+    p = _Path(carpeta)
+    if not p.exists():
+        try:
+            p.mkdir(parents=True, exist_ok=True)
+        except Exception as e:
+            return {"ok": False, "error": str(e)}
+    _monitor_state["carpeta"] = str(p)
+    _monitor_state["videos"]  = _scan_monitor_videos(str(p))
+    # Remontar static
+    try:
+        from fastapi.staticfiles import StaticFiles as _SFMonR
+        app.mount("/monitor_videos", _SFMonR(directory=str(p), html=False), name="monitor_videos")
+    except Exception:
+        pass
+    _monitor_push({"accion": "reload_playlist", "suspendido": _monitor_state["suspendido"], "volumen": _monitor_state["volumen"]})
+    return {"ok": True, "total": len(_monitor_state["videos"]), "carpeta": str(p)}
+
+@app.get("/api/monitor/eventos")
+async def api_monitor_eventos():
+    from fastapi.responses import StreamingResponse as _SR
+    import asyncio as _aio, queue as _queue
+    q: _queue.Queue = _queue.Queue()
+    _monitor_clients.append(q)
+
+    async def _gen():
+        # Enviar estado inicial
+        import json as _json
+        yield f"data: {_json.dumps({'suspendido': _monitor_state['suspendido'], 'volumen': _monitor_state['volumen']})}\n\n"
+        try:
+            while True:
+                try:
+                    msg = q.get_nowait()
+                    yield msg
+                except _queue.Empty:
+                    yield ": ping\n\n"
+                await _aio.sleep(1)
+        except _aio.CancelledError:
+            pass
+        finally:
+            _monitor_clients.remove(q)
+
+    return _SR(_gen(), media_type="text/event-stream", headers={
+        "Cache-Control": "no-cache",
+        "X-Accel-Buffering": "no",
+    })
+
 
 if __name__ == "__main__":
     from nexus_autopilot import autopilot as _ap

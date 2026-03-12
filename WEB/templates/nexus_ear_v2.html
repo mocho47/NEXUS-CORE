@@ -1,0 +1,681 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NEXUS — Voz</title>
+<style>
+  :root {
+    --orb-idle:      #1a1aff;
+    --orb-listen:    #00cfff;
+    --orb-think:     #a020f0;
+    --orb-speak:     #00ff88;
+    --orb-error:     #ff3344;
+    --bg:            #050510;
+    --text:          #e0e8ff;
+    --glass:         rgba(255,255,255,0.05);
+    --border:        rgba(255,255,255,0.1);
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Segoe UI', system-ui, sans-serif;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+  }
+
+  /* ── FONDO ANIMADO ── */
+  .bg-grid {
+    position: fixed; inset: 0; z-index: 0;
+    background-image:
+      linear-gradient(rgba(26,26,255,0.04) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(26,26,255,0.04) 1px, transparent 1px);
+    background-size: 40px 40px;
+    animation: gridMove 20s linear infinite;
+  }
+  @keyframes gridMove { to { background-position: 40px 40px; } }
+
+  /* ── ORB ── */
+  .orb-container {
+    position: relative; z-index: 10;
+    display: flex; flex-direction: column;
+    align-items: center; gap: 40px;
+  }
+
+  .orb-wrapper {
+    position: relative;
+    width: 200px; height: 200px;
+    cursor: pointer;
+  }
+
+  .orb {
+    width: 200px; height: 200px;
+    border-radius: 50%;
+    background: radial-gradient(circle at 35% 35%,
+      #6666ff 0%, #1a1aff 40%, #000088 100%);
+    box-shadow:
+      0 0 40px rgba(26,26,255,0.6),
+      0 0 80px rgba(26,26,255,0.3),
+      inset 0 0 40px rgba(255,255,255,0.1);
+    transition: all 0.4s ease;
+    animation: orbPulse 3s ease-in-out infinite;
+  }
+
+  @keyframes orbPulse {
+    0%,100% { transform: scale(1); box-shadow: 0 0 40px rgba(26,26,255,0.6), 0 0 80px rgba(26,26,255,0.3), inset 0 0 40px rgba(255,255,255,0.1); }
+    50%      { transform: scale(1.04); box-shadow: 0 0 60px rgba(26,26,255,0.8), 0 0 100px rgba(26,26,255,0.4), inset 0 0 50px rgba(255,255,255,0.15); }
+  }
+
+  /* Estados del ORB */
+  .orb.escuchando {
+    background: radial-gradient(circle at 35% 35%, #66ffff, #00cfff, #0066aa);
+    box-shadow: 0 0 60px rgba(0,207,255,0.8), 0 0 120px rgba(0,207,255,0.4);
+    animation: orbListen 0.5s ease-in-out infinite alternate;
+  }
+  @keyframes orbListen {
+    from { transform: scale(1); }
+    to   { transform: scale(1.08); }
+  }
+
+  .orb.pensando {
+    background: radial-gradient(circle at 35% 35%, #cc66ff, #a020f0, #440088);
+    box-shadow: 0 0 60px rgba(160,32,240,0.8), 0 0 120px rgba(160,32,240,0.4);
+    animation: orbThink 1s linear infinite;
+  }
+  @keyframes orbThink {
+    from { transform: rotate(0deg) scale(1); }
+    50%  { transform: rotate(180deg) scale(1.05); }
+    to   { transform: rotate(360deg) scale(1); }
+  }
+
+  .orb.hablando {
+    background: radial-gradient(circle at 35% 35%, #66ffbb, #00ff88, #008844);
+    box-shadow: 0 0 60px rgba(0,255,136,0.8), 0 0 120px rgba(0,255,136,0.4);
+    animation: orbSpeak 0.3s ease-in-out infinite alternate;
+  }
+  @keyframes orbSpeak {
+    from { transform: scale(1); }
+    to   { transform: scale(1.1); }
+  }
+
+  .orb.error {
+    background: radial-gradient(circle at 35% 35%, #ff6677, #ff3344, #880011);
+    box-shadow: 0 0 60px rgba(255,51,68,0.8);
+    animation: orbError 0.2s ease-in-out infinite alternate;
+  }
+  @keyframes orbError {
+    from { transform: translateX(-3px); }
+    to   { transform: translateX(3px); }
+  }
+
+  /* ── ONDAS ── */
+  .waves {
+    position: absolute; inset: 0;
+    border-radius: 50%;
+    pointer-events: none;
+  }
+  .wave {
+    position: absolute; inset: 0;
+    border-radius: 50%;
+    border: 2px solid rgba(0,207,255,0.4);
+    opacity: 0;
+    animation: waveOut 2s ease-out infinite;
+  }
+  .wave:nth-child(1) { animation-delay: 0s; }
+  .wave:nth-child(2) { animation-delay: 0.5s; }
+  .wave:nth-child(3) { animation-delay: 1s; }
+
+  .orb-wrapper.escuchando .wave {
+    animation-play-state: running;
+  }
+  .orb-wrapper:not(.escuchando) .wave {
+    animation-play-state: paused;
+    opacity: 0;
+  }
+
+  @keyframes waveOut {
+    0%   { transform: scale(1); opacity: 0.6; }
+    100% { transform: scale(2.2); opacity: 0; }
+  }
+
+  /* ── NIVEL DE AUDIO ── */
+  .audio-ring {
+    position: absolute; inset: -8px;
+    border-radius: 50%;
+    border: 3px solid transparent;
+    transition: border-color 0.1s;
+  }
+
+  /* ── ESTADO LABEL ── */
+  .estado-label {
+    font-size: 14px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: rgba(255,255,255,0.5);
+    height: 20px;
+    transition: all 0.3s;
+  }
+
+  /* ── TRANSCRIPCION ── */
+  .transcripcion {
+    max-width: 500px; width: 90vw;
+    text-align: center;
+    min-height: 60px;
+    font-size: 16px;
+    line-height: 1.6;
+    color: rgba(255,255,255,0.7);
+    padding: 12px 20px;
+    background: var(--glass);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    transition: all 0.3s;
+    backdrop-filter: blur(10px);
+  }
+  .transcripcion.usuario { color: #aaddff; border-color: rgba(0,207,255,0.3); }
+  .transcripcion.nexus   { color: #aaffcc; border-color: rgba(0,255,136,0.3); }
+
+  /* ── BARRA INFERIOR ── */
+  .bottom-bar {
+    position: fixed; bottom: 0; left: 0; right: 0;
+    padding: 16px 24px 24px;
+    background: linear-gradient(transparent, rgba(5,5,16,0.95));
+    display: flex; flex-direction: column; gap: 12px;
+    align-items: center; z-index: 20;
+  }
+
+  .chips {
+    display: flex; gap: 8px; flex-wrap: wrap; justify-content: center;
+  }
+  .chip {
+    padding: 6px 14px;
+    background: var(--glass);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    font-size: 12px;
+    cursor: pointer;
+    transition: all 0.2s;
+    backdrop-filter: blur(10px);
+  }
+  .chip:hover {
+    background: rgba(255,255,255,0.1);
+    border-color: rgba(0,207,255,0.5);
+    color: #00cfff;
+  }
+
+  .input-row {
+    display: flex; gap: 10px; width: 100%; max-width: 540px;
+  }
+  .txt-input {
+    flex: 1;
+    padding: 12px 18px;
+    background: var(--glass);
+    border: 1px solid var(--border);
+    border-radius: 24px;
+    color: var(--text);
+    font-size: 15px;
+    outline: none;
+    backdrop-filter: blur(10px);
+    transition: border-color 0.2s;
+  }
+  .txt-input:focus { border-color: rgba(0,207,255,0.5); }
+  .txt-input::placeholder { color: rgba(255,255,255,0.3); }
+
+  .btn-send, .btn-mic {
+    width: 46px; height: 46px;
+    border-radius: 50%;
+    border: none; cursor: pointer;
+    font-size: 18px;
+    display: flex; align-items: center; justify-content: center;
+    transition: all 0.2s;
+  }
+  .btn-send {
+    background: linear-gradient(135deg, #1a1aff, #0066cc);
+    color: white;
+  }
+  .btn-send:hover { transform: scale(1.1); }
+  .btn-mic {
+    background: linear-gradient(135deg, #00cfff, #0088aa);
+    color: white;
+  }
+  .btn-mic.activo {
+    background: linear-gradient(135deg, #ff3344, #aa0011);
+    animation: micPulse 0.5s ease-in-out infinite alternate;
+  }
+  @keyframes micPulse { from { transform: scale(1); } to { transform: scale(1.15); } }
+
+  /* ── LOGO ── */
+  .logo {
+    position: fixed; top: 24px; left: 50%; transform: translateX(-50%);
+    font-size: 13px; letter-spacing: 4px;
+    color: rgba(255,255,255,0.3);
+    z-index: 20;
+  }
+  .logo span { color: rgba(0,207,255,0.7); }
+
+  /* ── INDICADOR CONEXION ── */
+  .conexion {
+    position: fixed; top: 24px; right: 24px;
+    display: flex; align-items: center; gap: 6px;
+    font-size: 11px; color: rgba(255,255,255,0.3);
+    z-index: 20;
+  }
+  .dot {
+    width: 7px; height: 7px; border-radius: 50%;
+    background: #333;
+    transition: background 0.3s;
+  }
+  .dot.ok { background: #00ff88; box-shadow: 0 0 8px #00ff88; }
+  .dot.err { background: #ff3344; }
+
+  /* ── HISTORIAL ── */
+  .historial {
+    position: fixed; top: 60px; right: 16px;
+    width: 280px; max-height: calc(100vh - 200px);
+    overflow-y: auto;
+    display: flex; flex-direction: column; gap: 8px;
+    padding: 8px;
+    z-index: 15;
+  }
+  .msg {
+    padding: 10px 14px;
+    border-radius: 12px;
+    font-size: 13px;
+    line-height: 1.5;
+    max-width: 100%;
+    word-break: break-word;
+  }
+  .msg.usuario {
+    background: rgba(0,207,255,0.1);
+    border: 1px solid rgba(0,207,255,0.2);
+    color: #aaddff;
+    align-self: flex-end;
+  }
+  .msg.nexus {
+    background: rgba(0,255,136,0.08);
+    border: 1px solid rgba(0,255,136,0.2);
+    color: #aaffcc;
+    align-self: flex-start;
+  }
+  .msg .accion-badge {
+    display: inline-block;
+    font-size: 10px;
+    padding: 2px 6px;
+    border-radius: 8px;
+    background: rgba(160,32,240,0.3);
+    color: #cc99ff;
+    margin-bottom: 4px;
+  }
+
+  /* ── SCROLLBAR ── */
+  ::-webkit-scrollbar { width: 4px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 2px; }
+</style>
+</head>
+<body>
+
+<div class="bg-grid"></div>
+
+<div class="logo">NEX<span>US</span> · VOZ</div>
+
+<div class="conexion">
+  <div class="dot" id="dotWs"></div>
+  <span id="lblConexion">conectando</span>
+</div>
+
+<!-- Historial lateral -->
+<div class="historial" id="historial"></div>
+
+<!-- ORB central -->
+<div class="orb-container">
+  <div class="orb-wrapper" id="orbWrapper" onclick="toggleMic()">
+    <div class="orb" id="orb"></div>
+    <div class="waves">
+      <div class="wave"></div>
+      <div class="wave"></div>
+      <div class="wave"></div>
+    </div>
+    <div class="audio-ring" id="audioRing"></div>
+  </div>
+
+  <div class="estado-label" id="estadoLabel">Di "nexus" para activar</div>
+
+  <div class="transcripcion" id="transcripcion">
+    Hola, soy NEXUS. ¿En qué te ayudo?
+  </div>
+</div>
+
+<!-- Barra inferior -->
+<div class="bottom-bar">
+  <div class="chips">
+    <div class="chip" onclick="enviarTexto('cotización Cherokee')">📄 Cotizar Cherokee</div>
+    <div class="chip" onclick="enviarTexto('estado del servidor')">🖥️ Estado servidor</div>
+    <div class="chip" onclick="enviarTexto('generar caption para ATF')">📱 Caption ATF</div>
+    <div class="chip" onclick="enviarTexto('precio Aozoom X4')">💡 Precio X4</div>
+    <div class="chip" onclick="limpiarHistorial()">🗑️ Limpiar</div>
+  </div>
+  <div class="input-row">
+    <input class="txt-input" id="txtInput" placeholder="Escribe o habla..."
+           onkeydown="if(event.key==='Enter') enviarTextoInput()">
+    <button class="btn-send" onclick="enviarTextoInput()" title="Enviar">➤</button>
+    <button class="btn-mic" id="btnMic" onclick="toggleMic()" title="Toca y habla">🎤</button>
+    <button class="btn-mic" id="btnCont" onclick="toggleContinuo()" title="Modo continuo — di nexus" style="background:linear-gradient(135deg,#a020f0,#660099)">∞</button>
+  </div>
+</div>
+
+<script>
+// ── ESTADO ────────────────────────────────────────────────────────────────────
+const orb        = document.getElementById('orb');
+const orbWrapper = document.getElementById('orbWrapper');
+const estadoLbl  = document.getElementById('estadoLabel');
+const transcDiv  = document.getElementById('transcripcion');
+const histDiv    = document.getElementById('historial');
+const btnMic     = document.getElementById('btnMic');
+const dotWs      = document.getElementById('dotWs');
+const lblConn    = document.getElementById('lblConexion');
+
+let ws               = null;
+let grabando         = false;
+let recognition      = null;
+let esperandoComando = false;   // persiste entre reinicios del recognition
+let nexusHablando    = false;   // true mientras suena el TTS
+
+// ── WEBSOCKET ─────────────────────────────────────────────────────────────────
+function conectarWS() {
+  const proto = location.protocol === 'https:' ? 'wss' : 'ws';
+  ws = new WebSocket(`${proto}://${location.host}/ws/voz`);
+
+  ws.onopen = () => {
+    dotWs.className = 'dot ok';
+    lblConn.textContent = 'conectado';
+    ping();
+  };
+
+  ws.onclose = () => {
+    dotWs.className = 'dot err';
+    lblConn.textContent = 'reconectando...';
+    setTimeout(conectarWS, 3000);
+  };
+
+  ws.onerror = () => {
+    dotWs.className = 'dot err';
+  };
+
+  ws.onmessage = async (ev) => {
+    const msg = JSON.parse(ev.data);
+
+    if (msg.tipo === 'pong') return;
+
+    if (msg.tipo === 'procesando') {
+      setEstado('pensando');
+    }
+
+    if (msg.tipo === 'transcripcion') {
+      transcDiv.textContent = `"${msg.texto}"`;
+      transcDiv.className = 'transcripcion usuario';
+      agregarMsg(msg.texto, 'usuario');
+    }
+
+    if (msg.tipo === 'respuesta') {
+      transcDiv.textContent = msg.texto;
+      transcDiv.className = 'transcripcion nexus';
+      agregarMsg(msg.texto, 'nexus', msg.accion);
+    }
+
+    if (msg.tipo === 'audio') {
+      nexusHablando = true;
+      setEstado('hablando');
+      await reproducirAudio(msg.data);
+      nexusHablando = false;
+      // Reanudar escucha automáticamente
+      setTimeout(arrancarEscucha, 500);
+    }
+
+    if (msg.tipo === 'error') {
+      setEstado('error');
+      transcDiv.textContent = msg.msg;
+      setTimeout(() => setEstado('idle'), 2000);
+    }
+  };
+}
+
+function ping() {
+  if (ws && ws.readyState === WebSocket.OPEN) {
+    ws.send(JSON.stringify({tipo: 'ping'}));
+    setTimeout(ping, 30000);
+  }
+}
+
+// ── VOZ — modo Grok/Gemini ────────────────────────────────────────────────────
+const SpeechRec  = window.SpeechRecognition || window.webkitSpeechRecognition;
+const WAKE_WORDS = ['nexus','nexos','nexis','néctar','nexux'];
+
+function arrancarEscucha() {
+  if (!SpeechRec) {
+    transcDiv.textContent = 'Usa Chrome o Edge para voz.';
+    return;
+  }
+  if (nexusHablando) return;   // no escuchar mientras habla
+
+  recognition = new SpeechRec();
+  recognition.lang             = 'es-MX';
+  recognition.continuous       = false;  // un turno a la vez — más estable
+  recognition.interimResults   = true;
+  recognition.maxAlternatives  = 1;
+
+  recognition.onstart = () => {
+    grabando = true;
+    setEstado('escuchando');
+    estadoLbl.textContent = esperandoComando ? 'Di tu comando...' : 'Di "nexus"...';
+  };
+
+  recognition.onresult = (e) => {
+    let interino = '', final = '';
+    for (let i = e.resultIndex; i < e.results.length; i++) {
+      e.results[i].isFinal ? (final += e.results[i][0].transcript)
+                           : (interino += e.results[i][0].transcript);
+    }
+    if (interino) transcDiv.textContent = interino;
+    if (!final) return;
+
+    const txt = final.trim().toLowerCase();
+
+    if (!esperandoComando) {
+      // Buscando wake word
+      if (WAKE_WORDS.some(w => txt.includes(w))) {
+        esperandoComando = true;
+        transcDiv.textContent = '...';
+        // "Mande" rápido con voz del navegador, sin llamar al servidor
+        nexusHablando = true;
+        if (recognition) try { recognition.abort(); } catch(e){}
+        const u = new SpeechSynthesisUtterance('Mande');
+        u.lang = 'es-MX'; u.rate = 1.1;
+        u.onend = () => { nexusHablando = false; setTimeout(arrancarEscucha, 200); };
+        speechSynthesis.speak(u);
+      } else {
+        // No fue wake word — volver a escuchar
+        setTimeout(arrancarEscucha, 300);
+      }
+    } else {
+      // Tenemos el comando
+      esperandoComando = false;
+      enviarANexus(final.trim());
+    }
+  };
+
+  recognition.onerror = (e) => {
+    if (e.error === 'no-speech') { setTimeout(arrancarEscucha, 300); return; }
+    if (e.error === 'not-allowed') { transcDiv.textContent = 'Permiso denegado — haz clic en 🔒'; return; }
+    if (e.error === 'audio-capture') { transcDiv.textContent = 'Sin micrófono.'; return; }
+    setTimeout(arrancarEscucha, 500);
+  };
+
+  recognition.onend = () => {
+    grabando = false;
+    if (!nexusHablando) setTimeout(arrancarEscucha, 300);
+  };
+
+  try { recognition.start(); } catch(e) { setTimeout(arrancarEscucha, 1000); }
+}
+
+function toggleMic() {
+  if (grabando || nexusHablando) {
+    nexusHablando = false;
+    grabando = false;
+    esperandoComando = false;
+    if (recognition) try { recognition.abort(); } catch(e){}
+    setEstado('idle');
+    estadoLbl.textContent = 'Di "nexus" para activar';
+    btnMic.classList.remove('activo');
+    btnMic.textContent = '🎤';
+  } else {
+    arrancarEscucha();
+  }
+}
+
+// "Mande" rápido vía browser TTS (sin esperar servidor)
+function decirMande() {
+  return new Promise(resolve => {
+    nexusHablando = true;
+    if (recognition) try { recognition.abort(); } catch(e){}
+    const u = new SpeechSynthesisUtterance('Mande');
+    u.lang = 'es-MX'; u.rate = 1.1;
+    u.onend = () => { nexusHablando = false; resolve(); };
+    speechSynthesis.speak(u);
+  });
+}
+
+// ── ESTADOS ORB ───────────────────────────────────────────────────────────────
+function setEstado(estado) {
+  orb.className       = 'orb';
+  orbWrapper.className = 'orb-wrapper';
+
+  const labels = {
+    idle:        'Toca para hablar',
+    escuchando:  'Escuchando...',
+    pensando:    'Procesando...',
+    hablando:    'NEXUS habla',
+    error:       'Error'
+  };
+
+  if (estado !== 'idle') {
+    orb.classList.add(estado);
+    orbWrapper.classList.add(estado);
+  }
+  estadoLbl.textContent = labels[estado] || '';
+}
+
+// ── AUDIO TTS ─────────────────────────────────────────────────────────────────
+async function responderConVoz(texto) {
+  nexusHablando = true;
+  if (recognition) try { recognition.abort(); } catch(e){}
+  setEstado('hablando');
+
+  try {
+    const resp = await fetch('/api/voz2/texto', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({texto})
+    });
+    const d = await resp.json();
+    if (d.audio_b64) await reproducirAudio(d.audio_b64);
+    else await hablarNavegador(texto);
+  } catch(e) {
+    await hablarNavegador(texto);
+  }
+
+  nexusHablando = false;
+  setEstado('escuchando');
+  setTimeout(arrancarEscucha, 500);  // reanuda escucha automáticamente
+}
+
+async function reproducirAudio(b64) {
+  return new Promise(resolve => {
+    const bytes = Uint8Array.from(atob(b64), c => c.charCodeAt(0));
+    const blob  = new Blob([bytes], {type: 'audio/mpeg'});
+    const url   = URL.createObjectURL(blob);
+    const audio = new Audio(url);
+    audio.onended = () => { URL.revokeObjectURL(url); resolve(); };
+    audio.onerror = resolve;
+    audio.play().catch(resolve);
+  });
+}
+
+function hablarNavegador(texto) {
+  return new Promise(resolve => {
+    const u = new SpeechSynthesisUtterance(texto);
+    u.lang = 'es-MX'; u.rate = 1.0;
+    u.onend = resolve; u.onerror = resolve;
+    speechSynthesis.speak(u);
+  });
+}
+
+// ── TEXTO ─────────────────────────────────────────────────────────────────────
+// Alias para llamadas desde reconocimiento de voz
+function enviarANexus(texto) { enviarTexto(texto); }
+
+function enviarTextoInput() {
+  const txt = document.getElementById('txtInput').value.trim();
+  if (txt) {
+    enviarTexto(txt);
+    document.getElementById('txtInput').value = '';
+  }
+}
+
+function enviarTexto(texto) {
+  if (!ws || ws.readyState !== WebSocket.OPEN) {
+    transcDiv.textContent = 'Sin conexión con NEXUS';
+    return;
+  }
+  agregarMsg(texto, 'usuario');
+  transcDiv.textContent = `"${texto}"`;
+  transcDiv.className = 'transcripcion usuario';
+  setEstado('pensando');
+  ws.send(JSON.stringify({tipo: 'texto', data: texto}));
+}
+
+// ── HISTORIAL ─────────────────────────────────────────────────────────────────
+function agregarMsg(texto, rol, accion) {
+  const div = document.createElement('div');
+  div.className = `msg ${rol}`;
+  if (accion && accion !== 'conversar' && accion !== 'silencio') {
+    const badge = document.createElement('div');
+    badge.className = 'accion-badge';
+    badge.textContent = accion;
+    div.appendChild(badge);
+    div.appendChild(document.createElement('br'));
+  }
+  div.appendChild(document.createTextNode(texto));
+  histDiv.appendChild(div);
+  histDiv.scrollTop = histDiv.scrollHeight;
+
+  // Máximo 30 mensajes
+  while (histDiv.children.length > 30) {
+    histDiv.removeChild(histDiv.firstChild);
+  }
+}
+
+async function limpiarHistorial() {
+  histDiv.innerHTML = '';
+  transcDiv.textContent = 'Historial limpiado. ¿En qué te ayudo?';
+  transcDiv.className = 'transcripcion';
+  await fetch('/api/voz2/limpiar', {method: 'POST'});
+}
+
+// ── INIT ──────────────────────────────────────────────────────────────────────
+conectarWS();
+
+// Arrancar modo continuo automaticamente al cargar
+window.addEventListener('load', () => {
+  setTimeout(arrancarEscucha, 1500);
+});
+</script>
+</body>
+</html>
