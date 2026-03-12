@@ -695,7 +695,35 @@ if(window.speechSynthesis && window.speechSynthesis.onvoiceschanged !== undefine
 // OÍDO — STT CONTINUO CON WAKE WORD
 // ═══════════════════════════════════════════════════════
 let oidMicVivo=false, oidEsperando=false, oidHablando=false, oidMic=null;
-const OID_CHIPS = ['Pedidos','Stock','Clientes','Ventas','Sistema','Marketing','Hora','Ayuda'];
+// Tips de comandos — se cargan desde /api/nexus/tips
+let OID_TIPS = [];
+let _tipIdx = 0;
+fetch('/api/nexus/tips').then(r=>r.json()).then(d=>{
+    OID_TIPS = d.tips || [];
+    _renderTips();
+}).catch(()=>{});
+
+function _renderTips(){
+    const el = document.getElementById('oid-chips');
+    if(!el || OID_TIPS.length===0) return;
+    // Muestra 6 tips rotando, con clic para enviar
+    const slice = [];
+    for(let i=0;i<6;i++) slice.push(OID_TIPS[(i+_tipIdx)%OID_TIPS.length]);
+    el.innerHTML = slice.map(t=>
+        `<button class="btn btn-sm" title="${t.categoria}"
+            onclick="oidCmd('${t.tip.replace(/'/g,'\\'')}')"
+            style="font-size:.75rem;padding:3px 8px;border-color:#1a3a2a;color:#9cf"
+        >${t.icono} ${t.tip}</button>`
+    ).join('') +
+    `<button onclick="_tipIdx=(_tipIdx+6)%Math.max(1,OID_TIPS.length);_renderTips()"
+        style="background:transparent;border:1px solid #1a2a1a;color:#444;
+               padding:3px 8px;border-radius:6px;font-size:.72rem;cursor:pointer"
+        title="Ver mas tips">→</button>`;
+}
+// Rotar tips automaticamente cada 12s
+setInterval(()=>{
+    if(OID_TIPS.length>0){ _tipIdx=(_tipIdx+6)%OID_TIPS.length; _renderTips(); }
+}, 12000);
 
 // ─── Diálogos guiados por voz ────────────────────────────────────────────────
 let _dialogo = null; // { tipo, paso, datos }
@@ -788,9 +816,7 @@ function nexusHablar(txt, pitch=1.05, rate=1.1){
 
 let _oidPanelActive = false;
 function iniciarOido(){
-    document.getElementById('oid-chips').innerHTML = OID_CHIPS.map(c=>
-        `<button class="btn btn-sm" onclick="oidCmd('${c.toLowerCase()}')">${c}</button>`
-    ).join('');
+    _renderTips();
     // El mic global ya está corriendo — solo activamos el panel
     _oidPanelActive = true;
     oidSetDot('listening');
@@ -998,97 +1024,283 @@ function navegarPorVoz(texto) {
     return null;
 }
 
+// ═══════════════════════════════════════════════════════
+// NEXUS EJECUTAR — Dispatch real de acciones
+// NEXUS no hace todo — NEXUS OPERA todo como un profesional
+// Recibe {accion, params} del cerebro y ejecuta el modulo correcto
+// ═══════════════════════════════════════════════════════
+const NEXUS_URLS = {
+    ver_pedidos:    '/pedidos',
+    ver_clientes:   '/clientes',
+    ver_stock:      '/stock',
+    cotizar:        '/cotizar',
+    historial:      '/historial',
+    ver_finanzas:   '/finanzas',
+    agenda:         '/agenda',
+    marketing_panel:'/marketing/panel',
+    galeria_atf:    '/atf/galeria',
+    ver_agenda_atf: '/atf',
+    catalogo_atf:   '/canbusfix/catalogo',
+    ver_pipeline:   '/autoventas',
+    video_studio:   '/video-studio',
+    monitor_videos: '/monitor',
+    cartoonizer:    '/cartoonizer',
+    admin:          '/admin',
+    ver_config:     '/config_negocio',
+    health_check:   '/api/health/check',
+    ver_logs:       '/logs',
+    resumen:        '/dashboard',
+    merch_diseno:   '/merch-design',
+    teens_panel:    '/teens',
+    paranormal_modo:'/paranormal',
+    marketing:      '/marketing/panel',
+    setup:          '/setup',
+};
+
+async function nexusEjecutar(accion, params){
+    if(!accion || accion==='conversar' || accion==='error') return;
+
+    // ── Navegacion directa ─────────────────────────────────────────────────
+    if(accion==='navegar' && params.url){
+        setTimeout(()=>window.location=params.url, 1200); return;
+    }
+    if(NEXUS_URLS[accion]){
+        const url = NEXUS_URLS[accion];
+        if(url.startsWith('/api/')){
+            // Ejecutar y mostrar resultado
+            const r = await fetch(url).then(x=>x.json()).catch(()=>({}));
+            oidBurbuja('SYS', JSON.stringify(r).substring(0,200), false);
+        } else {
+            setTimeout(()=>window.location=url, 1200);
+        }
+        return;
+    }
+
+    // ── Pedidos ────────────────────────────────────────────────────────────
+    if(accion==='crear_pedido'){
+        if(params.cliente && params.producto){
+            const fd = new FormData();
+            fd.append('cliente', params.cliente);
+            fd.append('producto', params.producto);
+            fd.append('entrega', params.deadline || params.entrega || '');
+            fd.append('area', params.area || 'GENERAL');
+            await fetch('/nuevo_pedido', {method:'POST', body:fd}).catch(()=>{});
+            oidBurbuja('SYS', `Pedido de ${params.cliente} registrado.`, false);
+            setTimeout(()=>cargarPedidos && cargarPedidos(), 800);
+        } else {
+            setTimeout(()=>window.location='/nuevo_pedido_form', 1000);
+        }
+        return;
+    }
+    if(accion==='nuevo_cliente'){
+        if(params.nombre && params.telefono){
+            const fd = new FormData();
+            fd.append('nombre', params.nombre);
+            fd.append('telefono', params.telefono);
+            fd.append('email', params.email||'');
+            await fetch('/nuevo_cliente', {method:'POST', body:fd}).catch(()=>{});
+            oidBurbuja('SYS', `Cliente ${params.nombre} registrado.`, false);
+        } else {
+            setTimeout(()=>window.location='/nuevo_cliente_form', 1000);
+        }
+        return;
+    }
+    if(accion==='nuevo_stock'){
+        if(params.nombre && params.cantidad){
+            const fd = new FormData();
+            fd.append('nombre', params.nombre);
+            fd.append('cantidad', params.cantidad);
+            fd.append('precio', params.precio||0);
+            await fetch('/nuevo_item_stock', {method:'POST', body:fd}).catch(()=>{});
+            oidBurbuja('SYS', `Stock: ${params.nombre} x${params.cantidad} agregado.`, false);
+        } else {
+            setTimeout(()=>window.location='/nuevo_stock_form', 1000);
+        }
+        return;
+    }
+
+    // ── Estudio / Produccion ───────────────────────────────────────────────
+    if(accion==='abrir_corel' || accion==='abrir_silhouette' || accion==='abrir_aspire' || accion==='abrir_app'){
+        const appKey = params.app || (accion==='abrir_corel'?'corel': accion==='abrir_silhouette'?'silhouette':'aspire');
+        const r = await fetch('/api/estudio/abrir',{method:'POST',
+            headers:{'Content-Type':'application/json'},
+            body:JSON.stringify({app:appKey, archivo:params.archivo||null})
+        }).then(x=>x.json()).catch(e=>({ok:false,error:e.message}));
+        oidBurbuja('SYS', r.ok ? `${appKey} abierto.` : `Error: ${r.error}`, false);
+        return;
+    }
+    if(accion==='ejecutar_macro'){
+        const r = await fetch('/api/estudio/ejecutar_macro',{method:'POST',
+            headers:{'Content-Type':'application/json'},
+            body:JSON.stringify({macro:params.macro||params.nombre})
+        }).then(x=>x.json()).catch(e=>({ok:false,error:e.message}));
+        oidBurbuja('SYS', r.ok ? `Macro ejecutado.` : `Error: ${r.error}`, false);
+        return;
+    }
+    if(accion==='generar_caja'){
+        const r = await fetch('/api/estudio/generar_caja',{method:'POST',
+            headers:{'Content-Type':'application/json'},
+            body:JSON.stringify(params)
+        }).then(x=>x.json()).catch(e=>({ok:false,error:e.message}));
+        if(r.ok && r.archivos){
+            oidBurbuja('SYS', `Caja generada: ${r.archivos.join(', ')}`, false);
+            if(r.pdf) window.open(r.pdf,'_blank');
+        } else {
+            oidBurbuja('SYS', `Error caja: ${r.error||'sin respuesta'}`, false);
+            setTimeout(()=>window.location='/estudio', 1200);
+        }
+        return;
+    }
+    if(accion==='planilla_stickers'){
+        const r = await fetch('/api/estudio/planilla_stickers',{method:'POST',
+            headers:{'Content-Type':'application/json'},
+            body:JSON.stringify(params)
+        }).then(x=>x.json()).catch(e=>({ok:false,error:e.message}));
+        if(r.ok && r.pdf) window.open(r.pdf,'_blank');
+        else setTimeout(()=>window.location='/estudio', 1200);
+        return;
+    }
+    if(accion==='cartoonizer'){
+        setTimeout(()=>window.location='/cartoonizer'+(params.estilo?'?estilo='+params.estilo:''), 1200);
+        return;
+    }
+    if(accion==='merch_diseno'){
+        setTimeout(()=>window.location='/merch-design'+(params.tipo?'?tipo='+params.tipo:''), 1200);
+        return;
+    }
+
+    // ── Marketing ─────────────────────────────────────────────────────────
+    if(accion==='generar_promo'){
+        oidBurbuja('SYS', 'Generando promo...', false);
+        const r = await fetch('/api/marketing/generar_promo',{method:'POST',
+            headers:{'Content-Type':'application/json'},
+            body:JSON.stringify(params)
+        }).then(x=>x.json()).catch(e=>({ok:false}));
+        oidBurbuja('SYS', r.job_id ? 'Promo en proceso — revisa /marketing/panel' : 'Abriendo marketing...', false);
+        setTimeout(()=>window.location='/marketing/panel', 1800);
+        return;
+    }
+    if(accion==='caption_rapido' || accion==='caption_video'){
+        const r = await fetch('/api/marketing/caption_rapido',{method:'POST',
+            headers:{'Content-Type':'application/json'},
+            body:JSON.stringify(params)
+        }).then(x=>x.json()).catch(()=>({}));
+        if(r.caption) oidBurbuja('SYS', r.caption, false);
+        else setTimeout(()=>window.location='/marketing/panel', 1200);
+        return;
+    }
+    if(accion==='generar_copy'){
+        const r = await fetch('/api/generar_copy',{method:'POST',
+            headers:{'Content-Type':'application/json'},
+            body:JSON.stringify(params)
+        }).then(x=>x.json()).catch(()=>({}));
+        if(r.copy) oidBurbuja('SYS', r.copy, false);
+        return;
+    }
+    if(accion==='abrir_instagram'){
+        window.open('https://www.instagram.com','_blank'); return;
+    }
+    if(accion==='generar_motion'){
+        oidBurbuja('SYS', 'Generando video animado...', false);
+        fetch('/api/marketing/generar_motion',{method:'POST',
+            headers:{'Content-Type':'application/json'},
+            body:JSON.stringify(params)
+        }).catch(()=>{});
+        setTimeout(()=>window.location='/marketing/panel', 1800);
+        return;
+    }
+
+    // ── ATF ────────────────────────────────────────────────────────────────
+    if(accion==='agendar_atf'){
+        const r = await fetch('/api/atf/agendar',{method:'POST',
+            headers:{'Content-Type':'application/json'},
+            body:JSON.stringify(params)
+        }).then(x=>x.json()).catch(e=>({ok:false,error:e.message}));
+        oidBurbuja('SYS', r.ok ? `Cita ATF agendada para ${params.cliente}.` : `Error: ${r.error}`, false);
+        return;
+    }
+    if(accion==='registrar_instalador'){
+        const r = await fetch('/api/canbusfix/registrar_instalador',{method:'POST',
+            headers:{'Content-Type':'application/json'},
+            body:JSON.stringify(params)
+        }).then(x=>x.json()).catch(e=>({ok:false}));
+        oidBurbuja('SYS', r.ok ? 'Instalador registrado.' : 'Abriendo CanbusFix...', false);
+        if(!r.ok) setTimeout(()=>window.location='/canbusfix', 1200);
+        return;
+    }
+
+    // ── Ventas Auto ────────────────────────────────────────────────────────
+    if(accion==='nuevo_prospecto'){
+        const r = await fetch('/api/autoventas/prospecto',{method:'POST',
+            headers:{'Content-Type':'application/json'},
+            body:JSON.stringify(params)
+        }).then(x=>x.json()).catch(e=>({ok:false}));
+        oidBurbuja('SYS', r.ok ? `Prospecto ${params.nombre} registrado.` : 'Abriendo pipeline...', false);
+        if(!r.ok) setTimeout(()=>window.location='/autoventas', 1200);
+        return;
+    }
+
+    // ── Sistema ────────────────────────────────────────────────────────────
+    if(accion==='backup'){
+        const r = await fetch('/api/backup',{method:'POST',headers:{'Content-Type':'application/json'},body:'{}'}).then(x=>x.json()).catch(()=>({}));
+        oidBurbuja('SYS', r.ok ? 'Backup completado.' : 'Backup iniciado.', false);
+        return;
+    }
+    if(accion==='limpiar_historial'){
+        fetch('/api/voz2/limpiar',{method:'POST',headers:{'Content-Type':'application/json'},body:'{}'}).catch(()=>{});
+        oidBurbuja('SYS', 'Historial limpiado.', false);
+        return;
+    }
+    if(accion==='reparar_sistema'){
+        const r = await fetch('/api/health/reparar',{method:'POST',headers:{'Content-Type':'application/json'},body:'{}'}).then(x=>x.json()).catch(()=>({}));
+        oidBurbuja('SYS', r.reparaciones ? `Reparaciones: ${r.reparaciones.join(', ')}` : 'Sistema revisado.', false);
+        return;
+    }
+    if(accion==='cotizar'){
+        const url = params.tipo==='rapido' ? '/cotizar-rapido' : params.tipo==='simple' ? '/cotizar-rapido' : '/cotizar';
+        setTimeout(()=>window.location=url, 1000);
+        return;
+    }
+
+    // Accion desconocida — solo mostrar respuesta sin crash
+    console.log('[NEXUS] Accion no mapeada:', accion, params);
+}
+
 async function oidConsultar(texto){
     oidSetDot('processing');
-    oidSetStatus('Procesando...');
+    oidSetStatus('Pensando...');
 
-    // Si hay un diálogo activo, canalizar respuesta ahí
+    // Si hay un diálogo activo, canalizar respuesta ahí primero
     if (_dialogo) {
         const handled = await _pasoDialogo(texto);
         if (handled) { oidSetDot('listening'); oidSetStatus('Escuchando — di "nexus"'); return; }
     }
 
-    // Detectar inicio de diálogos guiados
-    const tl = texto.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'');
-    if (/pedido|orden\s+nueva|nuevo\s+orden/.test(tl)) {
-        _dialogo = { tipo:'pedido', paso:'cliente', datos:{} };
-        const msg = '¿Para qué cliente?';
-        oidBurbuja('NEXUS', msg, false);
-        await nexusHablar(msg);
-        oidSetDot('listening'); oidSetStatus('Escuchando respuesta...'); return;
-    }
-
-    // Intentar navegación web primero
-    const navResp = navegarPorVoz(texto);
-    if(navResp){
-        oidBurbuja('NEXUS', navResp, false);
-        await nexusHablar(navResp);
-        oidSetDot('listening');
-        oidSetStatus('Escuchando — di "nexus"');
-        return;
-    }
     try{
-        // ── STREAMING: responde oración por oración mientras Groq genera ──
-        const _resp = await fetch('/api/asistente/stream',{method:'POST',
+        // Cerebro unificado — JSON con accion + params + respuesta
+        const d = await fetch('/api/asistente',{method:'POST',
             headers:{'Content-Type':'application/json'},
-            body:JSON.stringify({texto,session_id:'dashboard'})
-        });
-        const _reader = _resp.body.getReader();
-        const _dec = new TextDecoder();
-        let _fullText = '';
-        let _ttsQueue = [];
-        let _ttsRunning = false;
+            body:JSON.stringify({texto, session_id:'dashboard'})
+        }).then(r=>r.json());
 
-        async function _processTTS(){
-            if(_ttsRunning || _ttsQueue.length===0) return;
-            _ttsRunning = true;
-            const sentence = _ttsQueue.shift();
-            await nexusHablar(sentence);
-            _ttsRunning = false;
-            _processTTS();
-        }
+        const accion   = d.accion   || 'conversar';
+        const params   = d.params   || {};
+        const respText = d.respuesta|| '';
 
-        let _buf = '';
-        oidSetStatus('Respondiendo...');
-        while(true){
-            const {done,value} = await _reader.read();
-            if(done) break;
-            _buf += _dec.decode(value,{stream:true});
-            const lines = _buf.split('\n');
-            _buf = lines.pop();
-            for(const line of lines){
-                if(!line.startsWith('data: ')) continue;
-                const data = line.slice(6).trim();
-                if(data==='[FIN]') break;
-                _fullText += (_fullText?' ':'')+data;
-                oidBurbuja('NEXUS',_fullText,false);
-                _ttsQueue.push(data);
-                _processTTS();
-            }
-        }
-        // Detectar si AI ofrece navegar a un módulo
-        const _rn = _fullText.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'');
-        const _MODMAP = {
-            'estudio':()=>window.location='/estudio','laser':()=>window.location='/estudio',
-            'milens':()=>window.location='/milens','pedidos':()=>window.location='/pedidos',
-            'clientes':()=>window.location='/clientes','stock':()=>window.location='/stock',
-            'agenda':()=>window.location='/agenda','teens':()=>window.location='/teens',
-            'atf':()=>window.location='/atf','marketing':()=>window.location='/marketing/panel',
-        };
-        if(/redirig|ir al?|abrir?|llevar|naveg|quieres (ir|abrir|ver)/.test(_rn)){
-            for(const [mod,fn] of Object.entries(_MODMAP)){
-                if(_rn.includes(mod)){ _oidPendingAction=fn; break; }
-            }
-        }
-        // Esperar a que termine el TTS antes de volver a escuchar
-        await new Promise(res=>{ const _chk=setInterval(()=>{ if(!_ttsRunning&&_ttsQueue.length===0){clearInterval(_chk);res();} },100); });
-        oidSetDot('listening');
-        oidSetStatus('Escuchando — di "nexus"');
+        // 1. Mostrar respuesta en chat
+        if(respText) oidBurbuja('NEXUS', respText, false);
+
+        // 2. Hablar la respuesta
+        if(respText) await nexusHablar(respText);
+
+        // 3. Ejecutar el modulo correspondiente
+        await nexusEjecutar(accion, params);
+
     }catch(e){
         oidBurbuja('NEXUS','Error: '+e.message,false);
-        oidSetDot('listening');
-        oidSetStatus('Error — intenta de nuevo');
     }
+    oidSetDot('listening');
+    oidSetStatus('Escuchando — di "nexus"');
 }
 
 function oidEnviar(){

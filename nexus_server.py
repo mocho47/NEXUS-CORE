@@ -101,6 +101,12 @@ async def dashboard_view(request: Request):
 async def api_nexus_status():
     return nexus_status()
 
+@app.get("/api/nexus/tips", response_class=JSONResponse)
+async def api_nexus_tips():
+    """Tips de comandos disponibles — para mostrar en el dashboard como hints."""
+    from nexus_cerebro import MODULOS_TIPS
+    return {"tips": MODULOS_TIPS}
+
 # ── PERFILES DE USUARIO ──────────────────────────────────────────────────────
 @app.get("/api/perfil", response_class=JSONResponse)
 async def api_perfil_info():
