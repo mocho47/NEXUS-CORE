@@ -3152,6 +3152,167 @@ window.addEventListener('DOMContentLoaded', () => setTimeout(NX.verificarOnboard
     };
 })();
 
+// ── MODO NOCHE — Reflexión de las 9pm ────────────────────────────────────────
+// Aparece automáticamente entre 20:30 y 23:30 una vez por día
+// 2 preguntas, guarda al diario, desea buenas noches
+(function _modoNoche() {
+    const KEY_NOCHE = 'nexus_noche_' + new Date().toLocaleDateString('es-MX');
+    if (localStorage.getItem(KEY_NOCHE)) return; // ya se hizo hoy
+
+    const hora = new Date().getHours();
+    const es_noche = hora >= 20 && hora < 24;
+    if (!es_noche) return;
+
+    // Esperar 30s para no interrumpir la entrada
+    setTimeout(() => {
+        if (localStorage.getItem(KEY_NOCHE)) return;
+        _abrirModoNoche();
+    }, 30000);
+
+    // También: botón Luna que aparece de noche
+    const btn = document.createElement('button');
+    btn.id = 'btn-noche';
+    btn.title = 'Modo Noche — reflexión del día';
+    btn.style.cssText = `
+        position:fixed; bottom:80px; right:12px; z-index:500;
+        width:42px; height:42px; border-radius:50%;
+        background:linear-gradient(135deg,#1a0a2a,#0a0a1a);
+        border:1px solid #4a2a6a; font-size:18px; cursor:pointer;
+        box-shadow:0 0 12px rgba(160,32,240,0.3);
+        display:flex; align-items:center; justify-content:center;
+    `;
+    btn.textContent = '🌙';
+    btn.onclick = _abrirModoNoche;
+    document.body.appendChild(btn);
+
+    function _abrirModoNoche() {
+        if (document.getElementById('overlay-noche')) return;
+        const nombres = {papa:'papá',mama:'mamá',hijo:'',hija:''};
+        const rol = localStorage.getItem('nexus_teens_rol') || '';
+        const nombre = localStorage.getItem('nexus_teens_nombre') || 'tú';
+
+        const overlay = document.createElement('div');
+        overlay.id = 'overlay-noche';
+        overlay.style.cssText = `
+            position:fixed; inset:0; background:rgba(0,0,0,0.92);
+            z-index:9500; display:flex; align-items:center; justify-content:center;
+            padding:20px; animation: fadeIn .4s ease;
+        `;
+        overlay.innerHTML = `
+            <div style="background:linear-gradient(160deg,#0a0a1a,#0d0520);
+                        border:1px solid #2a1a4a; border-radius:20px;
+                        padding:24px; max-width:380px; width:100%; text-align:center">
+                <div style="font-size:2.2em; margin-bottom:8px">🌙</div>
+                <div style="font-size:1.1em; font-weight:800; color:#cc99ff; margin-bottom:4px">
+                    Modo Noche
+                </div>
+                <div style="color:#888; font-size:0.8em; margin-bottom:20px">
+                    2 preguntas rápidas antes de cerrar el día
+                </div>
+
+                <div style="text-align:left; margin-bottom:14px">
+                    <div style="font-size:0.82em; color:#cc99ff; margin-bottom:6px; font-weight:600">
+                        ✨ ¿Qué fue lo mejor de hoy?
+                    </div>
+                    <textarea id="noche-q1" rows="3" style="
+                        width:100%; background:#110820; border:1px solid #2a1a4a;
+                        border-radius:10px; color:#e0d0ff; padding:10px; font-size:0.85em;
+                        resize:none; font-family:inherit; outline:none;
+                    " placeholder="Algo chico o grande — lo que sea que valió..."></textarea>
+                </div>
+
+                <div style="text-align:left; margin-bottom:20px">
+                    <div style="font-size:0.82em; color:#9cf; margin-bottom:6px; font-weight:600">
+                        🔄 ¿Algo que harías diferente o que aprendiste hoy?
+                    </div>
+                    <textarea id="noche-q2" rows="3" style="
+                        width:100%; background:#081218; border:1px solid #1a2a3a;
+                        border-radius:10px; color:#c0e8ff; padding:10px; font-size:0.85em;
+                        resize:none; font-family:inherit; outline:none;
+                    " placeholder="Sin juzgarte — solo observar..."></textarea>
+                </div>
+
+                <button onclick="_guardarNoche()" style="
+                    width:100%; padding:12px; background:linear-gradient(135deg,#a020f0,#4400cc);
+                    border:none; border-radius:12px; color:#fff; font-weight:700;
+                    font-size:0.92em; cursor:pointer; margin-bottom:10px;
+                ">Guardar y cerrar el día ✓</button>
+                <button onclick="document.getElementById('overlay-noche').remove()" style="
+                    background:none; border:none; color:#555; font-size:0.78em; cursor:pointer;
+                ">Ahora no</button>
+            </div>
+        `;
+        document.body.appendChild(overlay);
+    }
+
+    window._guardarNoche = function() {
+        const q1 = document.getElementById('noche-q1')?.value?.trim() || '';
+        const q2 = document.getElementById('noche-q2')?.value?.trim() || '';
+        if (!q1 && !q2) {
+            document.getElementById('overlay-noche')?.remove();
+            return;
+        }
+
+        // Construir entrada de diario
+        const fecha = new Date().toLocaleString('es-MX');
+        const texto = [
+            '🌙 Reflexión nocturna',
+            q1 ? `✨ Lo mejor de hoy: ${q1}` : '',
+            q2 ? `🔄 Lo aprendido: ${q2}` : ''
+        ].filter(Boolean).join('\n');
+
+        // Guardar en el diario (sin PIN — entradas de noche van sin cifrar en clave separada)
+        const KEY_NOCHE_DIARIO = 'nexus_noches';
+        const noches = JSON.parse(localStorage.getItem(KEY_NOCHE_DIARIO) || '[]');
+        noches.unshift({ fecha, q1, q2 });
+        if (noches.length > 90) noches.pop();
+        localStorage.setItem(KEY_NOCHE_DIARIO, JSON.stringify(noches));
+
+        // Si hay PIN activo, también guardar en el diario principal cifrado
+        if (window._bovedaPin) {
+            try {
+                const entradas = JSON.parse(localStorage.getItem('nexus_diario_entries') || '[]');
+                entradas.unshift({
+                    fecha,
+                    enc: window._xorEnc ? window._xorEnc(texto, window._bovedaPin) : texto
+                });
+                if (entradas.length > 100) entradas.pop();
+                localStorage.setItem('nexus_diario_entries', JSON.stringify(entradas));
+            } catch(e) {}
+        }
+
+        // Marcar como hecho hoy
+        localStorage.setItem(KEY_NOCHE, '1');
+
+        // Cerrar y mostrar despedida
+        document.getElementById('overlay-noche')?.remove();
+        document.getElementById('btn-noche')?.remove();
+
+        const despedida = document.createElement('div');
+        despedida.style.cssText = `
+            position:fixed; inset:0; background:rgba(0,0,0,0.88); z-index:9600;
+            display:flex; align-items:center; justify-content:center; padding:20px;
+        `;
+        const frases = [
+            'Descansa bien. Mañana hay otra oportunidad.',
+            'Lo que hiciste hoy ya es parte de ti. Descansa.',
+            'Un día más registrado. Eso cuenta.',
+            'El descanso también es parte del proceso. Buenas noches.',
+        ];
+        const frase = frases[Math.floor(Math.random() * frases.length)];
+        despedida.innerHTML = `
+            <div style="text-align:center; max-width:300px">
+                <div style="font-size:3em; margin-bottom:16px">🌙</div>
+                <div style="color:#cc99ff; font-size:1em; line-height:1.6">${frase}</div>
+            </div>
+        `;
+        document.body.appendChild(despedida);
+        setTimeout(() => despedida.remove(), 3000);
+
+        if (typeof showToast === 'function') showToast('🌙 Buenas noches');
+    };
+})();
+
 // ── Service Worker + detección offline ──────────────────────────────────────
 if ('serviceWorker' in navigator) {
     navigator.serviceWorker.register('/teens_sw.js', { scope: '/teens' })
