@@ -2157,9 +2157,8 @@ class AsistenteReq(BaseModel):
 @app.post("/api/asistente", response_class=JSONResponse)
 async def api_asistente_chat(req: AsistenteReq):
     try:
-        from nexus_assistant import get_respuesta
-        r = get_respuesta(req.texto, req.session_id)
-        return r if isinstance(r, dict) else {"respuesta": str(r)}
+        from nexus_cerebro import get_cerebro
+        return get_cerebro().pensar(req.texto)
     except Exception as e:
         return {"respuesta": f"Error del asistente: {str(e)}"}
 
@@ -2188,41 +2187,30 @@ async def api_asistente_stream(req: AsistenteReq):
             yield "data: [FIN]\n\n"
             return
 
-        # Groq streaming para preguntas abiertas
+        # Cerebro unificado — streaming
         groq_key = os.environ.get("GROQ_API_KEY","")
         if not groq_key:
-            try:
-                from nexus_assistant import get_respuesta
-                r = get_respuesta(req.texto, req.session_id)
-                resp = r.get("respuesta","") if isinstance(r,dict) else str(r)
-                yield f"data: {resp}\n\n"
-            except Exception as e:
-                yield f"data: Error: {e}\n\n"
+            yield "data: Sin API key configurada.\n\n"
             yield "data: [FIN]\n\n"
             return
 
         try:
+            from nexus_cerebro import ALMA, _contexto_memoria, aprender
             from groq import Groq
-            try:
-                _cfg = os.path.join(os.path.dirname(os.path.abspath(__file__)),"CONFIG","negocio.json")
-                with open(_cfg,"r",encoding="utf-8") as _f:
-                    _neg = _json.load(_f)
-                _ctx = f"Negocio: {_neg.get('nombre','Negocio')}. Servicios: {_neg.get('servicios','laser, retrofit de faros')}."
-            except Exception:
-                _ctx = "Negocio de servicios: laser, cajas, retrofit de faros (ATF), canbusfix."
+            contexto_mem = _contexto_memoria()
+            sistema = ALMA + ("\n\n" + contexto_mem if contexto_mem else "")
+            # En streaming no forzamos JSON — respuesta natural fluida
+            sistema += "\n\nMODO STREAM: responde directo en texto, sin JSON. Natural y breve."
 
             client = Groq(api_key=groq_key)
             stream = client.chat.completions.create(
                 model="llama-3.3-70b-versatile",
                 messages=[
-                    {"role":"system","content":(
-                        f"Eres NEXUS, asistente IA para un negocio mexicano. {_ctx} "
-                        "Responde en español mexicano, directo y natural. Máximo 3 oraciones."
-                    )},
-                    {"role":"user","content":req.texto}
+                    {"role": "system", "content": sistema},
+                    {"role": "user",   "content": req.texto}
                 ],
-                max_tokens=200,
-                temperature=0.7,
+                max_tokens=300,
+                temperature=0.6,
                 stream=True,
             )
             buf = ""
