@@ -208,6 +208,19 @@ ver_reporte       | Reporte ejecutivo: ventas, pedidos, rentabilidad. params: {p
 agenda            | Ver agenda del dia/semana. params: {}
                   | Usar cuando: "que tengo hoy", "mi agenda", "compromisos"
 
+--- MERCADOLIBRE ---
+meli_estado       | Estado de la cuenta MercadoLibre. params: {}
+                  | Usar cuando: "como esta mi ML", "estado mercadolibre"
+meli_publicar     | Publica producto en ML. params: {producto_id: "aozoom_x4"|"aozoom_x1"|"retrofit_basico"|"retrofit_pro"}
+                  | Usar cuando: "publica en mercadolibre", "sube el X4 a ML"
+meli_publicar_todo| Publica todo el catalogo. params: {}
+                  | Usar cuando: "publica todo en ML", "sube todos los productos"
+meli_preguntas    | Ver preguntas sin responder en ML. params: {}
+meli_auto_responder| Responde automaticamente con IA todas las preguntas. params: {}
+                  | Usar cuando: "responde las preguntas de ML", "auto responder ML"
+meli_auth         | Iniciar autenticacion OAuth2. params: {}
+                  | Usar cuando aun no esta autenticado en ML
+
 --- SISTEMA Y SALUD ---
 health_check      | Diagnostico del sistema NEXUS. params: {}
                   | Usar cuando: "como esta el sistema", "diagnostico", "salud de nexus"

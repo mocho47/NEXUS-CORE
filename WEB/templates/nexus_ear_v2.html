@@ -427,6 +427,10 @@ function conectarWS() {
       transcDiv.textContent = msg.texto;
       transcDiv.className = 'transcripcion nexus';
       agregarMsg(msg.texto, 'nexus', msg.accion);
+      // Ejecutar el modulo correspondiente — NEXUS opera, no solo habla
+      if (msg.accion && msg.accion !== 'conversar' && msg.accion !== 'error') {
+        setTimeout(() => nexusEjecutar(msg.accion, msg.params || {}), 1400);
+      }
     }
 
     if (msg.tipo === 'audio') {
@@ -668,6 +672,102 @@ async function limpiarHistorial() {
   transcDiv.className = 'transcripcion';
   await fetch('/api/voz2/limpiar', {method: 'POST'});
 }
+
+// ── NEXUS EJECUTAR — Dispatch de acciones (igual que dashboard) ───────────────
+// NEXUS no hace todo — NEXUS OPERA todo como un profesional
+const _NEXUS_URLS = {
+  ver_pedidos:'/pedidos', ver_clientes:'/clientes', ver_stock:'/stock',
+  cotizar:'/cotizar', historial:'/historial', ver_finanzas:'/finanzas',
+  agenda:'/agenda', marketing_panel:'/marketing/panel',
+  galeria_atf:'/atf/galeria', ver_agenda_atf:'/atf',
+  catalogo_atf:'/canbusfix/catalogo', ver_pipeline:'/autoventas',
+  video_studio:'/video-studio', monitor_videos:'/monitor',
+  cartoonizer:'/cartoonizer', admin:'/admin', ver_config:'/config_negocio',
+  ver_logs:'/logs', resumen:'/dashboard', merch_diseno:'/merch-design',
+  teens_panel:'/teens', paranormal_modo:'/paranormal',
+  marketing:'/marketing/panel', setup:'/setup',
+};
+
+async function nexusEjecutar(accion, params) {
+  if (!accion || accion === 'conversar' || accion === 'error') return;
+
+  if (accion === 'navegar' && params.url) {
+    window.location = params.url; return;
+  }
+  if (_NEXUS_URLS[accion]) {
+    window.location = _NEXUS_URLS[accion]; return;
+  }
+  if (accion === 'crear_pedido') {
+    if (params.cliente && params.producto) {
+      const fd = new FormData();
+      fd.append('cliente', params.cliente);
+      fd.append('producto', params.producto);
+      fd.append('entrega', params.deadline || '');
+      fd.append('area', params.area || 'GENERAL');
+      await fetch('/nuevo_pedido', {method:'POST', body:fd}).catch(()=>{});
+      agregarMsg(`Pedido de ${params.cliente} registrado.`, 'nexus', 'ok');
+    } else { window.location = '/nuevo_pedido_form'; }
+    return;
+  }
+  if (accion === 'nuevo_cliente') {
+    if (params.nombre && params.telefono) {
+      const fd = new FormData();
+      fd.append('nombre', params.nombre);
+      fd.append('telefono', params.telefono);
+      fd.append('email', params.email || '');
+      await fetch('/nuevo_cliente', {method:'POST', body:fd}).catch(()=>{});
+      agregarMsg(`Cliente ${params.nombre} registrado.`, 'nexus', 'ok');
+    } else { window.location = '/nuevo_cliente_form'; }
+    return;
+  }
+  if (accion === 'abrir_corel' || accion === 'abrir_silhouette' || accion === 'abrir_aspire' || accion === 'abrir_app') {
+    const app = params.app || (accion === 'abrir_corel' ? 'corel' : accion === 'abrir_silhouette' ? 'silhouette' : 'aspire');
+    await fetch('/api/estudio/abrir', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({app, archivo:params.archivo||null})}).catch(()=>{});
+    return;
+  }
+  if (accion === 'ejecutar_macro') {
+    await fetch('/api/estudio/ejecutar_macro', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({macro:params.macro})}).catch(()=>{});
+    return;
+  }
+  if (accion === 'generar_caja') {
+    const r = await fetch('/api/estudio/generar_caja', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(params)}).then(x=>x.json()).catch(()=>({}));
+    if (r.pdf) window.open(r.pdf, '_blank');
+    return;
+  }
+  if (accion === 'agendar_atf') {
+    await fetch('/api/atf/agendar', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(params)}).catch(()=>{});
+    return;
+  }
+  if (accion === 'nuevo_prospecto') {
+    await fetch('/api/autoventas/prospecto', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(params)}).catch(()=>{});
+    return;
+  }
+  if (accion === 'backup') {
+    fetch('/api/backup', {method:'POST', headers:{'Content-Type':'application/json'}, body:'{}'}).catch(()=>{});
+    return;
+  }
+  if (accion === 'generar_promo' || accion === 'caption_rapido') {
+    window.location = '/marketing/panel'; return;
+  }
+  if (accion === 'abrir_instagram') {
+    window.open('https://www.instagram.com', '_blank'); return;
+  }
+  // Cotizadores
+  if (accion === 'cotizar') {
+    window.location = params.tipo === 'rapido' ? '/cotizar-rapido' : '/cotizar'; return;
+  }
+}
+
+// ── Tips chips — cargar desde API ────────────────────────────────────────────
+fetch('/api/nexus/tips').then(r=>r.json()).then(d=>{
+  const tips = (d.tips||[]).slice(0,5);
+  const container = document.querySelector('.chips');
+  if (!container) return;
+  container.innerHTML = tips.map(t=>
+    `<div class="chip" onclick="enviarTexto('${t.tip.replace(/'/g,"\\'").replace(/\[.*?\]/g,'...')}')">${t.icono} ${t.tip}</div>`
+  ).join('') +
+  `<div class="chip" onclick="limpiarHistorial()">🗑️ Limpiar</div>`;
+}).catch(()=>{});
 
 // ── INIT ──────────────────────────────────────────────────────────────────────
 conectarWS();

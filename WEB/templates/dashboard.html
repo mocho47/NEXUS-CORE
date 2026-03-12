@@ -1262,6 +1262,38 @@ async function nexusEjecutar(accion, params){
         return;
     }
 
+    // ── MercadoLibre ──────────────────────────────────────────────────────
+    if(accion==='meli_estado'){
+        const r=await fetch('/api/meli/estado').then(x=>x.json()).catch(()=>({}));
+        const msg=r.autenticado?`ML conectado. ${r.catalogo_productos} productos en catálogo.`:`ML no autenticado. Ve a /api/meli/auth para conectar.`;
+        oidBurbuja('ML',msg,false); return;
+    }
+    if(accion==='meli_auth'){
+        const r=await fetch('/api/meli/auth').then(x=>x.json()).catch(()=>({}));
+        if(r.auth_url) window.open(r.auth_url,'_blank');
+        else oidBurbuja('ML',r.error||'Configura MELI_CLIENT_ID en .env',false); return;
+    }
+    if(accion==='meli_publicar'){
+        const pid=params.producto_id||'aozoom_x4';
+        oidBurbuja('ML',`Publicando ${pid} en MercadoLibre...`,false);
+        const r=await fetch(`/api/meli/publicar/${pid}`,{method:'POST'}).then(x=>x.json()).catch(()=>({}));
+        oidBurbuja('ML',r.ok?`Publicado: ${r.permalink}`:`Error: ${r.error}`,false); return;
+    }
+    if(accion==='meli_publicar_todo'){
+        oidBurbuja('ML','Publicando catálogo completo...',false);
+        const r=await fetch('/api/meli/publicar_todo',{method:'POST'}).then(x=>x.json()).catch(()=>({}));
+        oidBurbuja('ML',r.ok?`${r.publicados}/${r.total} productos publicados.`:`Error: ${r.error}`,false); return;
+    }
+    if(accion==='meli_preguntas'){
+        const r=await fetch('/api/meli/preguntas').then(x=>x.json()).catch(()=>({}));
+        oidBurbuja('ML',r.ok?`${r.total} preguntas sin responder.`:`Error: ${r.error}`,false); return;
+    }
+    if(accion==='meli_auto_responder'){
+        oidBurbuja('ML','Respondiendo preguntas con IA...',false);
+        const r=await fetch('/api/meli/auto_responder',{method:'POST'}).then(x=>x.json()).catch(()=>({}));
+        oidBurbuja('ML',r.ok?`${r.respondidas} preguntas respondidas.`:`Error: ${r.error}`,false); return;
+    }
+
     // Accion desconocida — solo mostrar respuesta sin crash
     console.log('[NEXUS] Accion no mapeada:', accion, params);
 }
@@ -2076,8 +2108,46 @@ async function healthReparar() {
 
 // Auto-check al abrir panel Sistema
 document.addEventListener('DOMContentLoaded', () => {
-    setTimeout(healthCheck, 2000); // check inicial 2s después de cargar
+    setTimeout(healthCheck, 2000);
+    // Briefing matutino — NEXUS te saluda con el estado real del negocio
+    setTimeout(nexusBriefing, 3000);
 });
+
+async function nexusBriefing() {
+    // Solo una vez por sesion
+    if (sessionStorage.getItem('briefing_done')) return;
+    sessionStorage.setItem('briefing_done', '1');
+    try {
+        const d = await fetch('/api/briefing/texto').then(r=>r.json());
+        if (!d.ok || !d.texto) return;
+        const texto = d.texto;
+        const datos = d.datos || {};
+
+        // Mostrar en el chat del oido
+        oidBurbuja('NEXUS', texto, false);
+
+        // Hablar el briefing con Jorge Neural
+        nexusHablar(texto);
+
+        // Si hay urgencias: resaltar en el dashboard
+        if (datos.pedidos_vencen_hoy > 0) {
+            const alert = document.createElement('div');
+            alert.style.cssText = `
+                position:fixed; top:16px; left:50%; transform:translateX(-50%);
+                background:#1a0000; border:1px solid #ff3344;
+                color:#ff8888; padding:10px 20px; border-radius:8px;
+                font-size:.85rem; z-index:9999; cursor:pointer;
+                box-shadow: 0 0 20px rgba(255,51,68,0.3);
+            `;
+            alert.innerHTML = `⚠️ ${datos.pedidos_vencen_hoy} pedido${datos.pedidos_vencen_hoy>1?'s':''} con entrega HOY — clic para ver`;
+            alert.onclick = () => { window.location='/pedidos'; };
+            document.body.appendChild(alert);
+            setTimeout(() => alert.remove(), 12000);
+        }
+    } catch(e) {
+        // Briefing falla silenciosamente — no interrumpir el trabajo
+    }
+}
 
 async function cmdSistema(modulo) {
     const el=document.getElementById('sis-cmd');

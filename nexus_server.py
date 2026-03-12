@@ -1051,6 +1051,101 @@ async def api_mercado_analizar(req: MercadoAnalizarRequest):
     except Exception as e:
         return {"ok": False, "error": str(e)}
 
+# ── NEXUS BRIEFING ───────────────────────────────────────────────────────────
+@app.get("/api/briefing", response_class=JSONResponse)
+async def api_briefing():
+    """Briefing matutino: estado real del negocio en texto + audio."""
+    try:
+        from nexus_briefing import generar_briefing_audio
+        return await generar_briefing_audio()
+    except Exception as e:
+        return {"ok": False, "error": str(e)}
+
+@app.get("/api/briefing/texto", response_class=JSONResponse)
+async def api_briefing_texto():
+    """Solo texto del briefing — sin audio (mas rapido)."""
+    try:
+        from nexus_briefing import analizar_negocio, generar_briefing
+        datos = analizar_negocio()
+        return {"ok": True, "texto": generar_briefing(datos), "datos": datos}
+    except Exception as e:
+        return {"ok": False, "error": str(e)}
+
+# ── MERCADOLIBRE ──────────────────────────────────────────────────────────────
+@app.get("/api/meli/estado", response_class=JSONResponse)
+async def api_meli_estado():
+    try:
+        from nexus_meli import estado_meli
+        return estado_meli()
+    except Exception as e:
+        return {"ok": False, "error": str(e)}
+
+@app.get("/api/meli/auth", response_class=JSONResponse)
+async def api_meli_auth():
+    """Retorna la URL de autorizacion OAuth2 de MercadoLibre."""
+    try:
+        from nexus_meli import get_auth_url, estado_meli
+        e = estado_meli()
+        if not e["configurado"]:
+            return {"ok": False, "error": "Agrega MELI_CLIENT_ID y MELI_CLIENT_SECRET al .env"}
+        return {"ok": True, "auth_url": get_auth_url(), "msg": "Abre auth_url en tu browser para autorizar"}
+    except Exception as e:
+        return {"ok": False, "error": str(e)}
+
+@app.get("/api/meli/callback", response_class=JSONResponse)
+async def api_meli_callback(code: str = None, error: str = None):
+    """Callback OAuth2 — MercadoLibre redirige aqui con el code."""
+    if error:
+        return {"ok": False, "error": error}
+    if not code:
+        return {"ok": False, "error": "Sin codigo de autorizacion"}
+    try:
+        from nexus_meli import exchange_code
+        return await exchange_code(code)
+    except Exception as e:
+        return {"ok": False, "error": str(e)}
+
+@app.get("/api/meli/catalogo", response_class=JSONResponse)
+async def api_meli_catalogo():
+    try:
+        from nexus_meli import cargar_catalogo
+        return {"ok": True, "productos": cargar_catalogo()}
+    except Exception as e:
+        return {"ok": False, "error": str(e)}
+
+@app.post("/api/meli/publicar/{producto_id}", response_class=JSONResponse)
+async def api_meli_publicar(producto_id: str):
+    try:
+        from nexus_meli import publicar_producto
+        return await publicar_producto(producto_id)
+    except Exception as e:
+        return {"ok": False, "error": str(e)}
+
+@app.post("/api/meli/publicar_todo", response_class=JSONResponse)
+async def api_meli_publicar_todo():
+    try:
+        from nexus_meli import publicar_catalogo_completo
+        return await publicar_catalogo_completo()
+    except Exception as e:
+        return {"ok": False, "error": str(e)}
+
+@app.get("/api/meli/preguntas", response_class=JSONResponse)
+async def api_meli_preguntas():
+    try:
+        from nexus_meli import obtener_preguntas
+        preguntas = await obtener_preguntas()
+        return {"ok": True, "total": len(preguntas), "preguntas": preguntas[:20]}
+    except Exception as e:
+        return {"ok": False, "error": str(e)}
+
+@app.post("/api/meli/auto_responder", response_class=JSONResponse)
+async def api_meli_auto_responder():
+    try:
+        from nexus_meli import auto_responder_preguntas
+        return await auto_responder_preguntas()
+    except Exception as e:
+        return {"ok": False, "error": str(e)}
+
 @app.get("/api/mercado/buscar", response_class=JSONResponse)
 async def api_mercado_buscar(q: str, limite: int = 20):
     try:
