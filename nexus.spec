@@ -1,81 +1,69 @@
 # -*- mode: python ; coding: utf-8 -*-
-# nexus.spec — NEXUS Business Suite v2026
+# nexus.spec — NEXUS Business Suite v2026 — VERSION FINAL
 # Generado para PyInstaller 6.x
 
 import os
 block_cipher = None
 
-# Directorio raíz del proyecto
 ROOT = os.path.abspath('.')
 
-# ── DATOS A INCLUIR ──────────────────────────────────────────────────
+# ── DATOS A INCLUIR ───────────────────────────────────────────────────────────
 datas = [
-    # Templates HTML
     (os.path.join(ROOT, 'WEB', 'templates'), 'WEB/templates'),
-    # Archivos estáticos
     (os.path.join(ROOT, 'WEB', 'static'),    'WEB/static'),
-    # Configuración
     (os.path.join(ROOT, 'CONFIG'),           'CONFIG'),
-    # Archivos de base de datos
-    (os.path.join(ROOT, 'nexus_v2.db'),      '.'),
 ]
 
-# Agregar solo si existen
-extra = [
+# Opcionales — solo si existen
+for src, dst in [
+    ('nexus_v2.db',  '.'),
     ('PLAN_NEGOCIO', 'PLAN_NEGOCIO'),
     ('logs',         'logs'),
-]
-for src, dst in extra:
+    ('LABORATORIO',  'LABORATORIO'),
+    ('DROP_IN',      'DROP_IN'),
+]:
     full = os.path.join(ROOT, src)
     if os.path.exists(full):
         datas.append((full, dst))
 
-# ── MÓDULOS OCULTOS ──────────────────────────────────────────────────
+# ── MÓDULOS OCULTOS ───────────────────────────────────────────────────────────
 hiddenimports = [
     # FastAPI / Starlette / Uvicorn
-    'fastapi',
-    'fastapi.middleware',
-    'fastapi.middleware.cors',
-    'fastapi.responses',
-    'fastapi.staticfiles',
-    'fastapi.templating',
-    'starlette',
-    'starlette.middleware',
-    'starlette.responses',
-    'starlette.routing',
-    'starlette.staticfiles',
-    'starlette.templating',
-    'uvicorn',
-    'uvicorn.logging',
-    'uvicorn.loops',
-    'uvicorn.loops.auto',
-    'uvicorn.protocols',
-    'uvicorn.protocols.http',
-    'uvicorn.protocols.http.auto',
-    'uvicorn.protocols.websockets',
-    'uvicorn.protocols.websockets.auto',
-    'uvicorn.lifespan',
-    'uvicorn.lifespan.on',
-    'anyio',
-    'anyio._backends._asyncio',
-    'anyio._backends._trio',
-    # Templates
-    'jinja2',
-    'jinja2.ext',
-    'jinja2.filters',
-    'aiofiles',
+    'fastapi', 'fastapi.middleware', 'fastapi.middleware.cors',
+    'fastapi.responses', 'fastapi.staticfiles', 'fastapi.templating',
+    'starlette', 'starlette.middleware', 'starlette.responses',
+    'starlette.routing', 'starlette.staticfiles', 'starlette.templating',
+    'uvicorn', 'uvicorn.logging', 'uvicorn.loops', 'uvicorn.loops.auto',
+    'uvicorn.protocols', 'uvicorn.protocols.http', 'uvicorn.protocols.http.auto',
+    'uvicorn.protocols.websockets', 'uvicorn.protocols.websockets.auto',
+    'uvicorn.lifespan', 'uvicorn.lifespan.on',
+    'anyio', 'anyio._backends._asyncio', 'anyio._backends._trio',
+    # Templates / HTTP
+    'jinja2', 'jinja2.ext', 'jinja2.filters', 'aiofiles',
+    'httpx', 'httpx._transports.default', 'httpcore',
     # Pydantic
-    'pydantic',
-    'pydantic.v1',
+    'pydantic', 'pydantic.v1',
     # Base de datos
-    'sqlite3',
-    'supabase',
-    'postgrest',
-    # Módulos NEXUS propios
+    'sqlite3', 'supabase', 'postgrest',
+    # IA
+    'groq', 'dotenv',
+    # Audio
+    'edge_tts',
+    # Cripto
+    'cryptography', 'cryptography.fernet',
+    # Utilidades
+    'psutil', 'requests', 'multipart', 'python_multipart',
+    'email', 'email.mime', 'email.mime.text', 'email.mime.multipart',
+    'email.mime.application', 'concurrent.futures', 'asyncio',
+    'threading', 'hashlib', 'secrets', 'json', 'logging',
+    'pathlib', 'platform', 'subprocess', 'importlib', 'importlib.metadata',
+    'websockets', 'websockets.legacy',
+    # ── MÓDULOS NEXUS CORE ───────────────────────────────────────────────────
+    'nexus_cerebro',
     'nexus_db',
-    'nexus_core',
-    'nexus_stock',
+    'nexus_orders',
     'nexus_crm',
+    'nexus_stock',
     'nexus_marketing',
     'nexus_assistant',
     'nexus_autoventas',
@@ -88,66 +76,70 @@ hiddenimports = [
     'nexus_authorization',
     'nexus_notifier',
     'nexus_telegram',
-    'nexus_meta',
     'nexus_scheduler',
     'nexus_backup',
-    'nexus_iot',
     'nexus_milens',
     'nexus_spy',
     'nexus_social',
+    'nexus_social_operator',
     'nexus_coder',
     'nexus_catalog',
     'nexus_panel',
-    'nexus_launcher',
-    # Audio / Voz
-    'pyttsx3',
-    'pyttsx3.drivers',
-    'pyttsx3.drivers.sapi5',
-    # Utilidades
-    'dotenv',
-    'psutil',
-    'requests',
-    'multipart',
-    'python_multipart',
-    'email',
-    'email.mime',
-    'email.mime.text',
-    'email.mime.multipart',
-    'email.mime.application',
-    'concurrent.futures',
-    'asyncio',
-    'threading',
-    'hashlib',
-    'secrets',
-    'json',
-    'logging',
-    'pathlib',
-    'platform',
-    'subprocess',
-    'importlib',
-    'importlib.metadata',
+    'nexus_finanzas',
+    'nexus_video',
+    'nexus_video_studio',
+    'nexus_video_maker',
+    'nexus_motion_video',
+    'nexus_studio_module',
+    'nexus_estudio',
+    'nexus_merch_design',
+    'nexus_image_processor',
+    'nexus_cartoon_module',
+    # ── MÓDULOS NUEVOS (v2026 final) ─────────────────────────────────────────
+    'nexus_autonomo',
+    'nexus_briefing',
+    'nexus_meli',
+    'nexus_dream',
+    'nexus_autopilot',
+    'nexus_self_heal',
+    'nexus_doctor',
+    'nexus_health',
+    'nexus_logs',
+    'nexus_memory',
+    'nexus_vault',
+    'nexus_watchtower',
+    'nexus_housekeeping',
+    'nexus_supabase_keepalive',
+    'nexus_voz_router',
+    'nexus_voz_v2',
+    'nexus_voice',
+    'nexus_agent',
+    'nexus_market_analyzer',
+    'nexus_boxes_gen',
+    'nexus_planilla_stickers',
+    'nexus_fingerprint',
+    'nexus_atf' if os.path.exists(os.path.join(ROOT,'nexus_atf.py')) else None,
 ]
+# Filtrar Nones
+hiddenimports = [m for m in hiddenimports if m]
 
-# ── ANÁLISIS ─────────────────────────────────────────────────────────
+# ── ANÁLISIS ──────────────────────────────────────────────────────────────────
 a = Analysis(
     ['nexus_server.py'],
     pathex=[ROOT],
-    binaries=[],
+    binaries=[
+        # ffmpeg/ffprobe si existen
+        *[(os.path.join(ROOT, b), '.') for b in ('ffmpeg.exe','ffprobe.exe')
+          if os.path.exists(os.path.join(ROOT, b))],
+    ],
     datas=datas,
     hiddenimports=hiddenimports,
     hookspath=[],
     hooksconfig={},
     runtime_hooks=[],
     excludes=[
-        'tkinter',
-        'matplotlib',
-        'numpy',
-        'pandas',
-        'scipy',
-        'PIL',
-        'cv2',
-        'torch',
-        'tensorflow',
+        'tkinter', 'matplotlib', 'scipy', 'torch', 'tensorflow',
+        'cv2', 'PIL', 'notebook', 'IPython',
     ],
     win_no_prefer_redirects=False,
     win_private_assemblies=False,
@@ -157,7 +149,7 @@ a = Analysis(
 
 pyz = PYZ(a.pure, a.zipped_data, cipher=block_cipher)
 
-# ── EXE ──────────────────────────────────────────────────────────────
+# ── EXE ───────────────────────────────────────────────────────────────────────
 exe = EXE(
     pyz,
     a.scripts,
@@ -168,7 +160,7 @@ exe = EXE(
     bootloader_ignore_signals=False,
     strip=False,
     upx=True,
-    console=True,       # True = muestra terminal (para logs)
+    console=True,
     disable_windowed_traceback=False,
     target_arch=None,
     codesign_identity=None,
@@ -176,7 +168,7 @@ exe = EXE(
     icon=None,
 )
 
-# ── COLLECT (carpeta con todo) ────────────────────────────────────────
+# ── COLLECT ───────────────────────────────────────────────────────────────────
 coll = COLLECT(
     exe,
     a.binaries,
