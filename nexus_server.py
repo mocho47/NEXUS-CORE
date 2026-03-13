@@ -1346,9 +1346,6 @@ async def api_milens_estado(req: MilensEstadoReq):
 async def api_milens_sugerir_precio(data: dict):
     try:
         from groq import Groq
-        from dotenv import load_dotenv
-        load_dotenv()
-        import os
         g = Groq(api_key=os.getenv("GROQ_API_KEY"))
         desc = data.get("descripcion", "")
         tipo = data.get("tipo", "LASER")
@@ -1372,9 +1369,6 @@ Sin texto extra."""
 async def api_milens_caption(data: dict):
     try:
         from groq import Groq
-        from dotenv import load_dotenv
-        load_dotenv()
-        import os
         g = Groq(api_key=os.getenv("GROQ_API_KEY"))
         desc = data.get("descripcion", "")
         tipo = data.get("tipo", "LASER")
