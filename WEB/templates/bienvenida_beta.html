@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>NEXUS — Bienvenido</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:#070a0e;color:#e6edf3;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;min-height:100vh;display:flex;align-items:center;justify-content:center}
+.wrap{width:100%;max-width:520px;padding:24px}
+.step{display:none;animation:fadeIn .4s ease}
+.step.active{display:block}
+@keyframes fadeIn{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+.logo{text-align:center;margin-bottom:32px}
+.logo-text{font-size:32px;font-weight:900;color:#00ff88;letter-spacing:-1px}
+.logo-sub{font-size:14px;color:#7d8590;margin-top:4px}
+.card{background:#0d1117;border:1px solid #21262d;border-radius:16px;padding:32px}
+h2{font-size:22px;font-weight:800;margin-bottom:8px;line-height:1.2}
+p{font-size:15px;color:#7d8590;line-height:1.6;margin-bottom:20px}
+.highlight{color:#e6edf3}
+input,select{width:100%;background:#161b22;border:1px solid #30363d;border-radius:10px;padding:12px 16px;color:#e6edf3;font-size:15px;margin-bottom:12px;outline:none;transition:.2s}
+input:focus,select:focus{border-color:#00ff88}
+.btn{width:100%;padding:14px;background:#00ff88;color:#000;border:none;border-radius:10px;font-size:16px;font-weight:800;cursor:pointer;transition:.2s;margin-top:8px}
+.btn:hover{background:#00cc6a;transform:translateY(-1px)}
+.btn-sec{background:transparent;border:1.5px solid #30363d;color:#7d8590;margin-top:8px}
+.btn-sec:hover{border-color:#00ff88;color:#00ff88;background:transparent}
+.progress{display:flex;gap:6px;justify-content:center;margin-bottom:28px}
+.dot{width:8px;height:8px;border-radius:50%;background:#21262d;transition:.3s}
+.dot.done{background:#00ff88}
+.dot.active{background:#00ff88;box-shadow:0 0 8px #00ff88}
+.mission{background:#0a1a0f;border:1px solid #00ff8830;border-radius:12px;padding:20px;margin:16px 0}
+.mission-title{font-size:13px;color:#00ff88;font-weight:700;text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px}
+.mission-steps{list-style:none}
+.mission-steps li{font-size:14px;color:#e6edf3;padding:6px 0;border-bottom:1px solid #21262d;display:flex;gap:10px;align-items:center}
+.mission-steps li:last-child{border:none}
+.num{background:#00ff8820;color:#00ff88;font-size:12px;font-weight:700;width:22px;height:22px;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.emoji-big{font-size:48px;text-align:center;margin-bottom:16px}
+.api-input{font-family:monospace;font-size:13px;letter-spacing:.5px}
+.check-row{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid #21262d;font-size:14px}
+.check-row:last-child{border:none}
+.check-icon{font-size:18px;width:24px;text-align:center}
+a{color:#00ff88;text-decoration:none}
+a:hover{text-decoration:underline}
+.tag{display:inline-block;background:#00ff8815;border:1px solid #00ff8830;color:#00ff88;font-size:11px;font-weight:700;padding:3px 10px;border-radius:12px;margin-bottom:16px}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <!-- Progreso -->
+  <div class="progress">
+    <div class="dot active" id="d1"></div>
+    <div class="dot" id="d2"></div>
+    <div class="dot" id="d3"></div>
+    <div class="dot" id="d4"></div>
+    <div class="dot" id="d5"></div>
+  </div>
+
+  <!-- PASO 1: Bienvenida -->
+  <div class="step active" id="s1">
+    <div class="logo">
+      <div class="logo-text">NEXUS</div>
+      <div class="logo-sub">by Simplex — El cerebro de tu negocio</div>
+    </div>
+    <div class="card">
+      <div class="emoji-big">🤖</div>
+      <h2>Hola. Soy NEXUS.</h2>
+      <p>Soy el asistente de IA para tu negocio. Hablo español mexicano, opero por voz, gestiono tus pedidos, clientes y ventas — y trabajo mientras tú duermes.</p>
+      <p class="highlight">Este setup tarda <b>3 minutos</b>. Al final tendrás tu propio cerebro digital funcionando.</p>
+      <button class="btn" onclick="next(2)">Vamos 🚀</button>
+    </div>
+  </div>
+
+  <!-- PASO 2: Datos del negocio -->
+  <div class="step" id="s2">
+    <div class="card">
+      <div class="tag">PASO 1 DE 4</div>
+      <h2>Cuéntame de tu negocio</h2>
+      <p>Para conocerte y hablar de lo tuyo desde el primer momento.</p>
+      <input id="inp-nombre" placeholder="Tu nombre" autocomplete="off">
+      <input id="inp-negocio" placeholder="Nombre de tu negocio">
+      <select id="inp-giro">
+        <option value="">¿A qué se dedica tu negocio?</option>
+        <option value="taller_autos">Taller / Servicio de autos</option>
+        <option value="tienda_ropa">Tienda de ropa / accesorios</option>
+        <option value="laser_vinil">Corte láser / Vinil / Rotulación</option>
+        <option value="wrap_vehiculos">Wrap / Personalización de vehículos</option>
+        <option value="ventas">Ventas / Distribución</option>
+        <option value="servicios">Servicios profesionales</option>
+        <option value="comida">Comida / Restaurante</option>
+        <option value="construccion">Construcción / Remodelación</option>
+        <option value="otro">Otro</option>
+      </select>
+      <input id="inp-ciudad" placeholder="Ciudad (ej: Guadalajara)" value="Guadalajara">
+      <button class="btn" onclick="guardarPerfil()">Continuar →</button>
+    </div>
+  </div>
+
+  <!-- PASO 3: API Key (Misión) -->
+  <div class="step" id="s3">
+    <div class="card">
+      <div class="tag">MISIÓN DESBLOQUEADA 🎯</div>
+      <h2>Activa tu cerebro IA</h2>
+      <p>NEXUS usa inteligencia artificial gratuita. Por ahora usas la clave de tu instalador — <b>tu primera misión</b> es obtener la tuya propia en 2 minutos.</p>
+      <div class="mission">
+        <div class="mission-title">🎯 Misión: Tu propia API Key</div>
+        <ul class="mission-steps">
+          <li><span class="num">1</span> Entra a <a href="https://console.groq.com" target="_blank">console.groq.com</a></li>
+          <li><span class="num">2</span> Crea cuenta gratuita (con Google en 30 seg)</li>
+          <li><span class="num">3</span> Ve a "API Keys" → "Create API Key"</li>
+          <li><span class="num">4</span> Copia la clave y pégala abajo</li>
+        </ul>
+      </div>
+      <input id="inp-apikey" class="api-input" placeholder="gsk_... (tu API key de Groq)" autocomplete="off">
+      <p style="font-size:12px;color:#555;margin-bottom:0">Si aún no tienes la tuya, puedes saltarte esto por ahora — usarás la clave compartida del beta.</p>
+      <button class="btn" onclick="guardarAPI()">Activar IA →</button>
+      <button class="btn btn-sec" onclick="saltarAPI()">Ahora no, usar clave beta</button>
+    </div>
+  </div>
+
+  <!-- PASO 4: Tutorial rápido -->
+  <div class="step" id="s4">
+    <div class="card">
+      <div class="tag">PASO 3 DE 4</div>
+      <h2>3 cosas que harás hoy</h2>
+      <p>NEXUS hace mucho — pero empieza con esto:</p>
+      <div class="check-row"><span class="check-icon">🎙️</span><span>Di <b>"nexus"</b> en el dashboard — respondo al instante</span></div>
+      <div class="check-row"><span class="check-icon">📦</span><span>Registra tu primer pedido diciendo <b>"nexus, nuevo pedido para [cliente]"</b></span></div>
+      <div class="check-row"><span class="check-icon">💡</span><span>Pregúntame algo de tu negocio — sé lo que necesitas</span></div>
+      <div style="background:#0a1a0f;border:1px solid #00ff8830;border-radius:10px;padding:16px;margin:16px 0;font-size:13px;color:#7d8590">
+        💬 Comandos de voz que puedes probar:<br>
+        <span style="color:#00ff88">• "nexus, dame el resumen de hoy"</span><br>
+        <span style="color:#00ff88">• "nexus, nuevo cliente [nombre]"</span><br>
+        <span style="color:#00ff88">• "nexus, genera un caption para Instagram"</span>
+      </div>
+      <button class="btn" onclick="next(5)">Entendido, vamos →</button>
+    </div>
+  </div>
+
+  <!-- PASO 5: Listo -->
+  <div class="step" id="s5">
+    <div class="card" style="text-align:center">
+      <div class="emoji-big">🎉</div>
+      <h2>¡NEXUS está listo, <span id="nombre-final">amigo</span>!</h2>
+      <p>Tu negocio ya tiene cerebro digital. Binaurales activos para máximo enfoque.</p>
+      <div style="background:#0a1a0f;border:1px solid #00ff8830;border-radius:10px;padding:16px;margin:16px 0;font-size:14px;text-align:left">
+        <b style="color:#00ff88">Tu misión como beta tester 🎯</b><br>
+        <span style="color:#7d8590">Cuando NEXUS te funcione — y va a funcionar — compártelo con <b style="color:#e6edf3">una sola persona</b>. Un amigo emprendedor. Un familiar que tiene su negocio. Eso es todo. Así crece esto.</span>
+      </div>
+      <div style="background:#161b22;border:1px solid #21262d;border-radius:10px;padding:14px;margin:8px 0;font-size:13px;text-align:left;display:flex;gap:10px;align-items:flex-start">
+        <span style="font-size:18px;flex-shrink:0">📖</span>
+        <span style="color:#7d8590">¿Tienes dudas de cómo usar algo? El <a href="/manual" target="_blank" style="color:#00ff88">manual de usuario</a> lo explica todo en lenguaje simple.</span>
+      </div>
+      <button class="btn" onclick="irDashboard()">Abrir mi NEXUS 🚀</button>
+      <button class="btn btn-sec" onclick="window.open('/manual','_blank')">📖 Ver manual de usuario</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// Si ya completó onboarding, ir directo al dashboard
+if(localStorage.getItem('nexus_onboarding_done')==='1'){
+  window.location = '/dashboard';
+}
+
+let _perfil = {};
+
+function next(n){
+  document.querySelectorAll('.step').forEach(s=>s.classList.remove('active'));
+  document.getElementById('s'+n).classList.add('active');
+  document.querySelectorAll('.dot').forEach((d,i)=>{
+    d.classList.remove('active','done');
+    if(i+1 < n) d.classList.add('done');
+    if(i+1 === n) d.classList.add('active');
+  });
+}
+
+function guardarPerfil(){
+  const nombre  = document.getElementById('inp-nombre').value.trim();
+  const negocio = document.getElementById('inp-negocio').value.trim();
+  const giro    = document.getElementById('inp-giro').value;
+  const ciudad  = document.getElementById('inp-ciudad').value.trim();
+  if(!nombre || !negocio){ alert('Ponme tu nombre y el de tu negocio 😊'); return; }
+  _perfil = {nombre, negocio, giro, ciudad};
+  // Guardar en NEXUS
+  fetch('/api/perfil/set', {method:'POST', headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({nombre_negocio: negocio, giro, ciudad, propietario: nombre})
+  }).catch(()=>{});
+  document.getElementById('nombre-final').textContent = nombre.split(' ')[0];
+  next(3);
+}
+
+function guardarAPI(){
+  const key = document.getElementById('inp-apikey').value.trim();
+  if(key && key.startsWith('gsk_')){
+    fetch('/api/perfil/set', {method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({groq_key: key})
+    }).catch(()=>{});
+    _perfil.api_propia = true;
+  }
+  next(4);
+}
+
+function saltarAPI(){
+  _perfil.api_propia = false;
+  next(4);
+}
+
+function irDashboard(){
+  // Marcar onboarding como completado
+  localStorage.setItem('nexus_onboarding_done','1');
+  localStorage.setItem('nexus_perfil', JSON.stringify(_perfil));
+  window.location = '/dashboard';
+}
+</script>
+</body>
+</html>

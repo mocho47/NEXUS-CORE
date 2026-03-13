@@ -1,0 +1,486 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>NEXUS — Manual de Usuario</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:#070a0e;color:#e6edf3;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;line-height:1.6}
+.header{background:#0d1117;border-bottom:1px solid #21262d;padding:20px 24px;position:sticky;top:0;z-index:100;display:flex;align-items:center;justify-content:space-between}
+.logo{font-size:22px;font-weight:900;color:#00ff88;letter-spacing:-1px}
+.logo span{color:#7d8590;font-weight:400;font-size:14px;margin-left:8px}
+.back-btn{color:#00ff88;text-decoration:none;font-size:14px;border:1px solid #00ff8830;padding:8px 16px;border-radius:8px}
+.back-btn:hover{background:#00ff8810}
+.container{max-width:800px;margin:0 auto;padding:40px 24px 80px}
+.hero{text-align:center;padding:48px 0 40px}
+.hero h1{font-size:36px;font-weight:900;color:#00ff88;margin-bottom:12px}
+.hero p{font-size:17px;color:#7d8590;max-width:500px;margin:0 auto}
+.toc{background:#0d1117;border:1px solid #21262d;border-radius:16px;padding:28px;margin:32px 0}
+.toc h3{font-size:14px;color:#00ff88;font-weight:700;text-transform:uppercase;letter-spacing:.5px;margin-bottom:16px}
+.toc-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.toc-item{display:flex;align-items:center;gap:10px;padding:8px 12px;border-radius:8px;cursor:pointer;transition:.2s;text-decoration:none;color:#e6edf3}
+.toc-item:hover{background:#161b22}
+.toc-num{background:#00ff8820;color:#00ff88;font-size:11px;font-weight:700;width:22px;height:22px;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.toc-text{font-size:14px}
+.section{margin:48px 0}
+.section-header{display:flex;align-items:center;gap:16px;margin-bottom:24px;padding-bottom:16px;border-bottom:1px solid #21262d}
+.section-icon{font-size:32px}
+.section-title h2{font-size:24px;font-weight:800}
+.section-title p{font-size:14px;color:#7d8590;margin-top:4px}
+.card{background:#0d1117;border:1px solid #21262d;border-radius:12px;padding:24px;margin:16px 0}
+.card h4{font-size:16px;font-weight:700;margin-bottom:12px;color:#e6edf3}
+.card p{font-size:14px;color:#7d8590}
+.tip{background:#0a1a0f;border:1px solid #00ff8830;border-radius:10px;padding:16px;margin:12px 0}
+.tip-label{font-size:11px;color:#00ff88;font-weight:700;text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px}
+.cmd{background:#161b22;border:1px solid #30363d;border-radius:8px;padding:12px 16px;margin:8px 0;font-family:monospace;font-size:14px;color:#00ff88;display:flex;align-items:center;gap:10px}
+.cmd-icon{font-size:16px}
+.cmd-text{flex:1}
+.cmd-copy{background:#21262d;border:none;color:#7d8590;font-size:11px;padding:4px 10px;border-radius:6px;cursor:pointer}
+.cmd-copy:hover{background:#00ff8820;color:#00ff88}
+.steps{list-style:none}
+.steps li{display:flex;gap:14px;padding:14px 0;border-bottom:1px solid #21262d;align-items:flex-start}
+.steps li:last-child{border:none}
+.step-num{background:#00ff88;color:#000;font-size:12px;font-weight:800;width:24px;height:24px;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:2px}
+.step-body{flex:1}
+.step-title{font-size:14px;font-weight:700;margin-bottom:4px}
+.step-desc{font-size:13px;color:#7d8590}
+.module-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:16px 0}
+.module-card{background:#161b22;border:1px solid #21262d;border-radius:10px;padding:16px}
+.module-icon{font-size:24px;margin-bottom:8px}
+.module-name{font-size:13px;font-weight:700;color:#e6edf3;margin-bottom:4px}
+.module-desc{font-size:12px;color:#7d8590}
+.badge{display:inline-block;background:#00ff8815;border:1px solid #00ff8830;color:#00ff88;font-size:10px;font-weight:700;padding:2px 8px;border-radius:10px;margin-left:6px;vertical-align:middle}
+.warn{background:#1a1000;border:1px solid #ff880030;border-radius:10px;padding:16px;margin:12px 0;font-size:13px;color:#ff8800}
+.faq-item{border-bottom:1px solid #21262d}
+.faq-q{padding:16px 0;font-weight:700;cursor:pointer;display:flex;justify-content:space-between;align-items:center;font-size:15px}
+.faq-q:hover{color:#00ff88}
+.faq-a{padding:0 0 16px;font-size:14px;color:#7d8590;display:none}
+.faq-a.open{display:block}
+.shortcut-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.shortcut{background:#161b22;border-radius:8px;padding:10px 14px;display:flex;align-items:center;gap:10px;font-size:13px}
+.shortcut kbd{background:#0d1117;border:1px solid #30363d;border-radius:4px;padding:2px 8px;font-family:monospace;font-size:12px;color:#00ff88}
+.progress-bar{background:#21262d;border-radius:8px;height:8px;margin:8px 0;overflow:hidden}
+.progress-fill{height:100%;background:linear-gradient(90deg,#00ff88,#00cc6a);border-radius:8px;transition:.5s}
+a{color:#00ff88;text-decoration:none}
+a:hover{text-decoration:underline}
+@media(max-width:600px){
+  .toc-grid,.module-grid,.shortcut-grid{grid-template-columns:1fr}
+  .hero h1{font-size:28px}
+}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="logo">NEXUS <span>by Simplex — Manual de Usuario</span></div>
+  <a href="/dashboard" class="back-btn">← Ir al Dashboard</a>
+</div>
+
+<div class="container">
+
+  <div class="hero">
+    <div style="font-size:56px;margin-bottom:16px">📖</div>
+    <h1>Manual de NEXUS</h1>
+    <p>Todo lo que necesitas para operar tu negocio con inteligencia artificial. Sin tecnicismos.</p>
+  </div>
+
+  <!-- Tabla de contenidos -->
+  <div class="toc">
+    <h3>Índice de contenidos</h3>
+    <div class="toc-grid">
+      <a href="#inicio" class="toc-item"><span class="toc-num">1</span><span class="toc-text">Cómo iniciar NEXUS</span></a>
+      <a href="#voz" class="toc-item"><span class="toc-num">2</span><span class="toc-text">Comandos de voz</span></a>
+      <a href="#pedidos" class="toc-item"><span class="toc-num">3</span><span class="toc-text">Pedidos y clientes</span></a>
+      <a href="#ia" class="toc-item"><span class="toc-num">4</span><span class="toc-text">Asistente IA</span></a>
+      <a href="#modulos" class="toc-item"><span class="toc-num">5</span><span class="toc-text">Módulos disponibles</span></a>
+      <a href="#autonomo" class="toc-item"><span class="toc-num">6</span><span class="toc-text">Modo autónomo</span></a>
+      <a href="#api" class="toc-item"><span class="toc-num">7</span><span class="toc-text">Tu API Key</span></a>
+      <a href="#faq" class="toc-item"><span class="toc-num">8</span><span class="toc-text">Preguntas frecuentes</span></a>
+    </div>
+  </div>
+
+  <!-- SECCIÓN 1: INICIO -->
+  <div class="section" id="inicio">
+    <div class="section-header">
+      <div class="section-icon">🚀</div>
+      <div class="section-title">
+        <h2>Cómo iniciar NEXUS</h2>
+        <p>Primeros pasos desde cero</p>
+      </div>
+    </div>
+
+    <div class="card">
+      <h4>Método 1: Doble clic en NEXUS.exe</h4>
+      <p>Si recibiste el archivo ejecutable, simplemente haz doble clic. NEXUS abre una ventana negra (terminal) y automáticamente lanza tu navegador en el dashboard.</p>
+    </div>
+
+    <div class="card">
+      <h4>Método 2: Script de inicio (.bat)</h4>
+      <ul class="steps">
+        <li>
+          <span class="step-num">1</span>
+          <div class="step-body">
+            <div class="step-title">Doble clic en INICIAR_NEXUS.bat</div>
+            <div class="step-desc">El script configura todo automáticamente</div>
+          </div>
+        </li>
+        <li>
+          <span class="step-num">2</span>
+          <div class="step-body">
+            <div class="step-title">Espera 5 segundos</div>
+            <div class="step-desc">NEXUS inicia su servidor en segundo plano</div>
+          </div>
+        </li>
+        <li>
+          <span class="step-num">3</span>
+          <div class="step-body">
+            <div class="step-title">Tu navegador abre automáticamente</div>
+            <div class="step-desc">Dashboard en http://localhost:8000/dashboard</div>
+          </div>
+        </li>
+      </ul>
+    </div>
+
+    <div class="tip">
+      <div class="tip-label">💡 Tip</div>
+      <span style="font-size:14px;color:#e6edf3">NEXUS funciona <b>sin internet</b> para la mayoría de funciones. Solo necesitas conexión para el asistente IA (Groq) y MercadoLibre.</span>
+    </div>
+  </div>
+
+  <!-- SECCIÓN 2: VOZ -->
+  <div class="section" id="voz">
+    <div class="section-header">
+      <div class="section-icon">🎙️</div>
+      <div class="section-title">
+        <h2>Comandos de voz</h2>
+        <p>Habla con NEXUS como hablas con un empleado de confianza</p>
+      </div>
+    </div>
+
+    <div class="card">
+      <h4>Cómo activar la voz</h4>
+      <ol class="steps">
+        <li>
+          <span class="step-num">1</span>
+          <div class="step-body">
+            <div class="step-title">Di "nexus" en voz alta</div>
+            <div class="step-desc">NEXUS responde "Mande" cuando te escucha</div>
+          </div>
+        </li>
+        <li>
+          <span class="step-num">2</span>
+          <div class="step-body">
+            <div class="step-title">Da tu comando inmediatamente</div>
+            <div class="step-desc">Tienes 8 segundos para hablar</div>
+          </div>
+        </li>
+        <li>
+          <span class="step-num">3</span>
+          <div class="step-body">
+            <div class="step-title">NEXUS ejecuta y responde</div>
+            <div class="step-desc">Respuesta en texto y/o voz según el comando</div>
+          </div>
+        </li>
+      </ol>
+    </div>
+
+    <div class="card">
+      <h4>Comandos más usados</h4>
+      <div class="cmd"><span class="cmd-icon">📊</span><span class="cmd-text">"nexus, dame el resumen de hoy"</span></div>
+      <div class="cmd"><span class="cmd-icon">📦</span><span class="cmd-text">"nexus, nuevo pedido para [nombre del cliente]"</span></div>
+      <div class="cmd"><span class="cmd-icon">👤</span><span class="cmd-text">"nexus, nuevo cliente [nombre]"</span></div>
+      <div class="cmd"><span class="cmd-icon">💰</span><span class="cmd-text">"nexus, ¿cuánto vendí esta semana?"</span></div>
+      <div class="cmd"><span class="cmd-icon">📱</span><span class="cmd-text">"nexus, genera un caption para Instagram"</span></div>
+      <div class="cmd"><span class="cmd-icon">📋</span><span class="cmd-text">"nexus, ver mis pedidos pendientes"</span></div>
+      <div class="cmd"><span class="cmd-icon">🧾</span><span class="cmd-text">"nexus, generar cotización para [cliente]"</span></div>
+      <div class="cmd"><span class="cmd-icon">🔔</span><span class="cmd-text">"nexus, ¿qué pedidos son urgentes hoy?"</span></div>
+    </div>
+
+    <div class="tip">
+      <div class="tip-label">🎤 Modo NEXUS Ear</div>
+      <span style="font-size:14px;color:#e6edf3">Para control de voz dedicado, abre <b>http://localhost:8000/nexus-ear2</b> — pantalla diseñada para operar solo con tu voz, sin necesidad de usar el mouse.</span>
+    </div>
+  </div>
+
+  <!-- SECCIÓN 3: PEDIDOS -->
+  <div class="section" id="pedidos">
+    <div class="section-header">
+      <div class="section-icon">📦</div>
+      <div class="section-title">
+        <h2>Pedidos y Clientes</h2>
+        <p>Gestión completa de tu operación diaria</p>
+      </div>
+    </div>
+
+    <div class="card">
+      <h4>Crear un pedido nuevo</h4>
+      <ul class="steps">
+        <li><span class="step-num">1</span><div class="step-body"><div class="step-title">Clic en "Pedidos" en el menú lateral</div><div class="step-desc">O di "nexus, nuevo pedido"</div></div></li>
+        <li><span class="step-num">2</span><div class="step-body"><div class="step-title">Llena los datos: cliente, descripción, monto, fecha</div><div class="step-desc">El cliente se guarda automáticamente si es nuevo</div></div></li>
+        <li><span class="step-num">3</span><div class="step-body"><div class="step-title">Selecciona el estado: Pendiente / En proceso / Listo / Entregado</div><div class="step-desc">NEXUS te avisa cuando hay pedidos urgentes</div></div></li>
+        <li><span class="step-num">4</span><div class="step-body"><div class="step-title">Clic en "Guardar pedido"</div><div class="step-desc">Queda registrado y aparece en el dashboard</div></div></li>
+      </ul>
+    </div>
+
+    <div class="module-grid">
+      <div class="module-card">
+        <div class="module-icon">📊</div>
+        <div class="module-name">Estados de pedido</div>
+        <div class="module-desc">Pendiente → En proceso → Listo → Entregado → Cancelado</div>
+      </div>
+      <div class="module-card">
+        <div class="module-icon">🔔</div>
+        <div class="module-name">Alertas automáticas</div>
+        <div class="module-desc">NEXUS detecta pedidos urgentes y te avisa al abrir el dashboard</div>
+      </div>
+      <div class="module-card">
+        <div class="module-icon">👤</div>
+        <div class="module-name">Historial de clientes</div>
+        <div class="module-desc">Cada cliente tiene su perfil con historial completo de compras</div>
+      </div>
+      <div class="module-card">
+        <div class="module-icon">💰</div>
+        <div class="module-name">Reportes de ventas</div>
+        <div class="module-desc">Ventas por día/semana/mes. Cotizaciones automáticas.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SECCIÓN 4: IA -->
+  <div class="section" id="ia">
+    <div class="section-header">
+      <div class="section-icon">🤖</div>
+      <div class="section-title">
+        <h2>Asistente de IA</h2>
+        <p>Tu consultor de negocios disponible 24/7</p>
+      </div>
+    </div>
+
+    <div class="card">
+      <h4>¿Qué puedes preguntarle a NEXUS?</h4>
+      <p style="margin-bottom:16px">NEXUS conoce tu negocio, tu historial y el contexto del mercado. Pregúntale lo que preguntarías a tu mejor asesor:</p>
+      <div class="cmd"><span class="cmd-icon">💡</span><span class="cmd-text">"¿Cómo puedo conseguir más clientes este mes?"</span></div>
+      <div class="cmd"><span class="cmd-icon">📣</span><span class="cmd-text">"Escríbeme un post para Facebook de mi negocio"</span></div>
+      <div class="cmd"><span class="cmd-icon">💬</span><span class="cmd-text">"¿Cómo le respondo a este cliente que se quejó?"</span></div>
+      <div class="cmd"><span class="cmd-icon">📈</span><span class="cmd-text">"Dame ideas para aumentar mis ventas en temporada baja"</span></div>
+      <div class="cmd"><span class="cmd-icon">🧾</span><span class="cmd-text">"Genera un mensaje de cobranza para [cliente]"</span></div>
+      <div class="cmd"><span class="cmd-icon">🎯</span><span class="cmd-text">"¿Qué debo hacer hoy que sea prioritario?"</span></div>
+    </div>
+
+    <div class="card">
+      <h4>Briefing matutino <span class="badge">Automático</span></h4>
+      <p>Cada mañana al abrir el dashboard, NEXUS te da un resumen de:<br>
+      • Pedidos urgentes del día<br>
+      • Prospectos que necesitan seguimiento<br>
+      • Recordatorios y pendientes<br>
+      • Sugerencias de acción inmediata</p>
+    </div>
+
+    <div class="tip">
+      <div class="tip-label">🧠 NEXUS aprende de ti</div>
+      <span style="font-size:14px;color:#e6edf3">Mientras más uses NEXUS, mejor te conoce. Cada conversación mejora sus respuestas. Habla natural — no necesitas tecnicismos.</span>
+    </div>
+  </div>
+
+  <!-- SECCIÓN 5: MÓDULOS -->
+  <div class="section" id="modulos">
+    <div class="section-header">
+      <div class="section-icon">⚡</div>
+      <div class="section-title">
+        <h2>Módulos disponibles</h2>
+        <p>Lo que NEXUS puede hacer por tu negocio</p>
+      </div>
+    </div>
+
+    <div class="module-grid">
+      <div class="module-card">
+        <div class="module-icon">📦</div>
+        <div class="module-name">Pedidos</div>
+        <div class="module-desc">Registro, seguimiento y alertas de órdenes</div>
+      </div>
+      <div class="module-card">
+        <div class="module-icon">👤</div>
+        <div class="module-name">Clientes</div>
+        <div class="module-desc">CRM completo con historial y seguimiento</div>
+      </div>
+      <div class="module-card">
+        <div class="module-icon">💰</div>
+        <div class="module-name">Ventas</div>
+        <div class="module-desc">Cotizaciones, facturas y reportes</div>
+      </div>
+      <div class="module-card">
+        <div class="module-icon">📱</div>
+        <div class="module-name">Social Media</div>
+        <div class="module-desc">Captions para Instagram, Facebook, TikTok</div>
+      </div>
+      <div class="module-card">
+        <div class="module-icon">🎙️</div>
+        <div class="module-name">Control por Voz</div>
+        <div class="module-desc">Habla con NEXUS — operar sin teclado</div>
+      </div>
+      <div class="module-card">
+        <div class="module-icon">📊</div>
+        <div class="module-name">Dashboard</div>
+        <div class="module-desc">Vista completa del estado de tu negocio</div>
+      </div>
+      <div class="module-card">
+        <div class="module-icon">🧠</div>
+        <div class="module-name">IA Conversacional</div>
+        <div class="module-desc">Consultor de negocios con memoria</div>
+      </div>
+      <div class="module-card">
+        <div class="module-icon">🛒</div>
+        <div class="module-name">MercadoLibre</div>
+        <div class="module-desc">Publicación automática y gestión de preguntas</div>
+      </div>
+      <div class="module-card">
+        <div class="module-icon">📹</div>
+        <div class="module-name">Video Pipeline</div>
+        <div class="module-desc">Convierte videos a TikTok, Reels y Facebook</div>
+      </div>
+      <div class="module-card">
+        <div class="module-icon">🔒</div>
+        <div class="module-name">Bóveda</div>
+        <div class="module-desc">Contraseñas y datos confidenciales seguros</div>
+      </div>
+      <div class="module-card">
+        <div class="module-icon">🏥</div>
+        <div class="module-name">Doctor NEXUS</div>
+        <div class="module-desc">Auto-diagnóstico y reparación del sistema</div>
+      </div>
+      <div class="module-card">
+        <div class="module-icon">💤</div>
+        <div class="module-name">Modo Sueño</div>
+        <div class="module-desc">NEXUS genera ideas mientras no trabajas</div>
+      </div>
+    </div>
+
+    <div class="tip">
+      <div class="tip-label">💬 Pregunta a NEXUS por un módulo</div>
+      <span style="font-size:14px;color:#e6edf3">Si no sabes cómo usar algo, pregunta: <b>"nexus, ¿cómo funciona el módulo de ventas?"</b> — te explica en lenguaje simple.</span>
+    </div>
+  </div>
+
+  <!-- SECCIÓN 6: AUTÓNOMO -->
+  <div class="section" id="autonomo">
+    <div class="section-header">
+      <div class="section-icon">🤖</div>
+      <div class="section-title">
+        <h2>Modo Autónomo</h2>
+        <p>NEXUS trabaja solo mientras tú vives tu vida</p>
+      </div>
+    </div>
+
+    <div class="card">
+      <h4>¿Qué hace NEXUS cuando no estás?</h4>
+      <ul class="steps">
+        <li><span class="step-num" style="background:#21262d;color:#00ff88">🎯</span><div class="step-body"><div class="step-title">Detecta prospectos sin seguimiento</div><div class="step-desc">Si un prospecto lleva más de 48h sin respuesta, NEXUS te avisa y genera el mensaje de WhatsApp</div></div></li>
+        <li><span class="step-num" style="background:#21262d;color:#00ff88">📊</span><div class="step-body"><div class="step-title">Analiza patrones de negocio</div><div class="step-desc">Aprende de tus conversaciones y detecta oportunidades recurrentes</div></div></li>
+        <li><span class="step-num" style="background:#21262d;color:#00ff88">🔧</span><div class="step-body"><div class="step-title">Auto-diagnóstico del sistema</div><div class="step-desc">Verifica que todos los módulos funcionen. Se auto-repara si puede.</div></div></li>
+        <li><span class="step-num" style="background:#21262d;color:#00ff88">💡</span><div class="step-body"><div class="step-title">Genera sugerencias de negocio</div><div class="step-desc">Al llegar al dashboard encuentras acciones concretas listas para ejecutar</div></div></li>
+      </ul>
+    </div>
+
+    <div class="warn">
+      ⚡ El modo autónomo se activa automáticamente cuando NEXUS está corriendo. No necesitas hacer nada. Revisa la pestaña "Autónomo" en el dashboard para ver sus sugerencias.
+    </div>
+  </div>
+
+  <!-- SECCIÓN 7: API KEY -->
+  <div class="section" id="api">
+    <div class="section-header">
+      <div class="section-icon">🔑</div>
+      <div class="section-title">
+        <h2>Tu API Key personal</h2>
+        <p>La misión que multiplica el poder de NEXUS</p>
+      </div>
+    </div>
+
+    <div class="card">
+      <h4>¿Por qué necesitas tu propia API Key?</h4>
+      <p>NEXUS usa inteligencia artificial de Groq (gratuita). Durante el beta usas una clave compartida. Con tu propia clave tienes:<br><br>
+      ✅ Más velocidad y disponibilidad<br>
+      ✅ Tu propio límite de uso (sin compartir)<br>
+      ✅ Independencia total<br>
+      ✅ Misma calidad de IA — sin costo</p>
+    </div>
+
+    <div class="card">
+      <h4>Cómo obtener tu API Key GRATIS (2 minutos)</h4>
+      <ul class="steps">
+        <li><span class="step-num">1</span><div class="step-body"><div class="step-title">Entra a <a href="https://console.groq.com" target="_blank">console.groq.com</a></div><div class="step-desc">Crea cuenta gratuita — con Google en 30 segundos</div></div></li>
+        <li><span class="step-num">2</span><div class="step-body"><div class="step-title">Ve a "API Keys" → "Create API Key"</div><div class="step-desc">Ponle el nombre "NEXUS" para identificarla</div></div></li>
+        <li><span class="step-num">3</span><div class="step-body"><div class="step-title">Copia la clave (empieza con gsk_...)</div><div class="step-desc">Guárdala en un lugar seguro — solo se muestra una vez</div></div></li>
+        <li><span class="step-num">4</span><div class="step-body"><div class="step-title">En el dashboard: Configuración → Actualizar API Key</div><div class="step-desc">O di "nexus, actualizar mi api key"</div></div></li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- SECCIÓN 8: FAQ -->
+  <div class="section" id="faq">
+    <div class="section-header">
+      <div class="section-icon">❓</div>
+      <div class="section-title">
+        <h2>Preguntas frecuentes</h2>
+        <p>Lo que todos preguntan la primera semana</p>
+      </div>
+    </div>
+
+    <div class="card" style="padding:0 24px">
+      <div class="faq-item">
+        <div class="faq-q" onclick="toggleFaq(this)">¿NEXUS necesita internet para funcionar? <span>+</span></div>
+        <div class="faq-a">No del todo. El dashboard, pedidos, clientes y la mayoría de módulos funcionan sin internet. Solo necesitas conexión para el asistente IA, MercadoLibre y algunas funciones de redes sociales.</div>
+      </div>
+      <div class="faq-item">
+        <div class="faq-q" onclick="toggleFaq(this)">¿Es segura mi información de negocio? <span>+</span></div>
+        <div class="faq-a">Sí. Todos tus datos se guardan localmente en tu computadora en una base de datos SQLite cifrada. NEXUS no envía tu información de clientes o pedidos a ningún servidor externo. Solo los mensajes de chat al asistente IA van a Groq para procesar la respuesta.</div>
+      </div>
+      <div class="faq-item">
+        <div class="faq-q" onclick="toggleFaq(this)">La voz no me escucha, ¿qué hago? <span>+</span></div>
+        <div class="faq-a">1) Verifica que tu navegador tenga permiso para el micrófono (aparece en la barra de direcciones). 2) Usa Chrome o Edge — son los navegadores con mejor soporte de voz en español. 3) Habla cerca del micrófono y di "nexus" claramente. 4) Si sigue sin funcionar, escribe en el chat y reporta el problema.</div>
+      </div>
+      <div class="faq-item">
+        <div class="faq-q" onclick="toggleFaq(this)">¿Puedo usar NEXUS en mi celular? <span>+</span></div>
+        <div class="faq-a">Sí. NEXUS es una PWA (Progressive Web App) — en Chrome para Android, toca el menú → "Agregar a pantalla de inicio". Se instala como una app nativa. También funciona en Safari de iPhone. Necesitas que el servidor esté corriendo en tu computadora y estar en la misma red WiFi.</div>
+      </div>
+      <div class="faq-item">
+        <div class="faq-q" onclick="toggleFaq(this)">¿Qué pasa si se cierra la ventana negra (terminal)? <span>+</span></div>
+        <div class="faq-a">Si cierras la terminal, NEXUS deja de funcionar. Vuelve a abrir NEXUS.exe o INICIAR_NEXUS.bat. Todos tus datos están guardados — no se pierden al cerrar el servidor.</div>
+      </div>
+      <div class="faq-item">
+        <div class="faq-q" onclick="toggleFaq(this)">¿Cómo reporto un problema o sugerencia? <span>+</span></div>
+        <div class="faq-a">En el dashboard encontrarás un botón de feedback (💬). Puedes escribir directamente a WhatsApp: <a href="https://wa.me/523326148674" target="_blank">wa.me/523326148674</a> — el equipo de NEXUS responde el mismo día.</div>
+      </div>
+      <div class="faq-item">
+        <div class="faq-q" onclick="toggleFaq(this)">¿Los binaurales que suenan son normales? <span>+</span></div>
+        <div class="faq-a">Sí, completamente. NEXUS activa por defecto frecuencias binaurales (7.83Hz — resonancia Schumann) diseñadas para mejorar el enfoque y reducir el estrés mientras trabajas. Son inaudibles directamente pero tienen efecto en el nivel cognitivo. Puedes desactivarlos en Configuración → Ambiente sonoro.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- CTA final -->
+  <div style="text-align:center;padding:48px 0 16px">
+    <div style="font-size:48px;margin-bottom:16px">🚀</div>
+    <h2 style="font-size:28px;font-weight:900;color:#00ff88;margin-bottom:12px">¿Listo para operar?</h2>
+    <p style="color:#7d8590;font-size:16px;margin-bottom:28px">Ya tienes todo lo que necesitas. Tu negocio te espera.</p>
+    <a href="/dashboard" style="background:#00ff88;color:#000;padding:16px 40px;border-radius:12px;font-weight:800;font-size:16px;display:inline-block;text-decoration:none;transition:.2s" onmouseover="this.style.background='#00cc6a'" onmouseout="this.style.background='#00ff88'">Abrir mi NEXUS 🚀</a>
+    <br><br>
+    <a href="https://wa.me/523326148674" target="_blank" style="color:#7d8590;font-size:13px">¿Algo no funciona? Escríbenos por WhatsApp →</a>
+  </div>
+
+</div>
+
+<script>
+function toggleFaq(el){
+  const ans = el.nextElementSibling;
+  const sym = el.querySelector('span');
+  const isOpen = ans.classList.contains('open');
+  // cerrar todos
+  document.querySelectorAll('.faq-a').forEach(a=>a.classList.remove('open'));
+  document.querySelectorAll('.faq-q span').forEach(s=>s.textContent='+');
+  if(!isOpen){ ans.classList.add('open'); sym.textContent='−'; }
+}
+</script>
+</body>
+</html>

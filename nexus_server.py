@@ -1696,6 +1696,14 @@ async def api_galeria_credito(req: GaleriaCreditoReq):
 
 # ── LEGAL / PRIVACIDAD ────────────────────────────────────────────────────────
 
+@app.get("/bienvenida", response_class=HTMLResponse)
+async def bienvenida_view(request: Request):
+    return templates.TemplateResponse("bienvenida_beta.html", {"request": request})
+
+@app.get("/manual", response_class=HTMLResponse)
+async def manual_view(request: Request):
+    return templates.TemplateResponse("manual_usuario.html", {"request": request})
+
 @app.get("/legal", response_class=HTMLResponse)
 async def legal_view(request: Request):
     return templates.TemplateResponse("legal.html", {"request": request})
@@ -3433,6 +3441,42 @@ async def api_legal():
             "aviso_url": "/legal/privacidad",
             "terminos_url": "/legal/terminos",
         }
+    except Exception as e:
+        return {"ok": False, "error": str(e)}
+
+# ── BETA FEEDBACK ─────────────────────────────────────────────────────────────
+@app.post("/api/feedback/beta", response_class=JSONResponse)
+async def api_feedback_beta(request: Request):
+    """Recibe feedback de beta testers y lo guarda en JSON."""
+    try:
+        data = await request.json()
+        texto   = data.get("texto", "").strip()
+        negocio = data.get("negocio", "Beta")
+        ts      = data.get("timestamp", datetime.datetime.now().isoformat())
+        if not texto:
+            return {"ok": False, "error": "Texto vacío"}
+        feedback_path = os.path.join(CONFIG_DIR, "beta_feedback.json")
+        feedbacks = []
+        if os.path.exists(feedback_path):
+            with open(feedback_path, encoding="utf-8") as f:
+                feedbacks = json.load(f)
+        feedbacks.append({"negocio": negocio, "texto": texto, "timestamp": ts})
+        with open(feedback_path, "w", encoding="utf-8") as f:
+            json.dump(feedbacks, f, ensure_ascii=False, indent=2)
+        return {"ok": True, "total": len(feedbacks)}
+    except Exception as e:
+        return {"ok": False, "error": str(e)}
+
+@app.get("/api/feedback/beta", response_class=JSONResponse)
+async def api_feedback_beta_list():
+    """Lista todos los feedbacks de beta testers (admin)."""
+    try:
+        feedback_path = os.path.join(CONFIG_DIR, "beta_feedback.json")
+        if not os.path.exists(feedback_path):
+            return {"ok": True, "feedbacks": [], "total": 0}
+        with open(feedback_path, encoding="utf-8") as f:
+            feedbacks = json.load(f)
+        return {"ok": True, "feedbacks": feedbacks, "total": len(feedbacks)}
     except Exception as e:
         return {"ok": False, "error": str(e)}
 
