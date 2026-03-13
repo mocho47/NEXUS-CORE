@@ -1,0 +1,87 @@
+================================================================
+  NEXUS by Simplex — Guía de Inicio Rápido
+================================================================
+
+ARRANCAR EL SERVIDOR
+--------------------
+  Doble clic en:  INICIAR_NEXUS_COMPLETO.bat
+  O desde terminal:
+    cd C:\nexus
+    python nexus_server.py
+
+URLS PRINCIPALES (puerto 8000)
+-------------------------------
+  Dashboard     http://localhost:8000/dashboard
+  Voz (EAR v2)  http://localhost:8000/nexus-ear2
+  Pedidos       http://localhost:8000/pedidos
+  Clientes      http://localhost:8000/clientes
+  Stock         http://localhost:8000/stock
+  Cotizar       http://localhost:8000/cotizar
+  Estudio       http://localhost:8000/estudio
+  Marketing     http://localhost:8000/marketing
+  Finanzas      http://localhost:8000/finanzas
+  ATF           http://localhost:8000/atf
+  CanbusFix     http://localhost:8000/canbusfix
+  Milens        http://localhost:8000/milens
+  Video Studio  http://localhost:8000/video-studio
+  Mercado       http://localhost:8000/mercado
+  Admin         http://localhost:8000/admin   (PIN: nexus2024)
+  QR de red     http://localhost:8000/qr
+
+NEXUS TEENS (puerto 8100)
+--------------------------
+  Servidor:  python nexus_teens_server.py
+  URL:       http://localhost:8100/teens
+
+COMANDOS DE VOZ (decir "nexus" primero)
+----------------------------------------
+  "nexus" → espera → luego el comando:
+  - "nuevo pedido para [cliente], [producto]"
+  - "qué tengo pendiente hoy"
+  - "dame el resumen del día"
+  - "nuevo cliente [nombre] tel [teléfono]"
+  - "cotiza [producto] para [cliente]"
+  - "abre CorelDRAW"
+  - "genera caja MDF 30x20x10cm"
+  - "como está el sistema"
+  - "haz un backup ahora"
+  - "muestra el pipeline de ventas"
+  - "agenda instalación faros para [cliente]"
+
+APIs CLAVE
+----------
+  GET  /api/nexus_status        Estado de módulos
+  GET  /api/briefing/texto      Briefing matutino (sin audio)
+  GET  /api/briefing            Briefing con audio TTS
+  POST /api/asistente           Chat con IA (JSON: {texto, session_id})
+  GET  /api/autonomo/estado     Estado del sistema autónomo
+  GET  /api/meli/estado         Estado de MercadoLibre
+  GET  /api/health/check        Diagnóstico rápido del sistema
+
+CONFIGURACIÓN INICIAL
+---------------------
+  1. Copia .env.example → .env y llena tus claves (Groq, Supabase)
+  2. Abre http://localhost:8000/setup para el asistente de primera vez
+  3. Configura tu negocio en http://localhost:8000/config_negocio
+
+ACTIVAR MERCADOLIBRE
+--------------------
+  1. Agrega MELI_CLIENT_ID y MELI_CLIENT_SECRET en tu .env
+  2. Abre http://localhost:8000/api/meli/auth → copia la URL
+  3. Pégala en el browser → autoriza → listo
+
+BACKUP
+------
+  Automático: cada noche vía autopilot
+  Manual:     POST http://localhost:8000/api/backup
+  Carpeta:    C:\nexus\BACKUPS\
+
+SOPORTE
+-------
+  Logs del servidor:  C:\nexus\logs\
+  NOTAS_DE_ADMIN_NEXUS.txt — historial de cambios
+  MANUAL_NEXUS_V10.md — manual completo
+
+================================================================
+  NEXUS by Simplex | Guadalajara, Jalisco | 3326148674
+================================================================

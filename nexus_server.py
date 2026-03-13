@@ -1,5 +1,5 @@
 from fastapi import FastAPI, Request, Form, File, UploadFile
-from fastapi.responses import HTMLResponse, JSONResponse, RedirectResponse
+from fastapi.responses import HTMLResponse, JSONResponse, RedirectResponse, FileResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from pydantic import BaseModel
@@ -10,6 +10,14 @@ import platform
 import shutil
 import tempfile
 import urllib.parse
+
+# ── Cargar variables de entorno PRIMERO (antes de cualquier import de modulos) ──
+try:
+    from dotenv import load_dotenv
+    load_dotenv(os.path.join(os.path.dirname(os.path.abspath(__file__)), ".env"))
+except Exception:
+    pass
+
 from nexus_orders import manager as orders_mgr
 from nexus_crm import manager as crm_mgr
 from nexus_stock import manager as stock_mgr
@@ -52,6 +60,24 @@ os.makedirs(STATIC_DIR, exist_ok=True)
 
 templates = Jinja2Templates(directory=TEMPLATES_DIR)
 app.mount("/static", StaticFiles(directory=STATIC_DIR), name="static")
+
+# ── PWA: Service Worker y Manifest en raíz (scope máximo) ────────────────────
+@app.get("/nexus_sw.js")
+async def nexus_sw_root():
+    """Service Worker servido desde la raíz para scope completo PWA."""
+    sw_path = os.path.join(STATIC_DIR, "nexus_sw.js")
+    if os.path.exists(sw_path):
+        return FileResponse(sw_path, media_type="application/javascript",
+                            headers={"Service-Worker-Allowed": "/"})
+    return JSONResponse({"error": "SW no encontrado"}, status_code=404)
+
+@app.get("/manifest.json")
+async def manifest_json():
+    """Manifest PWA servido desde raíz (alias de /static/nexus_manifest.json)."""
+    manifest_path = os.path.join(STATIC_DIR, "nexus_manifest.json")
+    if os.path.exists(manifest_path):
+        return FileResponse(manifest_path, media_type="application/manifest+json")
+    return JSONResponse({"error": "Manifest no encontrado"}, status_code=404)
 
 def load_precios():
     try:
@@ -905,21 +931,42 @@ async def atf_videos_terminados():
 @app.get("/canbusfix", response_class=HTMLResponse)
 async def canbusfix_view():
     path = os.path.join(BASE_DIR, "WEB_CANBUSFIX", "index.html")
-    with open(path, "r", encoding="utf-8") as f:
-        return HTMLResponse(content=f.read())
+    try:
+        with open(path, "r", encoding="utf-8") as f:
+            return HTMLResponse(content=f.read())
+    except FileNotFoundError:
+        return HTMLResponse(content="""<!DOCTYPE html><html lang="es"><head><meta charset="UTF-8">
+<title>CanbusFix — Red de Instaladores</title>
+<script src="https://cdn.tailwindcss.com"></script></head>
+<body class="bg-gray-900 text-white flex items-center justify-center h-screen">
+<div class="text-center"><h1 class="text-4xl font-bold text-blue-400 mb-4">CanbusFix</h1>
+<p class="text-gray-400">Red de instaladores de retrofit en construcción.</p>
+<a href="/dashboard" class="mt-6 inline-block bg-blue-500 text-white px-6 py-2 rounded">← Volver</a>
+</div></body></html>""")
 
 @app.get("/canbusfix/catalogo", response_class=HTMLResponse)
 async def canbusfix_catalogo():
     path = os.path.join(BASE_DIR, "WEB_CANBUSFIX", "catalogo.html")
-    with open(path, "r", encoding="utf-8") as f:
-        return HTMLResponse(content=f.read())
+    try:
+        with open(path, "r", encoding="utf-8") as f:
+            return HTMLResponse(content=f.read())
+    except FileNotFoundError:
+        return HTMLResponse(content="""<!DOCTYPE html><html lang="es"><head><meta charset="UTF-8">
+<title>Catálogo CanbusFix</title></head>
+<body style="background:#111;color:#fff;text-align:center;padding:2rem">
+<h2>Catálogo no disponible aún.</h2>
+<a href="/canbusfix" style="color:#60a5fa">← Volver</a>
+</body></html>""")
 
 @app.get("/api/canbusfix/productos")
 async def canbusfix_productos():
     import json
     path = os.path.join(BASE_DIR, "ilume_prices.json")
-    with open(path, "r", encoding="utf-8") as f:
-        return json.load(f)
+    try:
+        with open(path, "r", encoding="utf-8") as f:
+            return json.load(f)
+    except FileNotFoundError:
+        return {"ok": False, "error": "ilume_prices.json no encontrado"}
 
 @app.get("/api/canbusfix/catalogo", response_class=JSONResponse)
 async def api_canbusfix_catalogo(tier: str = "publico"):
@@ -2316,9 +2363,18 @@ class AsistenteReq(BaseModel):
 async def api_asistente_chat(req: AsistenteReq):
     try:
         from nexus_cerebro import get_cerebro
-        return get_cerebro().pensar(req.texto)
+        resultado = get_cerebro().pensar(req.texto)
+        # Garantizar que la respuesta siempre tenga los campos mínimos esperados
+        if not isinstance(resultado, dict):
+            resultado = {"accion": "conversar", "params": {}, "respuesta": str(resultado)}
+        resultado.setdefault("accion", "conversar")
+        resultado.setdefault("params", {})
+        resultado.setdefault("respuesta", "")
+        return resultado
+    except json.JSONDecodeError as e:
+        return {"accion": "error", "params": {}, "respuesta": f"Error al decodificar respuesta del cerebro: {e}"}
     except Exception as e:
-        return {"respuesta": f"Error del asistente: {str(e)}"}
+        return {"accion": "error", "params": {}, "respuesta": f"Error del asistente: {str(e)}"}
 
 @app.post("/api/asistente/stream")
 async def api_asistente_stream(req: AsistenteReq):
@@ -3253,14 +3309,29 @@ async def api_logs_bitacora(n: int = 50):
 
 
 if __name__ == "__main__":
-    from nexus_autopilot import autopilot as _ap
-    _ap.iniciar()
+    port = int(os.environ.get("PORT", 8000))
+    print("=" * 58)
+    print("  NEXUS by Simplex — Sistema Empresarial con IA")
+    print(f"  Dashboard   : http://localhost:{port}/dashboard")
+    print(f"  Voz         : http://localhost:{port}/nexus-ear2")
+    print(f"  QR Red      : http://localhost:{port}/qr")
+    print(f"  Admin       : http://localhost:{port}/admin")
+    print("=" * 58)
+
+    # Arrancar autopilot
+    try:
+        from nexus_autopilot import autopilot as _ap
+        _ap.iniciar()
+    except Exception as _e:
+        print(f"[Autopilot] No se pudo iniciar: {_e}")
+
     # Arrancar sistema autonomo
     try:
         from nexus_autonomo import iniciar as _autonomo_iniciar
         _autonomo_iniciar()
     except Exception as _e:
         print(f"[Autonomo] No se pudo iniciar: {_e}")
+
     # Arrancar supabase keepalive
     try:
         from nexus_supabase_keepalive import SupabaseKeepAlive
@@ -3268,15 +3339,14 @@ if __name__ == "__main__":
         _kl.start()
     except Exception as _e:
         print(f"[Keepalive] {_e}")
+
     # Arrancar bot de Telegram
     try:
-        from dotenv import load_dotenv
-        load_dotenv()
         from nexus_telegram import TelegramBot
         _bot = TelegramBot()
         _bot.start()
         _bot.send("🟢 <b>NEXUS iniciado</b>\nServidor activo en puerto 8000.")
     except Exception as _e:
         print(f"[Telegram] No se pudo iniciar bot: {_e}")
-    port = int(os.environ.get("PORT", 8000))
+
     uvicorn.run(app, host="0.0.0.0", port=port)

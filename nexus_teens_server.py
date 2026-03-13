@@ -316,6 +316,23 @@ async def api_aptitudes(user_id: str):
     except Exception as e:
         return {"ok": False, "error": str(e)}
 
+@app.get("/teens_sw.js")
+async def teens_sw_root():
+    """Service Worker de Teens servido desde raíz para scope PWA completo."""
+    sw_path = STATIC_DIR / "teens_sw.js"
+    if sw_path.exists():
+        return FileResponse(str(sw_path), media_type="application/javascript",
+                            headers={"Service-Worker-Allowed": "/"})
+    return JSONResponse({"error": "SW no encontrado"}, status_code=404)
+
+@app.get("/teens_manifest.json")
+async def teens_manifest_root():
+    """Manifest Teens servido desde raíz."""
+    manifest_path = STATIC_DIR / "teens_manifest.json"
+    if manifest_path.exists():
+        return FileResponse(str(manifest_path), media_type="application/manifest+json")
+    return JSONResponse({"error": "Manifest no encontrado"}, status_code=404)
+
 @app.get("/api/health", response_class=JSONResponse)
 async def health():
     return {"ok": True, "app": "NEXUS Teens", "version": "2026.1", "puerto": 8100}
