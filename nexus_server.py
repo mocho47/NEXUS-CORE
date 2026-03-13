@@ -3202,6 +3202,89 @@ async def api_monitor_eventos():
     })
 
 
+# ── VIDEO PIPELINE ATF ────────────────────────────────────────────────────────
+@app.get("/api/atf/pipeline/estado", response_class=JSONResponse)
+async def api_atf_pipeline_estado():
+    try:
+        from nexus_video_pipeline_atf import estado_pipeline
+        return estado_pipeline()
+    except Exception as e:
+        return {"ok": False, "error": str(e)}
+
+@app.post("/api/atf/pipeline/procesar", response_class=JSONResponse)
+async def api_atf_pipeline_procesar(request: Request):
+    try:
+        body = await request.json()
+        from nexus_video_pipeline_atf import procesar_video, procesar_carpeta
+        if body.get("carpeta"):
+            return procesar_carpeta(body.get("ruta"))
+        elif body.get("archivo"):
+            return procesar_video(body["archivo"])
+        else:
+            return procesar_carpeta()
+    except Exception as e:
+        return {"ok": False, "error": str(e)}
+
+@app.get("/api/atf/pipeline/caption", response_class=JSONResponse)
+async def api_atf_pipeline_caption(archivo: str = ""):
+    try:
+        if not archivo:
+            return {"ok": False, "error": "Parámetro 'archivo' requerido"}
+        from nexus_video_pipeline_atf import generar_caption_ia
+        return generar_caption_ia(archivo)
+    except Exception as e:
+        return {"ok": False, "error": str(e)}
+
+# ── WHATSAPP ──────────────────────────────────────────────────────────────────
+@app.post("/api/whatsapp/webhook")
+async def api_whatsapp_webhook(request: Request):
+    """Webhook de Twilio — recibe mensajes entrantes de WhatsApp."""
+    try:
+        form = await request.form()
+        numero   = str(form.get("From", ""))
+        nombre   = str(form.get("ProfileName", ""))
+        texto    = str(form.get("Body", ""))
+        from nexus_whatsapp import procesar_mensaje, generar_twiml
+        resultado = procesar_mensaje(numero, nombre, texto, "twilio")
+        twiml = generar_twiml(resultado["respuesta"])
+        from fastapi.responses import Response
+        return Response(content=twiml, media_type="application/xml")
+    except Exception as e:
+        from fastapi.responses import Response
+        return Response(content='<?xml version="1.0"?><Response></Response>', media_type="application/xml")
+
+@app.get("/api/whatsapp/estado", response_class=JSONResponse)
+async def api_whatsapp_estado():
+    try:
+        from nexus_whatsapp import estado
+        return estado()
+    except Exception as e:
+        return {"ok": False, "error": str(e)}
+
+@app.post("/api/whatsapp/test", response_class=JSONResponse)
+async def api_whatsapp_test(request: Request):
+    """Simula un mensaje entrante para probar el módulo."""
+    try:
+        body = await request.json()
+        from nexus_whatsapp import procesar_mensaje
+        return procesar_mensaje(
+            body.get("numero", "3300000000"),
+            body.get("nombre", "Test"),
+            body.get("texto", "quiero saber el precio de los faros"),
+            "test",
+        )
+    except Exception as e:
+        return {"ok": False, "error": str(e)}
+
+@app.post("/api/whatsapp/inbox", response_class=JSONResponse)
+async def api_whatsapp_inbox():
+    """Procesa mensajes pendientes en DROP_IN/INBOX/."""
+    try:
+        from nexus_whatsapp import procesar_inbox
+        return procesar_inbox()
+    except Exception as e:
+        return {"ok": False, "error": str(e)}
+
 # ── DOCTOR ────────────────────────────────────────────────────────────────────
 @app.get("/api/doctor", response_class=JSONResponse)
 async def api_doctor():

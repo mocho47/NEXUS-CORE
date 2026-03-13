@@ -132,6 +132,11 @@
         }
         .tour-tooltip .tt-btns .tt-next:hover { background: #ffd700; }
     </style>
+<link rel="manifest" href="/static/nexus_manifest.json">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="NEXUS">
 </head>
 <body>
 
@@ -2510,5 +2515,12 @@ function _tourSalir() {
         ⚖️ Aviso de Privacidad · LFPDPPP México
     </a>
 </div>
+<script>
+if('serviceWorker' in navigator){
+  navigator.serviceWorker.register('/static/nexus_sw.js')
+    .then(()=>console.log('[NEXUS] PWA Service Worker registrado'))
+    .catch(e=>console.warn('[NEXUS] SW error:',e));
+}
+</script>
 </body>
 </html>

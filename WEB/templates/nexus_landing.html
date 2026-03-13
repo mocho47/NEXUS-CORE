@@ -5,264 +5,567 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="theme-color" content="#0a0a0a">
 <title>NEXUS by Simplex — El cerebro digital de tu negocio</title>
-<meta name="description" content="Sistema de gestion con IA en espanol. Sin suscripcion mensual. Para negocios reales en Mexico.">
+<meta name="description" content="Sistema de gestión con IA en español. Sin suscripción mensual. Para negocios reales en México.">
+<meta property="og:title" content="NEXUS by Simplex — IA para tu negocio">
+<meta property="og:description" content="Gestiona pedidos, clientes, marketing y ventas con IA en español. Sin mensualidad.">
+<meta property="og:type" content="website">
 <style>
 :root{
-  --bg:#0a0a0a;--surface:#111;--surface2:#1a1a1a;--border:#2a2a2a;
-  --green:#00ff88;--blue:#00aaff;--gold:#ffd700;--text:#f0f0f0;--muted:#888;
+  --bg:#070a0e;--surface:#0d1117;--surface2:#161b22;--border:#21262d;
+  --green:#00ff88;--green2:#00cc6a;--blue:#00aaff;--gold:#ffd700;
+  --purple:#b39ddb;--text:#e6edf3;--muted:#7d8590;--red:#ff6b6b;
 }
 *{margin:0;padding:0;box-sizing:border-box}
-body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;line-height:1.6}
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;line-height:1.6;overflow-x:hidden}
 
-/* ── HERO ── */
-.hero{min-height:100dvh;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:32px 20px;position:relative;overflow:hidden}
-.hero::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse 80% 50% at 50% 0%,#00ff8815,transparent)}
-.hero-badge{background:#00ff8820;border:1px solid #00ff8840;color:var(--green);font-size:13px;font-weight:600;padding:6px 16px;border-radius:20px;margin-bottom:24px;display:inline-block}
-.hero h1{font-size:clamp(32px,8vw,56px);font-weight:900;line-height:1.1;margin-bottom:16px}
-.hero h1 span{color:var(--green)}
-.hero p{font-size:clamp(15px,3vw,18px);color:var(--muted);max-width:540px;margin:0 auto 32px}
-.hero-btns{display:flex;gap:12px;flex-wrap:wrap;justify-content:center}
-.btn{padding:14px 28px;border-radius:12px;font-size:16px;font-weight:700;cursor:pointer;border:none;text-decoration:none;display:inline-block;transition:.2s}
+/* ── TOPBAR ───────────────────────────────────────────────────────────── */
+.topbar{position:fixed;top:0;left:0;right:0;z-index:100;padding:14px 24px;display:flex;justify-content:space-between;align-items:center;backdrop-filter:blur(12px);background:#07090ecc;border-bottom:1px solid #ffffff08}
+.topbar-logo{font-size:20px;font-weight:900;color:var(--green);letter-spacing:-0.5px}
+.topbar-logo span{color:var(--text);font-weight:400}
+.topbar-nav{display:flex;gap:8px}
+.topbar-nav a{padding:8px 16px;border-radius:8px;font-size:14px;font-weight:600;text-decoration:none;transition:.2s}
+.nav-demo{background:var(--surface2);color:var(--text);border:1px solid var(--border)}
+.nav-demo:hover{border-color:var(--green);color:var(--green)}
+.nav-cta{background:var(--green);color:#000}
+.nav-cta:hover{background:var(--green2)}
+
+/* ── HERO ─────────────────────────────────────────────────────────────── */
+.hero{min-height:100dvh;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:100px 20px 60px;position:relative;overflow:hidden}
+.hero::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse 70% 40% at 50% 10%,#00ff8812,transparent),radial-gradient(ellipse 40% 30% at 80% 60%,#00aaff08,transparent)}
+.hero-badge{background:#00ff8815;border:1px solid #00ff8835;color:var(--green);font-size:12px;font-weight:700;padding:5px 14px;border-radius:20px;margin-bottom:24px;display:inline-block;letter-spacing:0.5px;text-transform:uppercase}
+.hero h1{font-size:clamp(36px,7vw,72px);font-weight:900;line-height:1.05;margin-bottom:20px;letter-spacing:-1px}
+.hero h1 .g{color:var(--green)}
+.hero h1 .d{color:var(--muted)}
+.hero-sub{font-size:clamp(16px,2.5vw,20px);color:var(--muted);max-width:560px;margin:0 auto 36px;line-height:1.5}
+.hero-btns{display:flex;gap:12px;flex-wrap:wrap;justify-content:center;margin-bottom:48px}
+.btn{padding:14px 28px;border-radius:10px;font-size:16px;font-weight:700;cursor:pointer;border:none;text-decoration:none;display:inline-flex;align-items:center;gap:8px;transition:.18s}
 .btn-green{background:var(--green);color:#000}
-.btn-green:hover{filter:brightness(1.1);transform:translateY(-1px)}
-.btn-outline{background:transparent;border:2px solid #333;color:var(--text)}
+.btn-green:hover{background:var(--green2);transform:translateY(-2px);box-shadow:0 8px 24px #00ff8830}
+.btn-outline{background:transparent;border:1.5px solid var(--border);color:var(--text)}
 .btn-outline:hover{border-color:var(--green);color:var(--green)}
+.hero-proof{display:flex;gap:24px;flex-wrap:wrap;justify-content:center;font-size:13px;color:var(--muted)}
+.hero-proof span{display:flex;align-items:center;gap:6px}
+.hero-proof b{color:var(--text)}
 
-/* ── SECTIONS ── */
-section{padding:60px 20px;max-width:960px;margin:0 auto}
-.section-title{font-size:clamp(24px,5vw,36px);font-weight:800;text-align:center;margin-bottom:12px}
-.section-sub{color:var(--muted);text-align:center;margin-bottom:40px;font-size:15px}
+/* ── DEMO WINDOW ──────────────────────────────────────────────────────── */
+.demo-wrap{width:100%;max-width:860px;margin:60px auto 0;padding:0 20px}
+.demo-window{background:var(--surface);border:1px solid var(--border);border-radius:16px;overflow:hidden;box-shadow:0 24px 80px #000a}
+.demo-bar{background:var(--surface2);padding:12px 16px;display:flex;align-items:center;gap:8px;border-bottom:1px solid var(--border)}
+.demo-dot{width:12px;height:12px;border-radius:50%}
+.demo-dot.r{background:#ff5f57}.demo-dot.y{background:#febc2e}.demo-dot.g{background:#28c840}
+.demo-url{background:var(--bg);border-radius:6px;padding:4px 12px;font-size:12px;color:var(--muted);margin-left:8px;flex:1;max-width:300px}
+.demo-screen{padding:20px;min-height:280px;display:grid;grid-template-columns:1fr 1fr;gap:12px}
+@media(max-width:600px){.demo-screen{grid-template-columns:1fr}}
+.demo-card{background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:14px}
+.demo-card-title{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:8px}
+.demo-stat{font-size:28px;font-weight:900;color:var(--green)}
+.demo-stat-label{font-size:12px;color:var(--muted);margin-top:2px}
+.demo-chat{background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:14px;grid-column:1/-1}
+.demo-msg{padding:8px 12px;border-radius:8px;font-size:13px;margin-bottom:6px;max-width:80%}
+.demo-msg.u{background:#00ff8820;color:var(--green);margin-left:auto}
+.demo-msg.n{background:var(--surface);color:var(--text);border:1px solid var(--border)}
+.demo-typing{display:flex;gap:4px;padding:8px 12px;width:60px}
+.demo-typing span{width:6px;height:6px;background:var(--muted);border-radius:50%;animation:bounce .8s infinite}
+.demo-typing span:nth-child(2){animation-delay:.15s}
+.demo-typing span:nth-child(3){animation-delay:.3s}
+@keyframes bounce{0%,80%,100%{transform:translateY(0)}40%{transform:translateY(-6px)}}
 
-/* ── FEATURES ── */
-.features-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:16px}
-.feature-card{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:24px;transition:.3s}
-.feature-card:hover{border-color:var(--green);transform:translateY(-2px)}
-.feature-emoji{font-size:34px;margin-bottom:12px}
-.feature-name{font-size:16px;font-weight:700;margin-bottom:6px}
-.feature-desc{color:var(--muted);font-size:13px;line-height:1.5}
+/* ── LOGOS / PRUEBA SOCIAL ────────────────────────────────────────────── */
+.social-proof{padding:48px 20px;text-align:center;border-top:1px solid var(--border);border-bottom:1px solid var(--border)}
+.social-proof p{font-size:13px;color:var(--muted);margin-bottom:20px;text-transform:uppercase;letter-spacing:1px}
+.proof-chips{display:flex;gap:12px;flex-wrap:wrap;justify-content:center}
+.proof-chip{background:var(--surface2);border:1px solid var(--border);padding:8px 18px;border-radius:20px;font-size:13px;color:var(--muted)}
 
-/* ── COMO FUNCIONA ── */
-.pasos{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:24px}
-.paso{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:28px 24px;text-align:center}
-.paso-num{width:48px;height:48px;border-radius:50%;background:#00ff8820;border:2px solid var(--green);color:var(--green);font-size:20px;font-weight:900;display:flex;align-items:center;justify-content:center;margin:0 auto 16px}
-.paso h3{font-size:18px;font-weight:800;margin-bottom:8px}
-.paso p{color:var(--muted);font-size:14px}
+/* ── FEATURES ─────────────────────────────────────────────────────────── */
+.section{padding:80px 20px;max-width:1100px;margin:0 auto}
+.section-label{font-size:12px;color:var(--green);font-weight:700;letter-spacing:1px;text-transform:uppercase;margin-bottom:12px}
+.section-title{font-size:clamp(28px,5vw,44px);font-weight:900;line-height:1.1;margin-bottom:16px}
+.section-sub{font-size:16px;color:var(--muted);max-width:520px;margin-bottom:48px}
+.features-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:20px}
+.feat-card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:24px;transition:.2s;position:relative;overflow:hidden}
+.feat-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,var(--green),transparent);opacity:0;transition:.3s}
+.feat-card:hover{border-color:#00ff8840;transform:translateY(-3px)}
+.feat-card:hover::before{opacity:1}
+.feat-icon{font-size:28px;margin-bottom:14px}
+.feat-title{font-size:16px;font-weight:700;margin-bottom:8px}
+.feat-desc{font-size:14px;color:var(--muted);line-height:1.5}
+.feat-tag{display:inline-block;background:#00ff8815;color:var(--green);font-size:11px;font-weight:600;padding:3px 8px;border-radius:4px;margin-top:10px}
 
-/* ── TESTIMONIOS ── */
-.testimonios-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:16px}
-.testimonio{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:24px}
-.testimonio-texto{font-size:15px;line-height:1.6;margin-bottom:16px;font-style:italic}
-.testimonio-texto::before{content:'"';color:var(--green);font-size:24px;font-weight:900;line-height:0;vertical-align:-8px;margin-right:4px}
-.testimonio-autor{font-size:13px;color:var(--muted);font-weight:600}
-.stars{color:var(--gold);font-size:14px;margin-bottom:8px}
+/* ── MODULOS ──────────────────────────────────────────────────────────── */
+.modulos-wrap{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:32px;margin-top:0}
+.modulos-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:12px}
+.modulo-item{background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:14px;display:flex;align-items:center;gap:10px;font-size:14px;font-weight:500}
+.modulo-item span{font-size:20px}
 
-/* ── CTA / FORM ── */
-.cta-section{background:var(--surface);border-top:1px solid var(--border);border-bottom:1px solid var(--border);max-width:100%;padding:70px 20px}
-.cta-inner{max-width:600px;margin:0 auto;text-align:center}
-.cta-inner h2{font-size:clamp(24px,5vw,36px);font-weight:900;margin-bottom:12px}
-.cta-inner > p{color:var(--muted);margin-bottom:32px;font-size:15px}
-.separador{display:flex;align-items:center;gap:16px;margin:28px 0;color:var(--muted);font-size:13px}
-.separador::before,.separador::after{content:'';flex:1;border-top:1px solid var(--border)}
-.form-card{background:var(--bg);border:1px solid var(--border);border-radius:20px;padding:28px 24px;text-align:left}
-.field{margin-bottom:14px}
-.field label{font-size:13px;color:var(--muted);margin-bottom:4px;display:block}
-.field input,.field select{background:var(--surface2);border:1px solid var(--border);color:var(--text);padding:12px;border-radius:10px;font-size:15px;width:100%;outline:none}
-.field input:focus,.field select:focus{border-color:var(--green)}
-.btn-full{width:100%;padding:14px;font-size:16px;border-radius:10px;border:none;cursor:pointer;font-weight:700}
+/* ── NEGOCIOS ─────────────────────────────────────────────────────────── */
+.negocios-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:20px;margin-top:48px}
+.negocio-card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:28px;position:relative}
+.negocio-badge{position:absolute;top:16px;right:16px;font-size:11px;font-weight:700;padding:3px 10px;border-radius:12px}
+.negocio-badge.activo{background:#00ff8820;color:var(--green);border:1px solid #00ff8840}
+.negocio-badge.pronto{background:#ffd70020;color:var(--gold);border:1px solid #ffd70040}
+.negocio-icon{font-size:36px;margin-bottom:16px}
+.negocio-title{font-size:18px;font-weight:800;margin-bottom:8px}
+.negocio-desc{font-size:14px;color:var(--muted);line-height:1.5}
 
-/* ── GRACIAS ── */
-#gracias{display:none;background:#00ff8820;border:1px solid #00ff8840;border-radius:16px;padding:28px;text-align:center;margin-bottom:24px}
-#gracias h3{color:var(--green);font-size:22px;margin-bottom:8px}
-#gracias p{color:var(--muted);font-size:15px}
+/* ── AUTONOMO ─────────────────────────────────────────────────────────── */
+.autonomo-section{background:linear-gradient(135deg,#0a1a0f,#070a0e);border:1px solid #00ff8820;border-radius:20px;padding:48px 40px;margin:0 20px;max-width:1060px;margin-left:auto;margin-right:auto}
+.autonomo-list{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:16px;margin-top:36px}
+.aut-item{background:#ffffff08;border:1px solid #ffffff10;border-radius:10px;padding:16px;display:flex;gap:12px;align-items:flex-start}
+.aut-item-icon{font-size:24px;flex-shrink:0}
+.aut-item-title{font-size:14px;font-weight:700;margin-bottom:4px}
+.aut-item-desc{font-size:13px;color:var(--muted)}
 
-/* ── FOOTER ── */
-footer{border-top:1px solid var(--border);padding:28px 20px;text-align:center;color:var(--muted);font-size:13px}
-footer a{color:var(--green);text-decoration:none}
-footer a:hover{text-decoration:underline}
+/* ── PRECIOS ──────────────────────────────────────────────────────────── */
+.precios-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:20px;margin-top:48px}
+.precio-card{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:32px;position:relative}
+.precio-card.featured{border-color:var(--green);background:linear-gradient(160deg,#0d1a12,#0d1117)}
+.precio-card.featured::before{content:'MÁS POPULAR';position:absolute;top:-12px;left:50%;transform:translateX(-50%);background:var(--green);color:#000;font-size:11px;font-weight:800;padding:4px 14px;border-radius:12px;white-space:nowrap}
+.precio-nombre{font-size:14px;color:var(--muted);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:12px}
+.precio-monto{font-size:48px;font-weight:900;margin-bottom:4px}
+.precio-monto small{font-size:20px;font-weight:400;color:var(--muted)}
+.precio-periodo{font-size:13px;color:var(--muted);margin-bottom:24px}
+.precio-features{list-style:none;margin-bottom:28px}
+.precio-features li{padding:8px 0;font-size:14px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:8px}
+.precio-features li:last-child{border:none}
+.precio-features .check{color:var(--green)}
+.precio-features .x{color:#333}
 
-/* ── WA FLOTANTE ── */
-.wa-float{position:fixed;bottom:24px;right:24px;background:#25D366;color:#000;border-radius:50px;padding:14px 20px;font-weight:700;font-size:15px;text-decoration:none;box-shadow:0 4px 20px #25D36660;display:flex;align-items:center;gap:8px;z-index:1000;transition:.2s}
-.wa-float:hover{transform:scale(1.05);box-shadow:0 6px 28px #25D36680}
+/* ── TESTIMONIO ───────────────────────────────────────────────────────── */
+.testimonios{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:20px;margin-top:48px}
+.test-card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:24px}
+.test-quote{font-size:15px;line-height:1.6;margin-bottom:16px;color:var(--text)}
+.test-quote::before{content:'"';color:var(--green);font-size:24px;line-height:0;vertical-align:-8px;margin-right:4px}
+.test-autor{display:flex;align-items:center;gap:12px}
+.test-avatar{width:40px;height:40px;border-radius:50%;background:var(--surface2);border:2px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:18px}
+.test-nombre{font-size:14px;font-weight:700}
+.test-rol{font-size:12px;color:var(--muted)}
 
-@media(max-width:480px){.wa-float span{display:none}}
+/* ── FAQ ──────────────────────────────────────────────────────────────── */
+.faq-list{margin-top:40px;max-width:720px}
+.faq-item{border-bottom:1px solid var(--border);padding:20px 0}
+.faq-q{font-size:16px;font-weight:600;cursor:pointer;display:flex;justify-content:space-between;align-items:center;gap:16px}
+.faq-q::after{content:'＋';color:var(--green);font-size:20px;flex-shrink:0;transition:.2s}
+.faq-item.open .faq-q::after{content:'－'}
+.faq-a{font-size:14px;color:var(--muted);line-height:1.6;margin-top:12px;display:none}
+.faq-item.open .faq-a{display:block}
+
+/* ── CTA FINAL ────────────────────────────────────────────────────────── */
+.cta-final{text-align:center;padding:100px 20px;position:relative;overflow:hidden}
+.cta-final::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse 60% 50% at 50% 50%,#00ff8810,transparent)}
+.cta-final h2{font-size:clamp(28px,6vw,52px);font-weight:900;margin-bottom:16px;line-height:1.1}
+.cta-final p{font-size:16px;color:var(--muted);max-width:480px;margin:0 auto 36px}
+
+/* ── FOOTER ───────────────────────────────────────────────────────────── */
+footer{background:var(--surface);border-top:1px solid var(--border);padding:40px 20px;text-align:center}
+footer .footer-logo{font-size:18px;font-weight:900;color:var(--green);margin-bottom:8px}
+footer p{font-size:13px;color:var(--muted)}
+footer a{color:var(--muted);text-decoration:none}
+footer a:hover{color:var(--green)}
+.footer-links{display:flex;gap:20px;justify-content:center;margin:16px 0}
+
+/* ── RESPONSIVE ───────────────────────────────────────────────────────── */
+@media(max-width:768px){
+  .topbar-nav .nav-demo{display:none}
+  .autonomo-section{padding:32px 20px;margin:0 12px}
+  .demo-screen{grid-template-columns:1fr}
+  .demo-chat{grid-column:1}
+}
 </style>
 </head>
 <body>
 
-<!-- ── HERO ──────────────────────────────────────────────────────────────── -->
-<div class="hero">
-  <div class="hero-badge">&#9889; NEXUS by Simplex</div>
-  <h1>El cerebro digital<br>de <span>tu negocio</span></h1>
-  <p>IA en espanol. Sin suscripcion mensual. Para negocios reales en Mexico.</p>
+<!-- TOPBAR -->
+<nav class="topbar">
+  <div class="topbar-logo">NEXUS <span>by Simplex</span></div>
+  <div class="topbar-nav">
+    <a href="#precios" class="nav-demo">Ver precios</a>
+    <a href="#contacto" class="nav-cta">Quiero NEXUS</a>
+  </div>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-badge">🇲🇽 Hecho en México para negocios reales</div>
+  <h1>Tu negocio operado<br>por <span class="g">inteligencia</span><br><span class="d">sin mensualidad</span></h1>
+  <p class="hero-sub">NEXUS no es una app — es el cerebro digital de tu negocio. Gestiona, aprende, vende y opera mientras tú duermes.</p>
   <div class="hero-btns">
-    <a href="https://wa.me/523326148674?text=Hola!+Me+interesa+NEXUS+para+mi+negocio"
-       target="_blank" class="btn btn-green">&#128172; Hablar por WhatsApp</a>
-    <a href="#como-funciona" class="btn btn-outline">Ver como funciona</a>
+    <a href="#contacto" class="btn btn-green">🚀 Quiero NEXUS ahora</a>
+    <a href="#modulos" class="btn btn-outline">Ver qué hace →</a>
+  </div>
+  <div class="hero-proof">
+    <span>🤖 <b>IA en español mexicano</b></span>
+    <span>🔒 <b>Tus datos, tu PC</b></span>
+    <span>💳 <b>Sin pago mensual</b></span>
+    <span>🎙️ <b>Control por voz</b></span>
+  </div>
+</section>
+
+<!-- DEMO WINDOW -->
+<div class="demo-wrap">
+  <div class="demo-window">
+    <div class="demo-bar">
+      <div class="demo-dot r"></div><div class="demo-dot y"></div><div class="demo-dot g"></div>
+      <div class="demo-url">localhost:8000/dashboard</div>
+    </div>
+    <div class="demo-screen">
+      <div class="demo-card">
+        <div class="demo-card-title">Pedidos activos</div>
+        <div class="demo-stat">12</div>
+        <div class="demo-stat-label">3 entregan hoy</div>
+      </div>
+      <div class="demo-card">
+        <div class="demo-card-title">Ingresos del mes</div>
+        <div class="demo-stat">$48,200</div>
+        <div class="demo-stat-label">+23% vs mes anterior</div>
+      </div>
+      <div class="demo-chat">
+        <div class="demo-card-title">NEXUS — Asistente de voz</div>
+        <div class="demo-msg u">nexus, nuevo pedido para Ramírez, playera XL roja</div>
+        <div class="demo-msg n">✅ Pedido #47 registrado para Ramírez — playera XL roja. ¿Fecha de entrega?</div>
+        <div class="demo-msg u">viernes</div>
+        <div class="demo-typing"><span></span><span></span><span></span></div>
+      </div>
+    </div>
   </div>
 </div>
 
-<!-- ── FEATURES ───────────────────────────────────────────────────────────── -->
-<section>
-  <div class="section-title">Todo lo que tu negocio necesita</div>
-  <div class="section-sub">En un solo sistema. En tu idioma. En tu computadora.</div>
+<!-- PRUEBA SOCIAL -->
+<div class="social-proof">
+  <p>Utilizado en negocios como</p>
+  <div class="proof-chips">
+    <span class="proof-chip">🔆 Talleres de faros</span>
+    <span class="proof-chip">✂️ Talleres de corte láser</span>
+    <span class="proof-chip">📦 Distribuidoras</span>
+    <span class="proof-chip">🛒 Tiendas de ropa</span>
+    <span class="proof-chip">🔧 Talleres de autos</span>
+    <span class="proof-chip">🍕 Comida</span>
+  </div>
+</div>
+
+<!-- FEATURES -->
+<section class="section" id="modulos">
+  <div class="section-label">Capacidades</div>
+  <h2 class="section-title">NEXUS opera tu negocio<br>como un profesional</h2>
+  <p class="section-sub">No es un chatbot. Es un sistema completo con IA que realmente ejecuta acciones en tu negocio.</p>
   <div class="features-grid">
-    <div class="feature-card">
-      <div class="feature-emoji">&#128203;</div>
-      <div class="feature-name">Pedidos en Tiempo Real</div>
-      <div class="feature-desc">Controla pedidos, entregas y estados desde tu celular o computadora.</div>
+    <div class="feat-card">
+      <div class="feat-icon">📦</div>
+      <div class="feat-title">Gestión de Pedidos</div>
+      <div class="feat-desc">Registra, asigna, da seguimiento y notifica cada pedido. Nunca más un encargo perdido.</div>
+      <span class="feat-tag">Módulo activo</span>
     </div>
-    <div class="feature-card">
-      <div class="feature-emoji">&#128101;</div>
-      <div class="feature-name">CRM de Clientes</div>
-      <div class="feature-desc">Historial, notas y seguimiento de cada cliente en un solo lugar.</div>
+    <div class="feat-card">
+      <div class="feat-icon">🎙️</div>
+      <div class="feat-title">Control por Voz</div>
+      <div class="feat-desc">Di "nexus" y dale instrucciones en español mexicano. Ejecuta acciones reales, no solo responde.</div>
+      <span class="feat-tag">Web Speech API</span>
     </div>
-    <div class="feature-card">
-      <div class="feature-emoji">&#128230;</div>
-      <div class="feature-name">Inventario Inteligente</div>
-      <div class="feature-desc">Alertas de stock bajo, reabasto automatico y control por categoria.</div>
+    <div class="feat-card">
+      <div class="feat-icon">🤖</div>
+      <div class="feat-title">IA Autónoma</div>
+      <div class="feat-desc">Mientras duermes: detecta prospectos sin seguimiento, aprende patrones, genera sugerencias de venta.</div>
+      <span class="feat-tag">Nuevo v2026</span>
     </div>
-    <div class="feature-card">
-      <div class="feature-emoji">&#128178;</div>
-      <div class="feature-name">Cotizador Automatico</div>
-      <div class="feature-desc">Genera cotizaciones profesionales en segundos. Envia por WhatsApp con un clic.</div>
+    <div class="feat-card">
+      <div class="feat-icon">🚀</div>
+      <div class="feat-title">Auto-Ventas</div>
+      <div class="feat-desc">Pipeline completo de prospectos. Genera mensajes de seguimiento personalizados con IA.</div>
+      <span class="feat-tag">Módulo activo</span>
     </div>
-    <div class="feature-card">
-      <div class="feature-emoji">&#129302;</div>
-      <div class="feature-name">Asistente por Voz</div>
-      <div class="feature-desc">"Nexus, cuantos pedidos tengo hoy?" — y te responde al instante.</div>
+    <div class="feat-card">
+      <div class="feat-icon">📣</div>
+      <div class="feat-title">Marketing con IA</div>
+      <div class="feat-desc">Genera captions virales, imágenes promocionales y posts para TikTok, Instagram y Facebook.</div>
+      <span class="feat-tag">Módulo activo</span>
     </div>
-    <div class="feature-card">
-      <div class="feature-emoji">&#128227;</div>
-      <div class="feature-name">Marketing con IA</div>
-      <div class="feature-desc">Copies, hashtags y guiones para TikTok e Instagram generados automaticamente.</div>
+    <div class="feat-card">
+      <div class="feat-icon">🛒</div>
+      <div class="feat-title">MercadoLibre</div>
+      <div class="feat-desc">Publica productos, responde preguntas con IA y gestiona tu catálogo desde NEXUS.</div>
+      <span class="feat-tag">OAuth2 conectado</span>
     </div>
-    <div class="feature-card">
-      <div class="feature-emoji">&#128197;</div>
-      <div class="feature-name">Agenda + Citas</div>
-      <div class="feature-desc">Calendario de servicios, recordatorios automaticos y confirmaciones por WhatsApp.</div>
+    <div class="feat-card">
+      <div class="feat-icon">💰</div>
+      <div class="feat-title">Finanzas</div>
+      <div class="feat-desc">Reporte ejecutivo de ventas, rentabilidad por producto y proyecciones simples.</div>
+      <span class="feat-tag">Módulo activo</span>
     </div>
-    <div class="feature-card">
-      <div class="feature-emoji">&#128176;</div>
-      <div class="feature-name">Finanzas Claras</div>
-      <div class="feature-desc">Flujo de caja, ingresos y gastos. Sin contabilidad complicada.</div>
+    <div class="feat-card">
+      <div class="feat-icon">🎨</div>
+      <div class="feat-title">Estudio Creativo</div>
+      <div class="feat-desc">Genera cajas paramétricas, planillas para corte láser, cartoons y arte para merch.</div>
+      <span class="feat-tag">CorelDRAW integrado</span>
     </div>
-  </div>
-</section>
-
-<!-- ── COMO FUNCIONA ───────────────────────────────────────────────────────── -->
-<section id="como-funciona" style="background:var(--surface);border-top:1px solid var(--border);border-bottom:1px solid var(--border);max-width:100%;padding:60px 20px">
-  <div style="max-width:960px;margin:0 auto">
-    <div class="section-title">Como funciona</div>
-    <div class="section-sub">Tres pasos y tu negocio ya esta conectado</div>
-    <div class="pasos">
-      <div class="paso">
-        <div class="paso-num">1</div>
-        <h3>&#127919; Lo configuras</h3>
-        <p>Tu negocio, tus productos, tu WhatsApp. NEXUS se adapta a ti — no al reves.</p>
-      </div>
-      <div class="paso">
-        <div class="paso-num">2</div>
-        <h3>&#129302; NEXUS aprende</h3>
-        <p>Pedidos, clientes, precios: todo en un sistema que entiende como trabajas.</p>
-      </div>
-      <div class="paso">
-        <div class="paso-num">3</div>
-        <h3>&#128640; Tu creces</h3>
-        <p>Mientras NEXUS gestiona lo administrativo, tu te concentras en cerrar mas ventas.</p>
-      </div>
+    <div class="feat-card">
+      <div class="feat-icon">📱</div>
+      <div class="feat-title">NEXUS Teens</div>
+      <div class="feat-desc">Módulo familiar: misiones, aptitudes, acuerdos y modo noche para hijos adolescentes.</div>
+      <span class="feat-tag">Incluido</span>
     </div>
   </div>
 </section>
 
-<!-- ── TESTIMONIOS ─────────────────────────────────────────────────────────── -->
-<section>
-  <div class="section-title">Lo que dicen nuestros clientes</div>
-  <div class="section-sub">Negocios reales, resultados reales</div>
-  <div class="testimonios-grid">
-    <div class="testimonio">
-      <div class="stars">&#9733;&#9733;&#9733;&#9733;&#9733;</div>
-      <div class="testimonio-texto">Redujo 2 horas diarias de papeleo y administracion. Ahora sigo mis pedidos desde el telefono sin perder nada.</div>
-      <div class="testimonio-autor">— Taller grafico, Guadalajara</div>
-    </div>
-    <div class="testimonio">
-      <div class="stars">&#9733;&#9733;&#9733;&#9733;&#9733;</div>
-      <div class="testimonio-texto">Mis clientes notan la diferencia. Cotizaciones rapidas, seguimiento profesional. Parece empresa grande.</div>
-      <div class="testimonio-autor">— Servicios a domicilio, CDMX</div>
+<!-- TODOS LOS MÓDULOS -->
+<section class="section" style="padding-top:0">
+  <div class="modulos-wrap">
+    <div class="section-label" style="margin-bottom:8px">Todos los módulos</div>
+    <div style="font-size:14px;color:var(--muted);margin-bottom:20px">286 rutas activas. Todo incluido en una sola compra.</div>
+    <div class="modulos-grid">
+      <div class="modulo-item"><span>📦</span> Pedidos</div>
+      <div class="modulo-item"><span>👥</span> CRM Clientes</div>
+      <div class="modulo-item"><span>📊</span> Inventario</div>
+      <div class="modulo-item"><span>💰</span> Finanzas</div>
+      <div class="modulo-item"><span>📣</span> Marketing IA</div>
+      <div class="modulo-item"><span>🚀</span> Auto-Ventas</div>
+      <div class="modulo-item"><span>🛒</span> MercadoLibre</div>
+      <div class="modulo-item"><span>🎙️</span> Voz NEXUS</div>
+      <div class="modulo-item"><span>🤖</span> IA Autónoma</div>
+      <div class="modulo-item"><span>🎨</span> Estudio Laser</div>
+      <div class="modulo-item"><span>📦</span> Cajas MDF</div>
+      <div class="modulo-item"><span>🎬</span> Video Studio</div>
+      <div class="modulo-item"><span>📱</span> NEXUS Teens</div>
+      <div class="modulo-item"><span>🔒</span> Admin Panel</div>
+      <div class="modulo-item"><span>☁️</span> Supabase Sync</div>
+      <div class="modulo-item"><span>📋</span> Reportes</div>
+      <div class="modulo-item"><span>🔆</span> ATF Faros</div>
+      <div class="modulo-item"><span>🚗</span> CanbusFix</div>
+      <div class="modulo-item"><span>🩺</span> Auto-Salud</div>
+      <div class="modulo-item"><span>💬</span> Telegram Bot</div>
+      <div class="modulo-item"><span>🌙</span> Modo Noche</div>
+      <div class="modulo-item"><span>🔮</span> Paranormal</div>
     </div>
   </div>
 </section>
 
-<!-- ── CTA + FORM ──────────────────────────────────────────────────────────── -->
-<div class="cta-section" id="contacto">
-  <div class="cta-inner">
-    <h2>Listo para probarlo?</h2>
-    <p>Sin compromiso. Sin tarjeta. Platica con nosotros y te mostramos como funciona para tu negocio.</p>
-
-    <div id="gracias">
-      <h3>&#10003; Mensaje recibido</h3>
-      <p>Gracias, nos comunicamos contigo en breve por WhatsApp.</p>
+<!-- AUTONOMO -->
+<section class="section" style="padding:0 0 80px">
+  <div class="autonomo-section">
+    <div class="section-label">Exclusivo NEXUS</div>
+    <h2 class="section-title" style="margin-bottom:8px">Opera solo mientras duermes</h2>
+    <p style="font-size:16px;color:var(--muted)">El sistema autónomo trabaja 24/7 sin que toques nada.</p>
+    <div class="autonomo-list">
+      <div class="aut-item">
+        <div class="aut-item-icon">💸</div>
+        <div>
+          <div class="aut-item-title">Auto-Ventas</div>
+          <div class="aut-item-desc">Detecta prospectos sin seguimiento y genera mensajes de WhatsApp listos para enviar.</div>
+        </div>
+      </div>
+      <div class="aut-item">
+        <div class="aut-item-icon">🧠</div>
+        <div>
+          <div class="aut-item-title">Auto-Aprendizaje</div>
+          <div class="aut-item-desc">Analiza tus conversaciones, detecta patrones y mejora sus respuestas cada día.</div>
+        </div>
+      </div>
+      <div class="aut-item">
+        <div class="aut-item-icon">🔧</div>
+        <div>
+          <div class="aut-item-title">Auto-Corrección</div>
+          <div class="aut-item-desc">Cuando le dices que se equivocó, aprende y nunca comete el mismo error dos veces.</div>
+        </div>
+      </div>
+      <div class="aut-item">
+        <div class="aut-item-icon">🔍</div>
+        <div>
+          <div class="aut-item-title">Intel de Mercado</div>
+          <div class="aut-item-desc">Escanea precios de competencia en MercadoLibre una vez al día automáticamente.</div>
+        </div>
+      </div>
+      <div class="aut-item">
+        <div class="aut-item-icon">🩺</div>
+        <div>
+          <div class="aut-item-title">Auto-Salud</div>
+          <div class="aut-item-desc">Verifica y repara sus propios módulos. Se mantiene funcionando sin intervención.</div>
+        </div>
+      </div>
+      <div class="aut-item">
+        <div class="aut-item-icon">🌙</div>
+        <div>
+          <div class="aut-item-title">Ciclo de Sueño</div>
+          <div class="aut-item-desc">A medianoche procesa el día, genera conocimiento y amanece más inteligente.</div>
+        </div>
+      </div>
     </div>
+  </div>
+</section>
 
-    <a href="https://wa.me/523326148674?text=Hola!+Quiero+ver+una+demo+de+NEXUS+para+mi+negocio"
-       target="_blank" class="btn btn-green btn-full" style="font-size:18px;padding:18px;display:block;text-align:center">
-      &#128172; Hablar por WhatsApp ahora
+<!-- PRECIOS -->
+<section class="section" id="precios">
+  <div class="section-label">Inversión</div>
+  <h2 class="section-title">Una vez. Tuyo para siempre.</h2>
+  <p class="section-sub">Sin mensualidades. Sin sorpresas. Tu negocio, tu sistema.</p>
+  <div class="precios-grid">
+    <div class="precio-card">
+      <div class="precio-nombre">Básico</div>
+      <div class="precio-monto"><small>$</small>4,999</div>
+      <div class="precio-periodo">pago único · licencia 1 PC</div>
+      <ul class="precio-features">
+        <li><span class="check">✓</span> Gestión de pedidos y clientes</li>
+        <li><span class="check">✓</span> Inventario y finanzas</li>
+        <li><span class="check">✓</span> Asistente IA voz y texto</li>
+        <li><span class="check">✓</span> Marketing básico</li>
+        <li><span class="check">✓</span> 6 meses de actualizaciones</li>
+        <li><span class="x">✗</span> Sistema autónomo</li>
+        <li><span class="x">✗</span> MercadoLibre</li>
+        <li><span class="x">✗</span> NEXUS Teens</li>
+      </ul>
+      <a href="#contacto" class="btn btn-outline" style="width:100%;justify-content:center">Empezar →</a>
+    </div>
+    <div class="precio-card featured">
+      <div class="precio-nombre">Pro</div>
+      <div class="precio-monto"><small>$</small>9,999</div>
+      <div class="precio-periodo">pago único · licencia 1 PC</div>
+      <ul class="precio-features">
+        <li><span class="check">✓</span> Todo lo del plan Básico</li>
+        <li><span class="check">✓</span> Sistema autónomo completo</li>
+        <li><span class="check">✓</span> MercadoLibre integrado</li>
+        <li><span class="check">✓</span> NEXUS Teens incluido</li>
+        <li><span class="check">✓</span> Video pipeline + Marketing IA</li>
+        <li><span class="check">✓</span> 1 año de actualizaciones</li>
+        <li><span class="check">✓</span> Instalación y configuración</li>
+        <li><span class="check">✓</span> WhatsApp soporte 90 días</li>
+      </ul>
+      <a href="#contacto" class="btn btn-green" style="width:100%;justify-content:center">Quiero el Pro →</a>
+    </div>
+    <div class="precio-card">
+      <div class="precio-nombre">Empresarial</div>
+      <div class="precio-monto" style="font-size:32px">Cotizar</div>
+      <div class="precio-periodo">múltiples PCs · marca personalizada</div>
+      <ul class="precio-features">
+        <li><span class="check">✓</span> Todo lo del plan Pro</li>
+        <li><span class="check">✓</span> Personalización de marca</li>
+        <li><span class="check">✓</span> Múltiples licencias</li>
+        <li><span class="check">✓</span> Módulos a medida</li>
+        <li><span class="check">✓</span> Soporte dedicado 1 año</li>
+        <li><span class="check">✓</span> Capacitación presencial GDL</li>
+        <li><span class="check">✓</span> Integración con tu sistema actual</li>
+        <li><span class="check">✓</span> SLA de respuesta 24h</li>
+      </ul>
+      <a href="#contacto" class="btn btn-outline" style="width:100%;justify-content:center">Contactar →</a>
+    </div>
+  </div>
+</section>
+
+<!-- TESTIMONIOS -->
+<section class="section" style="padding-top:0">
+  <div class="section-label">Resultados reales</div>
+  <h2 class="section-title">Lo que dicen los primeros</h2>
+  <div class="testimonios">
+    <div class="test-card">
+      <div class="test-quote">Antes tardaba 2 horas en revisar mis pedidos del día. Con NEXUS lo hago en 5 minutos hablándole por voz mientras desayuno.</div>
+      <div class="test-autor">
+        <div class="test-avatar">🔆</div>
+        <div><div class="test-nombre">Taller ATF GDL</div><div class="test-rol">Retrofit de faros · Guadalajara</div></div>
+      </div>
+    </div>
+    <div class="test-card">
+      <div class="test-quote">El módulo de cajas para láser me ahorró contratar a alguien. Genero los archivos DXF directo desde NEXUS y ya.</div>
+      <div class="test-autor">
+        <div class="test-avatar">✂️</div>
+        <div><div class="test-nombre">Creaciones Milens</div><div class="test-rol">Corte láser · MDF y acrílico</div></div>
+      </div>
+    </div>
+    <div class="test-card">
+      <div class="test-quote">El sistema autónomo me avisó que tenía 4 prospectos sin seguimiento. Ese día cerré 2 ventas que se me iban a perder.</div>
+      <div class="test-autor">
+        <div class="test-avatar">🚗</div>
+        <div><div class="test-nombre">Red CanbusFix</div><div class="test-rol">Instaladores certificados</div></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FAQ -->
+<section class="section" style="padding-top:0">
+  <div class="section-label">Preguntas frecuentes</div>
+  <h2 class="section-title">Todo lo que necesitas saber</h2>
+  <div class="faq-list">
+    <div class="faq-item">
+      <div class="faq-q" onclick="this.parentElement.classList.toggle('open')">¿Necesito internet para usar NEXUS?</div>
+      <div class="faq-a">No. NEXUS corre completamente en tu computadora. Solo necesitas internet para las funciones de IA (Groq), Supabase sync y MercadoLibre. Todo lo demás funciona offline.</div>
+    </div>
+    <div class="faq-item">
+      <div class="faq-q" onclick="this.parentElement.classList.toggle('open')">¿Qué pasa con mi información?</div>
+      <div class="faq-a">Tus datos quedan en tu PC. NEXUS usa una base de datos local (SQLite). Opcionalmente puedes sincronizar con Supabase en la nube, pero es tu decisión. No vendemos ni compartimos tus datos.</div>
+    </div>
+    <div class="faq-item">
+      <div class="faq-q" onclick="this.parentElement.classList.toggle('open')">¿Funciona en cualquier negocio?</div>
+      <div class="faq-a">Sí. NEXUS fue diseñado para PyMEs mexicanas: talleres, tiendas, distribuidoras, servicios. Si tienes pedidos, clientes y necesitas marketing, NEXUS funciona para ti.</div>
+    </div>
+    <div class="faq-item">
+      <div class="faq-q" onclick="this.parentElement.classList.toggle('open')">¿Necesito saber de computadoras?</div>
+      <div class="faq-a">No. Es un .exe que se instala en un clic. Lo manejas por voz o desde el browser. No hay código, no hay terminales, no hay configuración complicada.</div>
+    </div>
+    <div class="faq-item">
+      <div class="faq-q" onclick="this.parentElement.classList.toggle('open')">¿Incluye capacitación?</div>
+      <div class="faq-a">El plan Pro incluye 90 días de soporte por WhatsApp. El plan Empresarial incluye capacitación presencial en Guadalajara. NEXUS también tiene tutoriales integrados dentro del sistema.</div>
+    </div>
+    <div class="faq-item">
+      <div class="faq-q" onclick="this.parentElement.classList.toggle('open')">¿Qué es NEXUS Teens?</div>
+      <div class="faq-a">Es un módulo familiar incluido en el plan Pro. Permite que tus hijos adolescentes gestionen misiones, aptitudes y acuerdos familiares. Tiene control parental y modo noche para reflexión diaria.</div>
+    </div>
+  </div>
+</section>
+
+<!-- CTA FINAL / CONTACTO -->
+<section class="cta-final" id="contacto">
+  <div class="hero-badge" style="margin-bottom:20px">📍 Guadalajara, México</div>
+  <h2>¿Listo para tener<br><span style="color:var(--green)">tu propio NEXUS?</span></h2>
+  <p>Escríbenos por WhatsApp y te hacemos una demo en vivo. Sin compromiso.</p>
+  <div class="hero-btns" style="justify-content:center">
+    <a href="https://wa.me/523326148674?text=Hola%2C%20quiero%20conocer%20NEXUS%20para%20mi%20negocio"
+       target="_blank" class="btn btn-green" style="font-size:18px;padding:16px 32px">
+      💬 Escribir por WhatsApp
     </a>
-
-    <div class="separador">o dejanos tus datos y te contactamos</div>
-
-    <div class="form-card">
-      <form method="POST" action="/api/autoventas/lead">
-        <input type="hidden" name="canal" value="nexus">
-        <div class="field">
-          <label>Tu nombre</label>
-          <input type="text" name="nombre" placeholder="Ej: Carlos Mendoza" required>
-        </div>
-        <div class="field">
-          <label>WhatsApp</label>
-          <input type="tel" name="telefono" placeholder="10 digitos" required>
-        </div>
-        <div class="field">
-          <label>Tipo de negocio</label>
-          <select name="tipo_negocio">
-            <option value="General">Selecciona...</option>
-            <option value="Taller/Manufactura">Taller o Manufactura</option>
-            <option value="Comercio">Tienda o Comercio</option>
-            <option value="Servicios">Servicios a domicilio</option>
-            <option value="Restaurante/Food">Restaurante o Food</option>
-            <option value="Otro">Otro</option>
-          </select>
-        </div>
-        <button type="submit" class="btn btn-green btn-full">Quiero que me contacten &#8594;</button>
-      </form>
-    </div>
   </div>
-</div>
+  <p style="font-size:13px;color:var(--muted);margin-top:16px">Respuesta en menos de 2 horas · Lunes a sábado 9am–8pm</p>
+</section>
 
-<!-- ── FOOTER ─────────────────────────────────────────────────────────────── -->
+<!-- FOOTER -->
 <footer>
-  <p>NEXUS by Simplex &copy; 2026 &middot; Hecho en Mexico &#127474;&#127485;</p>
-  <p style="margin-top:8px">
-    <a href="#">Aviso de privacidad</a> &nbsp;&middot;&nbsp;
-    <a href="/dashboard">Panel NEXUS</a>
-  </p>
+  <div class="footer-logo">NEXUS by Simplex</div>
+  <p>El cerebro digital de tu negocio — Guadalajara, México</p>
+  <div class="footer-links">
+    <a href="/legal/privacidad">Aviso de Privacidad</a>
+    <a href="/legal/terminos">Términos de Uso</a>
+    <a href="https://wa.me/523326148674" target="_blank">WhatsApp</a>
+  </div>
+  <p style="margin-top:8px;font-size:12px">© 2026 Simplex GDL · NEXUS v2026 · Todos los derechos reservados</p>
 </footer>
 
-<!-- ── WA FLOTANTE ────────────────────────────────────────────────────────── -->
-<a href="https://wa.me/523326148674?text=Hola!+Me+interesa+NEXUS" target="_blank" class="wa-float">
-  &#128172; <span>WhatsApp</span>
-</a>
-
 <script>
-if(new URLSearchParams(location.search).get('gracias')==='1'){
-  document.getElementById('gracias').style.display='block';
-  document.getElementById('gracias').scrollIntoView({behavior:'smooth',block:'center'});
-}
-document.querySelectorAll('a[href^="#"]').forEach(a=>{
-  a.addEventListener('click',e=>{
-    const t=document.querySelector(a.getAttribute('href'));
-    if(t){e.preventDefault();t.scrollIntoView({behavior:'smooth'})}
-  });
-});
+// Animación de typing demo
+(function(){
+  const msgs = [
+    {u:"nexus, dame el resumen de hoy", n:"📊 Hoy: 12 pedidos activos, $3,200 en ventas, 2 entregan hoy. Tu prospecto Ramírez lleva 3 días sin contacto — ¿le mando seguimiento?"},
+    {u:"nexus, genera caption para Instagram de ATF", n:"🔆 'Tus faros opacos tienen solución 💡 Retrofit bi-led en Guadalajara desde $800. DM para cotización. #AtfGdl #RetrofitFaros #LuzLed'"},
+    {u:"nexus, nuevo prospecto Juan Pérez 3311223344", n:"✅ Prospecto Juan Pérez registrado. Te recuerdo hacer seguimiento en 48 horas. ¿Qué servicio le interesa?"},
+  ];
+  let idx = 0;
+  function animarDemo(){
+    const chat = document.querySelector('.demo-chat');
+    if(!chat) return;
+    const msg = msgs[idx % msgs.length];
+    const oldMsgs = chat.querySelectorAll('.demo-msg');
+    oldMsgs.forEach(m => m.remove());
+    const typing = chat.querySelector('.demo-typing');
+    const u = document.createElement('div');
+    u.className = 'demo-msg u';
+    u.textContent = msg.u;
+    chat.insertBefore(u, typing);
+    setTimeout(() => {
+      const n = document.createElement('div');
+      n.className = 'demo-msg n';
+      n.textContent = msg.n;
+      chat.insertBefore(n, typing);
+      typing.style.display = 'none';
+      setTimeout(() => { typing.style.display = 'flex'; idx++; animarDemo(); }, 4000);
+    }, 1500);
+  }
+  setTimeout(animarDemo, 2000);
+})();
 </script>
 </body>
 </html>
