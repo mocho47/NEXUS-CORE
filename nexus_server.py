@@ -3285,6 +3285,80 @@ async def api_whatsapp_inbox():
     except Exception as e:
         return {"ok": False, "error": str(e)}
 
+# ── PRESENCIA ─────────────────────────────────────────────────────────────────
+@app.get("/api/presencia/estado", response_class=JSONResponse)
+async def api_presencia_estado():
+    try:
+        from nexus_presencia import estado
+        return estado()
+    except Exception as e:
+        return {"ok": False, "error": str(e)}
+
+@app.post("/api/presencia/pensar", response_class=JSONResponse)
+async def api_presencia_pensar(request: Request):
+    try:
+        body = await request.json()
+        from nexus_presencia import pensar
+        return pensar(body.get("pregunta",""), body.get("contexto",""), body.get("max_tokens", 600))
+    except Exception as e:
+        return {"ok": False, "error": str(e)}
+
+@app.post("/api/presencia/aprender", response_class=JSONResponse)
+async def api_presencia_aprender(request: Request):
+    try:
+        body = await request.json()
+        from nexus_presencia import aprender
+        return aprender(body.get("tipo","aprendizaje"), body.get("contenido",""),
+                        body.get("categoria","general"), body.get("importancia", 1))
+    except Exception as e:
+        return {"ok": False, "error": str(e)}
+
+@app.post("/api/presencia/vision", response_class=JSONResponse)
+async def api_presencia_vision(request: Request):
+    """Analiza una imagen con visión IA (llama-3.2-11b-vision)."""
+    try:
+        body = await request.json()
+        from nexus_presencia import analizar_imagen
+        return analizar_imagen(
+            body.get("imagen",""),
+            body.get("pregunta",""),
+            body.get("contexto","atf"),
+        )
+    except Exception as e:
+        return {"ok": False, "error": str(e)}
+
+@app.post("/api/presencia/vision/upload", response_class=JSONResponse)
+async def api_presencia_vision_upload(request: Request):
+    """Sube una imagen y la analiza. Acepta multipart/form-data."""
+    try:
+        import base64, tempfile
+        form  = await request.form()
+        file  = form.get("imagen")
+        preg  = str(form.get("pregunta",""))
+        ctx   = str(form.get("contexto","atf"))
+        if not file:
+            return {"ok": False, "error": "Campo 'imagen' requerido"}
+        datos = await file.read()
+        ext   = Path(file.filename).suffix if file.filename else ".jpg"
+        tmp   = Path(tempfile.mktemp(suffix=ext))
+        tmp.write_bytes(datos)
+        from nexus_presencia import analizar_imagen
+        resultado = analizar_imagen(str(tmp), preg, ctx)
+        tmp.unlink(missing_ok=True)
+        return resultado
+    except Exception as e:
+        return {"ok": False, "error": str(e)}
+
+@app.post("/api/presencia/destilar", response_class=JSONResponse)
+async def api_presencia_destilar(request: Request):
+    """Extrae aprendizajes de una conversación y los guarda en la presencia."""
+    try:
+        body = await request.json()
+        from nexus_presencia import distilacion_conversacion
+        return distilacion_conversacion(body.get("conversacion", []))
+    except Exception as e:
+        return {"ok": False, "error": str(e)}
+
 # ── DOCTOR ────────────────────────────────────────────────────────────────────
 @app.get("/api/doctor", response_class=JSONResponse)
 async def api_doctor():
