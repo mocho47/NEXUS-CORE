@@ -85,14 +85,51 @@ textarea:focus{outline:none;border-color:var(--cyan)}
 
   <div class="main">
     <div class="tabs">
-      <div class="tab on" onclick="showTab('sistema')">Sistema</div>
+      <div class="tab on" onclick="showTab('contexto')">Contexto</div>
+      <div class="tab" onclick="showTab('sistema')">Sistema</div>
       <div class="tab" onclick="showTab('usuarios')">Beta Testers</div>
       <div class="tab" onclick="showTab('ia')">IA</div>
       <div class="tab" onclick="showTab('control')">Control</div>
     </div>
 
+    <!-- CONTEXTO DE TRABAJO -->
+    <div id="tab-contexto">
+      <div class="section-title">Negocios activos</div>
+      <div class="card">
+        <div class="health-row"><span>🔦 ATF — Actualiza Tus Faros</span><span style="color:var(--green)">Activo</span></div>
+        <div class="health-row"><span>🪵 Creaciones Milens — Laser</span><span style="color:var(--green)">Activo</span></div>
+        <div class="health-row"><span>🚗 CanbusFix — Red instaladores</span><span style="color:var(--green)">Activo</span></div>
+        <div class="health-row"><span>🤖 NEXUS Beta — Distribución</span><span style="color:var(--cyan)">En beta</span></div>
+      </div>
+
+      <div class="section-title">Pendientes activos</div>
+      <div class="card" id="ctx-pendientes">
+        <div class="health-row"><span>🔑 MELI_CLIENT_SECRET</span><span style="color:var(--yellow)">Pendiente</span></div>
+        <div class="health-row"><span>🎬 75 Videos ATF → TikTok/Reels</span><span style="color:var(--yellow)">Pendiente</span></div>
+        <div class="health-row"><span>☁️ Cloud deploy Railway</span><span style="color:var(--green)">Live</span></div>
+        <div class="health-row"><span>📱 APK Android — PWABuilder</span><span style="color:var(--yellow)">Pendiente</span></div>
+        <div class="health-row"><span>📦 Distribuir beta pack</span><span style="color:var(--yellow)">Pendiente</span></div>
+      </div>
+
+      <div class="section-title">Precios Aozoom (dist → pub)</div>
+      <div class="card">
+        <div class="health-row" style="font-size:.8em"><span>X1</span><span>$2,350 → $3,149</span></div>
+        <div class="health-row" style="font-size:.8em"><span>X2</span><span>$2,050 → $2,799</span></div>
+        <div class="health-row" style="font-size:.8em"><span>X4 ⭐ top venta</span><span>$1,990 → $2,699</span></div>
+        <div class="health-row" style="font-size:.8em"><span>X5/X6</span><span>$1,199 → $1,599</span></div>
+        <div class="health-row" style="font-size:.8em"><span>X7 niebla</span><span>$1,550 → $2,069</span></div>
+      </div>
+
+      <div class="section-title">Consultar contexto con IA</div>
+      <div class="card">
+        <textarea id="ctx-input" rows="2" placeholder="¿Cómo van las ventas? ¿Qué priorizo hoy?..."></textarea>
+        <button class="btn primary" onclick="consultarContexto()" style="margin-top:8px">Preguntar al cerebro →</button>
+        <div class="msg-box" id="ctx-resp" style="margin-top:10px">Pregúntame sobre el estado del negocio, prioridades, precios...</div>
+      </div>
+    </div>
+
     <!-- SISTEMA -->
-    <div id="tab-sistema">
+    <div id="tab-sistema" style="display:none">
       <div class="section-title">Estado del sistema</div>
       <div class="stat-grid">
         <div class="stat"><div class="val" id="st-usuarios">—</div><div class="lbl">Beta Testers</div></div>
@@ -177,11 +214,12 @@ function cerrarSesion() {
 
 // ── TABS ─────────────────────────────────────────────────────────────────────
 function showTab(t) {
-    ['sistema','usuarios','ia','control'].forEach(id => {
-        document.getElementById('tab-'+id).style.display = id===t ? 'block' : 'none';
+    ['contexto','sistema','usuarios','ia','control'].forEach(id => {
+        const el = document.getElementById('tab-'+id);
+        if (el) el.style.display = id===t ? 'block' : 'none';
     });
     document.querySelectorAll('.tab').forEach((el,i) => {
-        el.classList.toggle('on', ['sistema','usuarios','ia','control'][i] === t);
+        el.classList.toggle('on', ['contexto','sistema','usuarios','ia','control'][i] === t);
     });
     if (t === 'usuarios') cargarUsuarios();
 }
@@ -276,6 +314,33 @@ async function verificarLocal() {
     } catch(e) {}
 }
 
+async function consultarContexto() {
+    const txt = document.getElementById('ctx-input').value.trim();
+    if (!txt) return;
+    document.getElementById('ctx-resp').textContent = 'Pensando...';
+    const contexto = `Contexto de trabajo Simplex GDL:
+- ATF (retrofit faros): X1=$2350/$3149, X2=$2050/$2799, X4=$1990/$2699 (top venta), X5/X6=$1199/$1599, X7=$1550/$2069
+- Milens: corte laser, cajas MDF/acrílico, grabado
+- CanbusFix: red instaladores, free/Pro$299/Elite$599
+- NEXUS Beta activo en Railway, PTT voz, social
+- Pendientes: MELI_CLIENT_SECRET, 75 videos ATF, APK Android, distribuir beta
+- Admin PIN: nexus2024 | Licencia ADMIN hasta 2036
+Pregunta de Anuar: ${txt}`;
+    try {
+        const r = await fetch('/api/asistente', {
+            method:'POST',
+            headers:{'Content-Type':'application/json'},
+            body: JSON.stringify({texto: contexto, session_id:'admin_ctx'})
+        });
+        const d = await r.json();
+        const resp = d.respuesta || 'Sin respuesta';
+        document.getElementById('ctx-resp').textContent = resp;
+        hablar(resp.slice(0, 200));
+    } catch(e) {
+        document.getElementById('ctx-resp').textContent = 'Error de conexión';
+    }
+}
+
 async function consultarIA() {
     const txt = document.getElementById('ia-input').value.trim();
     if (!txt) return;
@@ -318,6 +383,7 @@ window.addEventListener('DOMContentLoaded', () => {
 });
 </script>
 
+<script src="/static/nx_security.js"></script>
 <script src="/static/nx_ptt.js"></script>
 <script src="/static/nx_social.js"></script>
 <script>

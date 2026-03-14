@@ -41,23 +41,58 @@ STATIC_DIR = BASE_DIR / "WEB" / "static"
 
 app = FastAPI(title="NEXUS by Simplex — Cloud", docs_url=None, redoc_url=None)
 
+# ── SEGURIDAD — Headers anti-copia / anti-embed ───────────────────────────────
+from fastapi.middleware.cors import CORSMiddleware
+from starlette.middleware.base import BaseHTTPMiddleware
+
+class SecurityHeadersMiddleware(BaseHTTPMiddleware):
+    async def dispatch(self, request, call_next):
+        response = await call_next(request)
+        response.headers["X-Frame-Options"] = "DENY"
+        response.headers["X-Content-Type-Options"] = "nosniff"
+        response.headers["Referrer-Policy"] = "no-referrer"
+        response.headers["X-Powered-By"] = "NEXUS by Simplex"
+        # Solo páginas HTML — bloquear cache de código fuente
+        if "text/html" in response.headers.get("content-type", ""):
+            response.headers["Cache-Control"] = "no-store, no-cache, must-revalidate"
+        return response
+
+app.add_middleware(SecurityHeadersMiddleware)
+
 if STATIC_DIR.exists():
     app.mount("/static", StaticFiles(directory=str(STATIC_DIR)), name="static")
 
-# ── HEALTH ────────────────────────────────────────────────────────────────────
+# ── DASHBOARD / ROOT ──────────────────────────────────────────────────────────
 @app.get("/")
-async def root():
-    return HTMLResponse("""
-    <html><head><meta charset="utf-8"><title>NEXUS by Simplex</title>
-    <style>body{background:#050d08;color:#00ff88;font-family:monospace;
-    display:flex;align-items:center;justify-content:center;height:100vh;flex-direction:column;gap:20px}
-    h1{font-size:2.5em;letter-spacing:4px}p{color:#666}</style></head>
-    <body>
-    <h1>NEXUS</h1>
-    <p>by Simplex — Guadalajara</p>
-    <p><a href="/teens/instalar" style="color:#00cfff">NEXUS Teens →</a></p>
-    </body></html>
-    """)
+async def root(request: Request):
+    try:
+        return TEMPLATES.TemplateResponse("dashboard.html", {"request": request})
+    except Exception:
+        return HTMLResponse("""
+        <html><head><meta charset="utf-8"><title>NEXUS by Simplex</title>
+        <style>body{background:#050d08;color:#00ff88;font-family:monospace;
+        display:flex;align-items:center;justify-content:center;height:100vh;flex-direction:column;gap:20px}
+        h1{font-size:2.5em;letter-spacing:4px}p{color:#666}
+        a{color:#00cfff;text-decoration:none;padding:12px 24px;border:1px solid #00cfff;border-radius:8px}
+        </style></head>
+        <body>
+        <h1>NEXUS</h1>
+        <p>by Simplex — Guadalajara</p>
+        <a href="/teens">NEXUS Teens</a>
+        <a href="/atf">ATF by Simplex</a>
+        </body></html>
+        """)
+
+@app.get("/dashboard")
+async def dashboard(request: Request):
+    try:
+        return TEMPLATES.TemplateResponse("dashboard.html", {"request": request})
+    except Exception as e:
+        return JSONResponse({"error": str(e)})
+
+@app.get("/admin")
+async def admin_panel(request: Request):
+    return TEMPLATES.TemplateResponse("nexus_admin_panel.html", {"request": request})
 
 @app.get("/health")
 @app.get("/api/health")
@@ -268,6 +303,57 @@ async def api_asistente(req: AsistenteReq):
         return get_cerebro().pensar(req.texto)
     except Exception as e:
         return {"respuesta": f"Error: {e}", "accion": "error", "params": {}}
+
+# Endpoint para beta/teens — usa cerebro completo pero filtra acciones de admin
+_ACCIONES_SOLO_ADMIN = {"abrir_corel","ejecutar_macro","backup","licencia","crear_admin",
+                        "admin","logout_admin","set_config_tier","set_precio","cambiar_pin"}
+
+@app.post("/api/asistente/beta")
+async def api_asistente_beta(req: AsistenteReq):
+    """Beta y Teens: IA completa, sin acceso a acciones de admin ni sistema."""
+    try:
+        groq_key = os.environ.get("GROQ_API_KEY", "")
+        if not groq_key:
+            return {"respuesta": "Sin conexión con el cerebro por ahora.", "accion": "conversar", "params": {}}
+        from groq import Groq
+        client = Groq(api_key=groq_key)
+        system = (
+            "Eres NEXUS, asistente de inteligencia artificial de Simplex. "
+            "Ayudas al usuario a resolver dudas, navegar su día, dar ideas de negocio, "
+            "responder mensajes, buscar información y operar con inteligencia. "
+            "Eres directo, sin relleno, con carácter. Guadalajara, México. "
+            "NO puedes ejecutar comandos del sistema, NO tienes acceso al panel admin, "
+            "NO puedes ver datos de otros usuarios. Solo ayudas al usuario frente a ti. "
+            "Si preguntan por funciones premium: 'Eso está disponible en la versión completa.' "
+            "Responde en español, máximo 3 párrafos."
+        )
+        chat = client.chat.completions.create(
+            model="llama-3.3-70b-versatile",
+            messages=[{"role": "system", "content": system},
+                      {"role": "user", "content": req.texto}],
+            max_tokens=400, temperature=0.7
+        )
+        resp = chat.choices[0].message.content or "Sin respuesta."
+        return {"respuesta": resp, "accion": "conversar", "params": {}}
+    except Exception as e:
+        return {"respuesta": f"Error: {e}", "accion": "error", "params": {}}
+
+# ── BETA / MANUAL ─────────────────────────────────────────────────────────────
+@app.get("/bienvenida", response_class=HTMLResponse)
+async def bienvenida(request: Request):
+    return TEMPLATES.TemplateResponse("bienvenida_beta.html", {"request": request})
+
+@app.get("/manual", response_class=HTMLResponse)
+async def manual(request: Request):
+    return TEMPLATES.TemplateResponse("manual_beta.html", {"request": request})
+
+@app.get("/manual/admin", response_class=HTMLResponse)
+async def manual_admin(request: Request):
+    return TEMPLATES.TemplateResponse("manual_admin.html", {"request": request})
+
+@app.get("/teens/manual", response_class=HTMLResponse)
+async def manual_teens(request: Request):
+    return TEMPLATES.TemplateResponse("manual_teens.html", {"request": request})
 
 # ── ATF PUBLICA ───────────────────────────────────────────────────────────────
 @app.get("/atf", response_class=HTMLResponse)

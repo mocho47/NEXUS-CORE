@@ -45,7 +45,7 @@ function abrirSitio(site, extra) {
 // ── Generador de respuesta con IA ─────────────────────────────────────────────
 async function generarRespuestaIA(mensaje, app) {
   try {
-    const res = await fetch('/api/asistente', {
+    const res = await fetch('/api/asistente/beta', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
