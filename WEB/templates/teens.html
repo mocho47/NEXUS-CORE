@@ -2784,6 +2784,13 @@ renderInspiracion();
     </div>
 </div>
 
+<!-- Botón cerrar mic arriba del FAB -->
+<div id="nx-close-mic"
+     onclick="NX.toggleVoiceMode();speechSynthesis.cancel();this.style.display='none'"
+     style="position:fixed;bottom:calc(90px + env(safe-area-inset-bottom,0px));right:14px;
+            background:#1a0010;border:1px solid #ff4444;color:#ff4444;
+            font-size:.7em;font-weight:700;padding:6px 10px;border-radius:8px;
+            cursor:pointer;z-index:501;display:none">✕ Cerrar mic</div>
 <!-- FAB de voz flotante -->
 <div id="nx-mic-fab" onclick="NX.toggleVoiceMode()"
      style="position:fixed;bottom:calc(24px + env(safe-area-inset-bottom,0px));right:18px;
@@ -2959,6 +2966,12 @@ const NX = (() => {
         bub.style.display = 'block'; bub.textContent = `"${cmd}"`;
         setTimeout(() => { bub.style.display = 'none'; }, 3000);
 
+        // Comandos sociales (WhatsApp, redes, contestar mensajes)
+        if (window.NxSocial) {
+            const fueComandoSocial = await NxSocial.procesarSocial(cmd);
+            if (fueComandoSocial) return;
+        }
+
         if (c.includes('misi'))      { document.querySelector('[onclick="go(\'misiones\')"]')?.click();  hablar('Aquí están tus misiones'); return; }
         if (c.includes('aptitud'))   { document.querySelector('[onclick="go(\'aptitudes\')"]')?.click(); hablar('Mira tu radar de talento'); return; }
         if (c.includes('viral') || c.includes('idea')) { document.querySelector('[onclick="go(\'viral\')"]')?.click(); hablar('Generando tu idea viral'); setTimeout(generarViral, 800); return; }
@@ -3011,8 +3024,30 @@ const NX = (() => {
     return { hablar, toggleVoiceMode, obResponder, obMic, verificarOnboarding };
 })();
 
-// Arrancar voz después de que la app cargue
-window.addEventListener('DOMContentLoaded', () => setTimeout(NX.verificarOnboarding, 900));
+// Arrancar voz — solo UNA vez por sesión (evita repetir al volver de otra app en cel)
+window.addEventListener('DOMContentLoaded', () => {
+    const _sesKey = 'nx_saludo_' + new Date().toDateString();
+    if (!sessionStorage.getItem(_sesKey)) {
+        sessionStorage.setItem(_sesKey, '1');
+        setTimeout(NX.verificarOnboarding, 900);
+    }
+});
+// Liberar audio al salir o recibir llamada — permite Admin/Beta sin bloqueo
+document.addEventListener('visibilitychange', () => {
+    if (document.hidden && window.speechSynthesis) {
+        speechSynthesis.cancel();
+        // Mostrar botón cerrar mic si modo escucha activo
+        if (window._modoEscucha) document.getElementById('nx-close-mic').style.display='block';
+    }
+});
+// Detectar freeze (llamada entrante, sistema interrumpe)
+window.addEventListener('freeze', () => {
+    speechSynthesis.cancel();
+    if (window._modoEscucha) window.NX?.toggleVoiceMode();
+});
+window.addEventListener('resume', () => {
+    document.getElementById('nx-close-mic').style.display='none';
+});
 
 // ── MANUAL DE BIENVENIDA ────────────────────────────────────────────────────
 (function() {
@@ -3326,6 +3361,21 @@ function _actualizarBannerConexion() {
 window.addEventListener('online',  _actualizarBannerConexion);
 window.addEventListener('offline', _actualizarBannerConexion);
 window.addEventListener('DOMContentLoaded', _actualizarBannerConexion);
+</script>
+
+<script src="/static/nx_ptt.js"></script>
+<script src="/static/nx_social.js"></script>
+<script>
+window.addEventListener('DOMContentLoaded', () => {
+    NxPTT.init({
+        lang: 'es-MX',
+        onResult: async (txt) => {
+            // Primero intenta comando social (WhatsApp, redes, contestar)
+            const fueComandoSocial = await NxSocial.procesarSocial(txt);
+            if (!fueComandoSocial && window.NX?.obResponder) window.NX.obResponder(txt);
+        }
+    });
+});
 </script>
 </body>
 </html>

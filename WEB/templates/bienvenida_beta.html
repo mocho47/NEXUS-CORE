@@ -281,16 +281,18 @@ function irDashboard(){
 
 
 <script src="/static/nx_ptt.js"></script>
+<script src="/static/nx_social.js"></script>
 <script>
 window.addEventListener('DOMContentLoaded', () => {
     NxPTT.init({
         lang: 'es-MX',
-        onResult: (txt) => {
-            // Buscar input visible y enviar, o llamar al asistente
-            const input = document.querySelector('input[type=text]:not([hidden]),textarea:not([hidden])');
+        onResult: async (txt) => {
+            // Primero comandos sociales
+            const fueComandoSocial = await NxSocial.procesarSocial(txt);
+            if (fueComandoSocial) return;
+            // Rellenar input visible
+            const input = document.querySelector('input[type=text]:not([style*="display:none"]),textarea:not([style*="display:none"])');
             if (input) { input.value = txt; input.dispatchEvent(new Event('input')); }
-            if (window._nxPTTCallback) window._nxPTTCallback(txt);
-            else if (window.NX?.obResponder) window.NX.obResponder(txt);
         }
     });
 });
