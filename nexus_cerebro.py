@@ -287,6 +287,33 @@ analizar_imagen   | Analiza foto con vision IA. params: {imagen, pregunta?, cont
 ver_presencia     | Estado de la presencia y memoria acumulada. params: {}
                   | Usar cuando: "que recuerdas", "cuanto sabes", "tu memoria"
 
+=== AUTOMATIZACION GOOGLE DRIVE / PORTFOLIO ATF ===
+subir_videos_atf  | Sube los mejores videos ATF a Google Drive, actualiza portfolio y publica en GitHub Pages.
+                  | Accion dispatch: {accion: "subir_videos_atf"}
+                  | API: POST /api/atf/subir_videos
+                  | Usar cuando: "sube los videos", "sube los videos ATF", "publica los trabajos",
+                  |   "actualiza el portfolio", "sube a Drive", "publica en GitHub"
+                  | Requiere: CONFIG/google_drive_credentials.json (OAuth2, se obtiene una sola vez)
+
+portfolio_atf     | Ver estado del portfolio y abrirlo en el navegador.
+                  | Accion dispatch: {accion: "portfolio_atf"}
+                  | API: GET /api/atf/portfolio
+                  | Usar cuando: "abre el portfolio", "ver mis trabajos publicados", "como va el portfolio"
+                  | Flujo automatico: autenticar -> crear carpeta Drive -> subir 6 videos ->
+                  |   obtener IDs -> actualizar docs/index.html -> crear landings -> push GitHub
+                  | Usar cuando: "sube los videos", "actualiza el portfolio ATF", "publica los trabajos"
+                  | Portfolio live: https://mocho47.github.io/NEXUS-CORE/
+                  | QR evento:      https://mocho47.github.io/NEXUS-CORE/atf-jetta.html
+
+generar_qr_atf    | Genera QR blanco/negro para grabado laser en acrilico apuntando al portfolio ATF.
+                  | Usar cuando: "genera el QR del evento", "QR para acrilico", "QR para el evento de carros"
+
+portfolio_agregar | Para agregar un trabajo nuevo al portfolio:
+                  | 1. Sube video a Drive manualmente o via subir_videos_atf.py
+                  | 2. Dame el FILE_ID del link de Drive
+                  | 3. NEXUS actualiza docs/index.html y crea la landing page automaticamente
+                  | Usar cuando: "agrega este trabajo", "tengo un video nuevo"
+
 === REGLAS DE SELECCION DE ACCION ===
 1. Si la intencion es CLARA y hay modulo para eso -> usar la accion especifica
 2. Si la intencion tiene AMBIGUEDAD -> preguntar UNA sola cosa antes de ejecutar

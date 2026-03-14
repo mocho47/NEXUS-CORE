@@ -804,6 +804,12 @@ app.mount("/out", _SF(directory=_out_dir), name="out")
 async def cartoonizer_view(request: Request):
     return templates.TemplateResponse("cartoonizer.html", {"request": request})
 
+@app.get("/atf/jetta", response_class=HTMLResponse)
+async def atf_jetta_qr(request: Request, video: str = ""):
+    """Landing page QR para acrilico — reproduce video Jetta y redirige a ATF."""
+    video_url = video if video else "/static/videos/jetta_atf.mp4"
+    return templates.TemplateResponse("atf_jetta_qr.html", {"request": request, "video_url": video_url})
+
 @app.get("/atf", response_class=HTMLResponse)
 async def atf_view():
     path = os.path.join(BASE_DIR, "WEB_ATF", "index.html")
@@ -3242,6 +3248,50 @@ async def api_atf_pipeline_caption(archivo: str = ""):
         return generar_caption_ia(archivo)
     except Exception as e:
         return {"ok": False, "error": str(e)}
+
+# ── ATF DRIVE PORTFOLIO ───────────────────────────────────────────────────────
+@app.post("/api/atf/subir_videos", response_class=JSONResponse)
+async def api_atf_subir_videos():
+    """Lanza el pipeline de subida a Google Drive en background."""
+    import asyncio, subprocess as sp
+    script = os.path.join(BASE_DIR, "subir_videos_atf.py")
+    if not os.path.exists(script):
+        return {"ok": False, "error": "Script no encontrado"}
+    creds = os.path.join(CONFIG_DIR, "google_drive_credentials.json")
+    if not os.path.exists(creds):
+        return {
+            "ok": False,
+            "necesita_credenciales": True,
+            "instrucciones": [
+                "Ve a console.cloud.google.com",
+                "Crea proyecto → habilita Google Drive API",
+                "Credenciales → OAuth → Aplicacion de escritorio → Descargar JSON",
+                f"Guarda el archivo como: {creds}"
+            ]
+        }
+    # Lanzar en background
+    sp.Popen([sys.executable, script], cwd=BASE_DIR,
+             creationflags=sp.CREATE_NEW_CONSOLE if sys.platform == "win32" else 0)
+    return {"ok": True, "mensaje": "Pipeline iniciado. Revisa la ventana que se abrió para ver el progreso."}
+
+@app.get("/api/atf/portfolio", response_class=JSONResponse)
+async def api_atf_portfolio_estado():
+    """Estado actual del portfolio ATF."""
+    ids_path = os.path.join(CONFIG_DIR, "atf_drive_ids.json")
+    creds    = os.path.join(CONFIG_DIR, "google_drive_credentials.json")
+    token    = os.path.join(CONFIG_DIR, "google_drive_token.json")
+    trabajos = []
+    if os.path.exists(ids_path):
+        with open(ids_path, encoding="utf-8") as f:
+            trabajos = json.load(f)
+    return {
+        "ok": True,
+        "autenticado": os.path.exists(token),
+        "credenciales_listas": os.path.exists(creds),
+        "videos_subidos": len(trabajos),
+        "portfolio_url": "https://mocho47.github.io/NEXUS-CORE/",
+        "trabajos": [{"titulo": t["titulo"], "drive_id": t.get("drive_id","")} for t in trabajos]
+    }
 
 # ── WHATSAPP ──────────────────────────────────────────────────────────────────
 @app.post("/api/whatsapp/webhook")

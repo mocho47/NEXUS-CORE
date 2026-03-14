@@ -1360,6 +1360,29 @@ async function nexusEjecutar(accion, params){
         return;
     }
 
+    // ── ATF Portfolio / Drive ─────────────────────────────────────────────
+    if(accion==='subir_videos_atf'){
+        oidBurbuja('ATF','Verificando configuración de Google Drive...',false);
+        const r=await fetch('/api/atf/portfolio').then(x=>x.json()).catch(()=>({}));
+        if(!r.credenciales_listas){
+            oidBurbuja('ATF','⚠️ Necesitas configurar Google Drive primero. Ve a console.cloud.google.com, crea un proyecto, habilita la Drive API, descarga las credenciales OAuth y guárdalas en CONFIG/google_drive_credentials.json',false);
+            return;
+        }
+        oidBurbuja('ATF','Iniciando subida de videos a Google Drive... Revisa la ventana que se abre.',false);
+        const r2=await fetch('/api/atf/subir_videos',{method:'POST'}).then(x=>x.json()).catch(()=>({}));
+        oidBurbuja('ATF', r2.ok ? '✅ Pipeline iniciado. Los videos se están subiendo a Drive y el portfolio se actualizará automáticamente en GitHub.' : (r2.error||'Error al iniciar'), false);
+        return;
+    }
+    if(accion==='portfolio_atf'){
+        const r=await fetch('/api/atf/portfolio').then(x=>x.json()).catch(()=>({}));
+        const msg = r.videos_subidos>0
+            ? `Portfolio ATF activo: ${r.videos_subidos} videos en Drive. URL: ${r.portfolio_url}`
+            : `Portfolio listo pero sin videos aún. Di "sube los videos ATF" para publicarlos.`;
+        oidBurbuja('ATF', msg, false);
+        window.open(r.portfolio_url,'_blank');
+        return;
+    }
+
     // ── Watchtower ────────────────────────────────────────────────────────
     if(accion==='watchtower'){
         const r=await fetch('/api/watchtower/mensajes').then(x=>x.json()).catch(()=>({}));
@@ -2509,12 +2532,96 @@ function _tourSalir() {
 
 <!-- ── NEXUS AMBIENT AUDIO ──────────────────────────────────────────────── -->
 <script src="/static/nexus_ambient.js"></script>
+<script>
+// Binaurales por defecto — arranca suave al primer clic del usuario
+(function(){
+    let _ambientStarted = false;
+    function _startAmbient(){
+        if(_ambientStarted) return;
+        _ambientStarted = true;
+        try{
+            if(typeof NexusAmbient !== 'undefined' && NexusAmbient.iniciar){
+                NexusAmbient.iniciar();
+            }
+        }catch(e){}
+    }
+    // Arrancar al primer clic o toque (requiere gesto del usuario para Web Audio API)
+    document.addEventListener('click',  _startAmbient, {once:true});
+    document.addEventListener('keydown', _startAmbient, {once:true});
+    document.addEventListener('touchstart', _startAmbient, {once:true});
+})();
+</script>
+<!-- Beta feedback + manual + legal footer -->
+<div id="beta-bar" style="display:none;background:#0a1a0f;border-top:1px solid #00ff8820;padding:10px 20px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px">
+  <span style="font-size:12px;color:#00ff88;font-weight:700">🧪 BETA TESTER</span>
+  <span style="font-size:12px;color:#7d8590">¿Encontraste algo? Tu feedback construye NEXUS.</span>
+  <div style="display:flex;gap:8px">
+    <a href="/manual" target="_blank" style="font-size:12px;color:#7d8590;border:1px solid #30363d;padding:5px 12px;border-radius:6px;text-decoration:none" onmouseover="this.style.borderColor='#00ff88';this.style.color='#00ff88'" onmouseout="this.style.borderColor='#30363d';this.style.color='#7d8590'">📖 Manual</a>
+    <a id="btn-feedback" href="#" style="font-size:12px;color:#000;background:#00ff88;padding:5px 12px;border-radius:6px;text-decoration:none;font-weight:700" onclick="abrirFeedback();return false">💬 Reportar</a>
+  </div>
+</div>
+<!-- Modal feedback -->
+<div id="modal-feedback" style="display:none;position:fixed;inset:0;background:#000000cc;z-index:9999;align-items:center;justify-content:center">
+  <div style="background:#0d1117;border:1px solid #21262d;border-radius:16px;padding:28px;max-width:420px;width:90%;animation:fadeUp .3s ease">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
+      <h3 style="font-size:18px;color:#00ff88">💬 Reportar problema o idea</h3>
+      <button onclick="cerrarFeedback()" style="background:none;border:none;color:#7d8590;font-size:20px;cursor:pointer">×</button>
+    </div>
+    <textarea id="feedback-texto" placeholder="Describe qué pasó o qué mejorarías..." style="width:100%;height:120px;background:#161b22;border:1px solid #30363d;border-radius:8px;color:#e6edf3;padding:12px;font-size:14px;resize:none;outline:none;font-family:inherit" onfocus="this.style.borderColor='#00ff88'" onblur="this.style.borderColor='#30363d'"></textarea>
+    <div style="display:flex;gap:8px;margin-top:12px">
+      <button onclick="enviarFeedback()" style="flex:1;background:#00ff88;color:#000;border:none;padding:12px;border-radius:8px;font-weight:800;cursor:pointer;font-size:14px">Enviar 🚀</button>
+      <button onclick="cerrarFeedback()" style="background:#161b22;color:#7d8590;border:1px solid #30363d;padding:12px 16px;border-radius:8px;cursor:pointer;font-size:14px">Cancelar</button>
+    </div>
+  </div>
+</div>
 <!-- Legal footer -->
-<div style="text-align:center;padding:8px;font-size:0.72em;color:#1e1e1e;border-top:1px solid #111;margin-top:8px">
+<div style="text-align:center;padding:8px;font-size:0.72em;color:#1e1e1e;border-top:1px solid #111;margin-top:4px">
     <a href="/legal" style="color:#1e1e1e;text-decoration:none" onmouseover="this.style.color='#444'" onmouseout="this.style.color='#1e1e1e'">
         ⚖️ Aviso de Privacidad · LFPDPPP México
     </a>
+    &nbsp;·&nbsp;
+    <a href="/manual" style="color:#1e1e1e;text-decoration:none" onmouseover="this.style.color='#444'" onmouseout="this.style.color='#1e1e1e'">
+        📖 Manual
+    </a>
 </div>
+<script>
+// Mostrar barra beta si el usuario es beta tester
+(function(){
+  const perfil = JSON.parse(localStorage.getItem('nexus_perfil')||'{}');
+  const betaDone = localStorage.getItem('nexus_onboarding_done');
+  if(betaDone) document.getElementById('beta-bar').style.display='flex';
+})();
+
+function abrirFeedback(){
+  const m = document.getElementById('modal-feedback');
+  m.style.display='flex';
+  setTimeout(()=>document.getElementById('feedback-texto').focus(),100);
+}
+function cerrarFeedback(){
+  document.getElementById('modal-feedback').style.display='none';
+  document.getElementById('feedback-texto').value='';
+}
+function enviarFeedback(){
+  const texto = document.getElementById('feedback-texto').value.trim();
+  if(!texto){ alert('Escribe algo 😊'); return; }
+  const perfil = JSON.parse(localStorage.getItem('nexus_perfil')||'{}');
+  fetch('/api/feedback/beta',{
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({texto, negocio: perfil.negocio||'Beta', timestamp: new Date().toISOString()})
+  })
+  .then(()=>{
+    cerrarFeedback();
+    // Mostrar mini-notificación
+    const n = document.createElement('div');
+    n.textContent = '✅ ¡Gracias! Tu feedback llega directo a nosotros.';
+    n.style.cssText='position:fixed;bottom:24px;right:24px;background:#00ff88;color:#000;padding:14px 20px;border-radius:10px;font-weight:700;font-size:14px;z-index:9999;animation:fadeIn .3s ease';
+    document.body.appendChild(n);
+    setTimeout(()=>n.remove(),4000);
+  })
+  .catch(()=>{ window.open('https://wa.me/523326148674?text=Feedback+NEXUS:+'+encodeURIComponent(texto),'_blank'); cerrarFeedback(); });
+}
+</script>
 <script>
 if('serviceWorker' in navigator){
   navigator.serviceWorker.register('/static/nexus_sw.js')
