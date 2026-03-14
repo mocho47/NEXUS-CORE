@@ -101,17 +101,13 @@ html,body{height:100%;background:#000;color:#fff;font-family:-apple-system,Blink
     </div>
   </div>
 
-  <!--
-    INSTRUCCION: Sube el video a Google Drive, compártelo como
-    "Cualquier persona con el enlace puede ver", copia el FILE_ID
-    del link (la parte larga entre /d/ y /view) y reemplaza
-    AQUI_VA_EL_ID_DE_DRIVE con ese valor.
-  -->
-  <iframe id="drive-frame"
-    src="https://drive.google.com/file/d/AQUI_VA_EL_ID_DE_DRIVE/preview"
-    allow="autoplay"
-    allowfullscreen>
-  </iframe>
+  <video id="drive-frame"
+    src="videos/atf_2024_retrofit_completo.mp4"
+    controls
+    playsinline
+    autoplay
+    style="width:100%;height:100%;object-fit:contain;background:#000">
+  </video>
 
   <div id="prog"></div>
 

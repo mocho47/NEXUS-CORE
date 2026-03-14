@@ -17,11 +17,12 @@ body{background:#070a0e;color:#e6edf3;font-family:-apple-system,BlinkMacSystemFo
 .hero h1{font-size:26px;font-weight:900;margin-bottom:8px}
 .hero p{font-size:14px;color:#7d8590;max-width:400px;margin:0 auto}
 .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:16px;padding:16px 16px 80px;max-width:1000px;margin:0 auto}
-.card{background:#0d1117;border:1px solid #21262d;border-radius:14px;overflow:hidden;cursor:pointer;transition:.2s;text-decoration:none;color:inherit}
+.card{background:#0d1117;border:1px solid #21262d;border-radius:14px;overflow:hidden;cursor:pointer;transition:.2s;color:inherit;display:block}
 .card:hover{border-color:#00d4ff40;transform:translateY(-2px)}
 .thumb{width:100%;aspect-ratio:16/9;background:#161b22;position:relative;overflow:hidden}
-.thumb img{width:100%;height:100%;object-fit:cover}
-.play-overlay{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:#00000060}
+.thumb video{width:100%;height:100%;object-fit:cover}
+.play-overlay{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:#00000060;transition:.2s}
+.card:hover .play-overlay{background:#00000030}
 .play-circle{width:52px;height:52px;border-radius:50%;background:#00d4ff20;border:2px solid #00d4ff80;display:flex;align-items:center;justify-content:center}
 .play-tri{width:0;height:0;border-style:solid;border-width:10px 0 10px 18px;border-color:transparent transparent transparent #00d4ff;margin-left:3px}
 .card-body{padding:16px}
@@ -30,6 +31,17 @@ body{background:#070a0e;color:#e6edf3;font-family:-apple-system,BlinkMacSystemFo
 .tag{display:inline-block;background:#00d4ff15;border:1px solid #00d4ff30;color:#00d4ff;font-size:10px;font-weight:700;padding:2px 8px;border-radius:8px;margin-right:6px;margin-top:6px}
 .footer{background:#0d1117;border-top:1px solid #21262d;padding:24px 20px;text-align:center;font-size:13px;color:#7d8590}
 .footer a{color:#00d4ff}
+/* Modal video */
+.modal{display:none;position:fixed;inset:0;background:#000000cc;z-index:100;align-items:center;justify-content:center;padding:20px}
+.modal.open{display:flex}
+.modal-inner{background:#0d1117;border-radius:14px;overflow:hidden;max-width:800px;width:100%;position:relative}
+.modal-inner video{width:100%;display:block;max-height:60vh}
+.modal-header{padding:12px 16px;display:flex;justify-content:space-between;align-items:center}
+.modal-title{font-size:15px;font-weight:700}
+.modal-close{background:none;border:none;color:#7d8590;font-size:22px;cursor:pointer;padding:0 4px;line-height:1}
+.modal-close:hover{color:#e6edf3}
+.modal-footer{padding:12px 16px;display:flex;gap:10px}
+.wa-cta{background:#25D366;color:#000;font-weight:800;font-size:14px;padding:10px 20px;border-radius:8px;text-decoration:none;flex:1;text-align:center}
 </style>
 </head>
 <body>
@@ -44,57 +56,94 @@ body{background:#070a0e;color:#e6edf3;font-family:-apple-system,BlinkMacSystemFo
   <p>Retrofit de faros LED profesional · Tuning y Diseño de Iluminación Automotriz · Guadalajara</p>
 </div>
 
-<div class="grid" id="grid">
-  <!-- Los trabajos se cargan desde el array JS abajo -->
-</div>
+<div class="grid" id="grid"></div>
 
 <div class="footer">
   <p>📍 Longinos Cadena 1740, Col. Lomas de Polanco, Guadalajara</p>
   <p style="margin-top:6px">📱 <a href="https://wa.me/523326148674">33 2614 8674</a> · Anuar Milan</p>
 </div>
 
+<!-- Modal reproductor -->
+<div class="modal" id="modal" onclick="cerrarModal(event)">
+  <div class="modal-inner">
+    <div class="modal-header">
+      <span class="modal-title" id="modal-title"></span>
+      <button class="modal-close" onclick="cerrarModal()">✕</button>
+    </div>
+    <video id="modal-video" controls playsinline></video>
+    <div class="modal-footer">
+      <a href="https://wa.me/523326148674?text=Vi+su+trabajo+en+el+portfolio%2C+quiero+informes" class="wa-cta">
+        Quiero esto en mi auto →
+      </a>
+    </div>
+  </div>
+</div>
+
 <script>
-// ─── TRABAJOS ATF ──────────────────────────────────────────────────────────
-// Para agregar un trabajo nuevo:
-// 1. Sube el video a Google Drive, compártelo público
-// 2. Saca el FILE_ID del link de Drive
-// 3. Agrega una entrada aquí con drive_id, titulo, auto, año, tags
+const BASE = 'videos/';
+
 const TRABAJOS = [
   {
-    titulo:   "Jetta A6 — Retrofit Completo",
-    auto:     "Volkswagen Jetta A6",
+    titulo:   "Retrofit Completo 2024",
+    auto:     "Por definir",
     anno:     "2024",
-    tags:     ["Bi-LED", "Aozoom X4", "DRL"],
-    drive_id: "AQUI_ID_VIDEO_JETTA",   // <-- reemplazar con ID de Drive
-    thumb_id: "",                        // <-- opcional: ID de imagen Drive
-    page:     "atf-jetta.html",
+    tags:     ["Bi-LED","Full","2024"],
+    video:    "atf_2024_retrofit_completo.mp4",
     featured: true,
   },
-  // ── Agrega más trabajos aquí ──────────────────────────────────────────────
-  // {
-  //   titulo:   "Camry 2020 — X1 Full",
-  //   auto:     "Toyota Camry",
-  //   anno:     "2024",
-  //   tags:     ["Bi-LED", "Aozoom X1"],
-  //   drive_id: "ID_VIDEO_CAMRY",
-  //   page:     "atf-camry.html",
-  // },
+  {
+    titulo:   "Transformación Completa 2023",
+    auto:     "Por definir",
+    anno:     "2023",
+    tags:     ["Bi-LED","LED"],
+    video:    "atf_2023_transformacion.mp4",
+    featured: false,
+  },
+  {
+    titulo:   "Último Trabajo 2025",
+    auto:     "Por definir",
+    anno:     "2025",
+    tags:     ["2025","Nuevo"],
+    video:    "atf_2025_nuevo.mp4",
+    featured: false,
+  },
+  {
+    titulo:   "Retrofit Clásico 2022",
+    auto:     "Por definir",
+    anno:     "2022",
+    tags:     ["2022","Clásico"],
+    video:    "atf_2022_clasico.mp4",
+    featured: false,
+  },
+  {
+    titulo:   "Resultado Final 2023",
+    auto:     "Por definir",
+    anno:     "2023",
+    tags:     ["Resultado"],
+    video:    "atf_2023_resultado.mp4",
+    featured: false,
+  },
+  {
+    titulo:   "Trabajo 2023",
+    auto:     "Por definir",
+    anno:     "2023",
+    tags:     ["2023"],
+    video:    "atf_2023_trabajo.mp4",
+    featured: false,
+  },
 ];
 
 const grid = document.getElementById('grid');
 
-TRABAJOS.forEach(t => {
-  const thumbSrc = t.thumb_id
-    ? `https://drive.google.com/thumbnail?id=${t.thumb_id}&sz=w600`
-    : `https://drive.google.com/thumbnail?id=${t.drive_id}&sz=w600`;
-
+TRABAJOS.forEach((t, i) => {
   const tags = t.tags.map(tag => `<span class="tag">${tag}</span>`).join('');
   const featured = t.featured ? '<span class="tag" style="background:#ff880020;border-color:#ff880040;color:#ff8800">DESTACADO</span>' : '';
+  const videoUrl = BASE + t.video;
 
   grid.innerHTML += `
-    <a class="card" href="${t.page}">
+    <div class="card" onclick="abrirVideo('${videoUrl}','${t.titulo}')">
       <div class="thumb">
-        <img src="${thumbSrc}" alt="${t.titulo}" loading="lazy" onerror="this.style.display='none'">
+        <video src="${videoUrl}" preload="metadata" muted playsinline style="pointer-events:none"></video>
         <div class="play-overlay">
           <div class="play-circle"><div class="play-tri"></div></div>
         </div>
@@ -104,8 +153,28 @@ TRABAJOS.forEach(t => {
         <div class="card-meta"><span>${t.auto}</span><span>${t.anno}</span></div>
         <div style="margin-top:8px">${featured}${tags}</div>
       </div>
-    </a>`;
+    </div>`;
 });
+
+function abrirVideo(src, titulo) {
+  const v = document.getElementById('modal-video');
+  document.getElementById('modal-title').textContent = titulo;
+  v.src = src;
+  v.play();
+  document.getElementById('modal').classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+
+function cerrarModal(e) {
+  if (e && e.target !== document.getElementById('modal')) return;
+  const v = document.getElementById('modal-video');
+  v.pause();
+  v.src = '';
+  document.getElementById('modal').classList.remove('open');
+  document.body.style.overflow = '';
+}
+
+document.addEventListener('keydown', e => { if (e.key === 'Escape') cerrarModal(); });
 </script>
 </body>
 </html>
