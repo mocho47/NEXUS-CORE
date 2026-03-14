@@ -386,19 +386,24 @@ window.addEventListener('DOMContentLoaded', () => {
 <script src="/static/nx_security.js"></script>
 <script src="/static/nx_ptt.js"></script>
 <script src="/static/nx_social.js"></script>
+<script src="/static/nx_admin_brain.js"></script>
 <script>
 window.addEventListener('DOMContentLoaded', () => {
     NxPTT.init({
         lang: 'es-MX',
         onResult: async (txt) => {
-            // Primero comandos sociales
+            // 1. Si hay un textarea activo/enfocado → dictar en él
+            const activeTA = document.activeElement;
+            if (activeTA && (activeTA.tagName === 'TEXTAREA' || activeTA.tagName === 'INPUT')) {
+                activeTA.value = txt;
+                activeTA.dispatchEvent(new Event('input'));
+                return;
+            }
+            // 2. Comandos sociales (abrir apps, contestar WA/Messenger)
             const fueComandoSocial = await NxSocial.procesarSocial(txt);
             if (fueComandoSocial) return;
-            // Buscar input visible y enviar
-            const input = document.querySelector('textarea:not([style*="display:none"])');
-            if (input && document.activeElement !== input) {
-                input.value = txt; input.dispatchEvent(new Event('input'));
-            }
+            // 3. Cerebro completo NEXUS — navegar, ejecutar acciones, responder
+            await NxAdminBrain.procesarAdmin(txt);
         }
     });
 });
