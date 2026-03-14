@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
+<title>NEXUS — Admin</title>
+<style>
+:root{--bg:#050a08;--card:#0c1410;--border:#1a2e20;--green:#00ff88;--cyan:#00d4ff;--yellow:#f5c518;--red:#ff4444;--dim:#4a6a55;--txt:#c8e6d0}
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:var(--bg);color:var(--txt);font-family:-apple-system,monospace;min-height:100vh}
+.header{background:#050a08;border-bottom:1px solid var(--border);padding:14px 20px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:10}
+.logo{font-size:1.3em;font-weight:900;color:var(--green);letter-spacing:2px}
+.logo span{color:var(--dim);font-size:.6em;font-weight:400;margin-left:6px}
+.badge-live{background:#0a2010;border:1px solid var(--green);color:var(--green);font-size:.65em;padding:3px 8px;border-radius:20px;animation:blink 2s infinite}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.4}}
+.pin-gate{position:fixed;inset:0;background:rgba(0,0,0,.95);z-index:100;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px}
+.pin-gate h2{color:var(--green);font-size:1.4em;letter-spacing:3px}
+.pin-dots{display:flex;gap:12px;margin:8px 0}
+.dot{width:14px;height:14px;border-radius:50%;border:2px solid var(--dim);background:transparent;transition:.2s}
+.dot.filled{background:var(--green);border-color:var(--green)}
+.pin-pad{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;width:220px}
+.pin-btn{background:#0c1410;border:1px solid var(--border);color:var(--txt);font-size:1.4em;padding:16px;border-radius:10px;cursor:pointer;text-align:center;transition:.15s}
+.pin-btn:active{background:var(--border)}
+.pin-btn.del{color:var(--red)}
+.main{padding:16px;max-width:600px;margin:0 auto}
+.section-title{font-size:.75em;color:var(--dim);text-transform:uppercase;letter-spacing:2px;margin:20px 0 10px}
+.card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:16px;margin-bottom:12px}
+.stat-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.stat{background:#060e0a;border:1px solid var(--border);border-radius:10px;padding:14px;text-align:center}
+.stat .val{font-size:2em;font-weight:900;color:var(--green)}
+.stat .lbl{font-size:.7em;color:var(--dim);margin-top:4px}
+.user-row{display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--border)}
+.user-row:last-child{border:none}
+.user-name{font-weight:700;font-size:.9em}
+.user-meta{font-size:.7em;color:var(--dim);margin-top:2px}
+.badge{font-size:.65em;padding:2px 8px;border-radius:10px;font-weight:700}
+.badge.active{background:#0a2010;color:var(--green);border:1px solid var(--green)}
+.badge.idle{background:#1a1a0a;color:var(--yellow);border:1px solid var(--yellow)}
+.badge.new{background:#0a1020;color:var(--cyan);border:1px solid var(--cyan)}
+.btn{background:#0c1410;border:1px solid var(--border);color:var(--txt);padding:10px 16px;border-radius:8px;cursor:pointer;font-size:.85em;width:100%;margin-top:8px;text-align:center}
+.btn:active{background:var(--border)}
+.btn.danger{border-color:var(--red);color:var(--red)}
+.btn.primary{border-color:var(--cyan);color:var(--cyan)}
+.health-row{display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid var(--border);font-size:.85em}
+.health-row:last-child{border:none}
+.dot-green{width:8px;height:8px;border-radius:50%;background:var(--green);display:inline-block;margin-right:6px;animation:blink 2s infinite}
+.dot-red{width:8px;height:8px;border-radius:50%;background:var(--red);display:inline-block;margin-right:6px}
+.msg-box{background:#060e0a;border:1px solid var(--border);border-radius:8px;padding:12px;font-size:.8em;line-height:1.6;margin-top:8px;min-height:60px;color:var(--txt)}
+textarea{width:100%;background:#060e0a;border:1px solid var(--border);border-radius:8px;padding:10px;color:var(--txt);font-size:.85em;resize:none;font-family:inherit}
+textarea:focus{outline:none;border-color:var(--cyan)}
+.tabs{display:flex;gap:6px;margin-bottom:16px;overflow-x:auto;padding-bottom:4px}
+.tab{white-space:nowrap;padding:8px 14px;border-radius:8px;border:1px solid var(--border);font-size:.8em;cursor:pointer;color:var(--dim)}
+.tab.on{border-color:var(--green);color:var(--green);background:#0a1a10}
+</style>
+</head>
+<body>
+
+<!-- PIN GATE -->
+<div class="pin-gate" id="pin-gate">
+  <h2>NEXUS ADMIN</h2>
+  <p style="color:var(--dim);font-size:.8em">Acceso restringido</p>
+  <input id="pin-input" type="password" placeholder="Contraseña"
+    autocomplete="off" autocorrect="off" spellcheck="false"
+    style="background:#0c1410;border:1px solid var(--border);color:var(--green);
+    font-size:1.2em;padding:14px 20px;border-radius:10px;width:220px;text-align:center;
+    outline:none;letter-spacing:4px;margin-top:8px"
+    oninput="pinInput(this.value)"
+    onkeydown="if(event.key==='Enter')_checkPin()">
+  <div id="pin-error" style="color:var(--red);font-size:.8em;min-height:18px"></div>
+  <button class="pin-btn primary" onclick="_checkPin()"
+    style="width:220px;font-size:1em;padding:14px;margin-top:4px;
+    background:#0c1410;border:1px solid var(--cyan);color:var(--cyan);
+    border-radius:10px;cursor:pointer">Entrar →</button>
+</div>
+
+<!-- PANEL ADMIN -->
+<div id="admin-panel" style="display:none">
+  <div class="header">
+    <div class="logo">NEXUS <span>ADMIN</span></div>
+    <div style="display:flex;align-items:center;gap:10px">
+      <span class="badge-live">● LIVE</span>
+      <button onclick="hablar('Sistema activo')" style="background:none;border:none;color:var(--green);font-size:1.1em;cursor:pointer">🔊</button>
+    </div>
+  </div>
+
+  <div class="main">
+    <div class="tabs">
+      <div class="tab on" onclick="showTab('sistema')">Sistema</div>
+      <div class="tab" onclick="showTab('usuarios')">Beta Testers</div>
+      <div class="tab" onclick="showTab('ia')">IA</div>
+      <div class="tab" onclick="showTab('control')">Control</div>
+    </div>
+
+    <!-- SISTEMA -->
+    <div id="tab-sistema">
+      <div class="section-title">Estado del sistema</div>
+      <div class="stat-grid">
+        <div class="stat"><div class="val" id="st-usuarios">—</div><div class="lbl">Beta Testers</div></div>
+        <div class="stat"><div class="val" id="st-xp">—</div><div class="lbl">XP Total</div></div>
+        <div class="stat"><div class="val" id="st-uptime">✓</div><div class="lbl">Railway</div></div>
+        <div class="stat"><div class="val" id="st-groq">✓</div><div class="lbl">Groq IA</div></div>
+      </div>
+
+      <div class="section-title">Servicios</div>
+      <div class="card">
+        <div class="health-row"><span><span class="dot-green"></span>Railway Cloud</span><span style="color:var(--green)">Activo</span></div>
+        <div class="health-row"><span><span class="dot-green" id="dot-groq"></span>Groq IA</span><span id="lbl-groq" style="color:var(--green)">Verificando...</span></div>
+        <div class="health-row"><span><span class="dot-green"></span>NEXUS Teens</span><span style="color:var(--green)">Activo</span></div>
+        <div class="health-row"><span><span class="dot-green"></span>NEXUS Beta</span><span style="color:var(--green)">Activo</span></div>
+        <div class="health-row"><span><span id="dot-local" class="dot-red"></span>Servidor Local</span><span id="lbl-local" style="color:var(--red)">Offline</span></div>
+      </div>
+    </div>
+
+    <!-- BETA TESTERS -->
+    <div id="tab-usuarios" style="display:none">
+      <div class="section-title">Beta Testers registrados</div>
+      <div class="card" id="lista-usuarios">
+        <div style="color:var(--dim);font-size:.8em;text-align:center;padding:20px">Cargando...</div>
+      </div>
+      <button class="btn primary" onclick="cargarUsuarios()">↻ Actualizar</button>
+    </div>
+
+    <!-- IA -->
+    <div id="tab-ia" style="display:none">
+      <div class="section-title">Consultar IA directa</div>
+      <div class="card">
+        <textarea id="ia-input" rows="3" placeholder="Pregunta al cerebro NEXUS..."></textarea>
+        <button class="btn primary" onclick="consultarIA()" style="margin-top:8px">Enviar →</button>
+        <div class="msg-box" id="ia-resp" style="margin-top:10px">Respuesta aquí...</div>
+      </div>
+    </div>
+
+    <!-- CONTROL -->
+    <div id="tab-control" style="display:none">
+      <div class="section-title">Mensaje a todos los beta testers</div>
+      <div class="card">
+        <textarea id="broadcast-msg" rows="3" placeholder="Escribe un aviso para todos los usuarios..."></textarea>
+        <button class="btn primary" onclick="broadcastMsg()">📢 Enviar aviso</button>
+      </div>
+
+      <div class="section-title">Accesos rápidos</div>
+      <div class="card">
+        <button class="btn" onclick="window.open('/bienvenida','_blank')">👁 Ver Bienvenida Beta</button>
+        <button class="btn" onclick="window.open('/teens','_blank')">👁 Ver NEXUS Teens</button>
+        <button class="btn" onclick="window.open('/manual','_blank')">📖 Ver Manual</button>
+        <button class="btn" onclick="window.open('/api/health','_blank')">🌐 Health Check</button>
+        <button class="btn danger" onclick="cerrarSesion()">🔒 Cerrar sesión admin</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+// ── PIN ───────────────────────────────────────────────────────────────────────
+const PIN = 'nexus2024';
+
+function pinInput(v) { /* live — Enter or button triggers check */ }
+function _checkPin() {
+    const _pin = (document.getElementById('pin-input')||{value:''}).value;
+    if (_pin === PIN) {
+        document.getElementById('pin-gate').style.display = 'none';
+        document.getElementById('admin-panel').style.display = 'block';
+        sessionStorage.setItem('nx_admin_auth', '1');
+        iniciarAdmin();
+        setTimeout(() => hablar('Sistema activo. Bienvenido Anuar.'), 600);
+    } else {
+        document.getElementById('pin-error').textContent = 'Contraseña incorrecta';
+        const inp = document.getElementById('pin-input');
+        if (inp) { inp.value = ''; inp.focus(); }
+        setTimeout(() => document.getElementById('pin-error').textContent = '', 1500);
+    }
+}
+function cerrarSesion() {
+    sessionStorage.removeItem('nx_admin_auth');
+    location.reload();
+}
+
+// ── TABS ─────────────────────────────────────────────────────────────────────
+function showTab(t) {
+    ['sistema','usuarios','ia','control'].forEach(id => {
+        document.getElementById('tab-'+id).style.display = id===t ? 'block' : 'none';
+    });
+    document.querySelectorAll('.tab').forEach((el,i) => {
+        el.classList.toggle('on', ['sistema','usuarios','ia','control'][i] === t);
+    });
+    if (t === 'usuarios') cargarUsuarios();
+}
+
+// ── VOZ ───────────────────────────────────────────────────────────────────────
+function hablar(txt) {
+    if (!window.speechSynthesis) return;
+    speechSynthesis.cancel();
+    const u = new SpeechSynthesisUtterance(txt);
+    u.lang = 'es-MX'; u.rate = 1.0; u.pitch = 1.0;
+    const vs = speechSynthesis.getVoices();
+    const mx = vs.find(v => v.lang === 'es-MX') || vs.find(v => v.lang.startsWith('es'));
+    if (mx) u.voice = mx;
+    speechSynthesis.speak(u);
+}
+document.addEventListener('visibilitychange', () => {
+    if (document.hidden && window.speechSynthesis) speechSynthesis.cancel();
+});
+
+// ── DATOS ─────────────────────────────────────────────────────────────────────
+function iniciarAdmin() {
+    cargarStats();
+    verificarGroq();
+    verificarLocal();
+    setInterval(cargarStats, 30000);
+}
+
+async function cargarStats() {
+    try {
+        const r = await fetch('/api/teens/admin/usuarios');
+        const d = await r.json();
+        document.getElementById('st-usuarios').textContent = d.total || 0;
+        const xpTotal = (d.usuarios || []).reduce((s,u) => s + (u.xp||0), 0);
+        document.getElementById('st-xp').textContent = xpTotal;
+    } catch(e) {}
+}
+
+async function cargarUsuarios() {
+    const el = document.getElementById('lista-usuarios');
+    el.innerHTML = '<div style="color:var(--dim);font-size:.8em;text-align:center;padding:20px">Cargando...</div>';
+    try {
+        const r = await fetch('/api/teens/admin/usuarios');
+        const d = await r.json();
+        if (!d.usuarios || d.usuarios.length === 0) {
+            el.innerHTML = '<div style="color:var(--dim);font-size:.8em;text-align:center;padding:20px">Sin usuarios registrados aún</div>';
+            return;
+        }
+        const ahora = Date.now();
+        el.innerHTML = d.usuarios.map(u => {
+            const ultimo = u.ultimo_acceso ? new Date(u.ultimo_acceso) : null;
+            const mins = ultimo ? Math.floor((ahora - ultimo.getTime()) / 60000) : null;
+            const estado = mins === null ? 'new' : mins < 30 ? 'active' : 'idle';
+            const estadoTxt = mins === null ? 'Nuevo' : mins < 30 ? 'Activo' : `Hace ${mins < 60 ? mins+'m' : Math.floor(mins/60)+'h'}`;
+            return `<div class="user-row">
+                <div>
+                    <div class="user-name">${u.nombre || 'Sin nombre'}</div>
+                    <div class="user-meta">${u.id.slice(0,12)}... · ${u.xp || 0} XP</div>
+                </div>
+                <span class="badge ${estado}">${estadoTxt}</span>
+            </div>`;
+        }).join('');
+        hablar(`${d.total} beta testers registrados`);
+    } catch(e) {
+        el.innerHTML = '<div style="color:var(--red);font-size:.8em;padding:10px">Error al cargar usuarios</div>';
+    }
+}
+
+async function verificarGroq() {
+    try {
+        const r = await fetch('/api/asistente', {
+            method:'POST',
+            headers:{'Content-Type':'application/json'},
+            body: JSON.stringify({texto:'test', session_id:'admin'})
+        });
+        const d = await r.json();
+        const ok = d.respuesta && !d.respuesta.includes('Error');
+        document.getElementById('dot-groq').className = ok ? 'dot-green' : 'dot-red';
+        document.getElementById('lbl-groq').style.color = ok ? 'var(--green)' : 'var(--red)';
+        document.getElementById('lbl-groq').textContent = ok ? 'Activo' : 'Error';
+        document.getElementById('st-groq').textContent = ok ? '✓' : '✗';
+    } catch(e) {}
+}
+
+async function verificarLocal() {
+    try {
+        const r = await fetch('http://localhost:8000/api/health', {signal: AbortSignal.timeout(2000)});
+        if (r.ok) {
+            document.getElementById('dot-local').className = 'dot-green';
+            document.getElementById('lbl-local').style.color = 'var(--green)';
+            document.getElementById('lbl-local').textContent = 'Online';
+        }
+    } catch(e) {}
+}
+
+async function consultarIA() {
+    const txt = document.getElementById('ia-input').value.trim();
+    if (!txt) return;
+    document.getElementById('ia-resp').textContent = 'Pensando...';
+    try {
+        const r = await fetch('/api/asistente', {
+            method:'POST',
+            headers:{'Content-Type':'application/json'},
+            body: JSON.stringify({texto: txt, session_id:'admin'})
+        });
+        const d = await r.json();
+        document.getElementById('ia-resp').textContent = d.respuesta || 'Sin respuesta';
+        hablar(d.respuesta?.slice(0, 200) || 'Listo');
+    } catch(e) {
+        document.getElementById('ia-resp').textContent = 'Error de conexión';
+    }
+}
+
+function broadcastMsg() {
+    const msg = document.getElementById('broadcast-msg').value.trim();
+    if (!msg) return;
+    alert('Aviso guardado. Los usuarios lo verán en su próxima sesión.');
+    document.getElementById('broadcast-msg').value = '';
+}
+
+// ── INIT ──────────────────────────────────────────────────────────────────────
+window.addEventListener('DOMContentLoaded', () => {
+    if (sessionStorage.getItem('nx_admin_auth') === '1') {
+        document.getElementById('pin-gate').style.display = 'none';
+        document.getElementById('admin-panel').style.display = 'block';
+        iniciarAdmin();
+        setTimeout(() => hablar('Panel admin activo.'), 600);
+    } else {
+        // Auto-focus contraseña
+        setTimeout(() => {
+            const inp = document.getElementById('pin-input');
+            if (inp) inp.focus();
+        }, 300);
+    }
+});
+</script>
+
+<script src="/static/nx_ptt.js"></script>
+<script>
+window.addEventListener('DOMContentLoaded', () => {
+    NxPTT.init({
+        lang: 'es-MX',
+        onResult: (txt) => {
+            // Buscar input visible y enviar, o llamar al asistente
+            const input = document.querySelector('input[type=text]:not([hidden]),textarea:not([hidden])');
+            if (input) { input.value = txt; input.dispatchEvent(new Event('input')); }
+            if (window._nxPTTCallback) window._nxPTTCallback(txt);
+            else if (window.NX?.obResponder) window.NX.obResponder(txt);
+        }
+    });
+});
+</script>
+</body>
+</html>
