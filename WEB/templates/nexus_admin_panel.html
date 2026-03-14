@@ -15,17 +15,14 @@ body{background:var(--bg);color:var(--txt);font-family:-apple-system,monospace;m
 @keyframes blink{0%,100%{opacity:1}50%{opacity:.4}}
 .pin-gate{position:fixed;inset:0;background:rgba(0,0,0,.95);z-index:100;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px}
 .pin-gate h2{color:var(--green);font-size:1.4em;letter-spacing:3px}
-.pin-dots{display:flex;gap:12px;margin:8px 0}
-.dot{width:14px;height:14px;border-radius:50%;border:2px solid var(--dim);background:transparent;transition:.2s}
-.dot.filled{background:var(--green);border-color:var(--green)}
 .pin-pad{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;width:220px}
 .pin-btn{background:#0c1410;border:1px solid var(--border);color:var(--txt);font-size:1.4em;padding:16px;border-radius:10px;cursor:pointer;text-align:center;transition:.15s}
 .pin-btn:active{background:var(--border)}
 .pin-btn.del{color:var(--red)}
-.main{padding:16px;max-width:600px;margin:0 auto}
+.main{padding:16px;max-width:700px;margin:0 auto}
 .section-title{font-size:.75em;color:var(--dim);text-transform:uppercase;letter-spacing:2px;margin:20px 0 10px}
 .card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:16px;margin-bottom:12px}
-.stat-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.stat-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px}
 .stat{background:#060e0a;border:1px solid var(--border);border-radius:10px;padding:14px;text-align:center}
 .stat .val{font-size:2em;font-weight:900;color:var(--green)}
 .stat .lbl{font-size:.7em;color:var(--dim);margin-top:4px}
@@ -37,20 +34,37 @@ body{background:var(--bg);color:var(--txt);font-family:-apple-system,monospace;m
 .badge.active{background:#0a2010;color:var(--green);border:1px solid var(--green)}
 .badge.idle{background:#1a1a0a;color:var(--yellow);border:1px solid var(--yellow)}
 .badge.new{background:#0a1020;color:var(--cyan);border:1px solid var(--cyan)}
-.btn{background:#0c1410;border:1px solid var(--border);color:var(--txt);padding:10px 16px;border-radius:8px;cursor:pointer;font-size:.85em;width:100%;margin-top:8px;text-align:center}
+.btn{background:#0c1410;border:1px solid var(--border);color:var(--txt);padding:10px 16px;border-radius:8px;cursor:pointer;font-size:.85em;width:100%;margin-top:8px;text-align:center;display:block}
 .btn:active{background:var(--border)}
 .btn.danger{border-color:var(--red);color:var(--red)}
 .btn.primary{border-color:var(--cyan);color:var(--cyan)}
 .health-row{display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid var(--border);font-size:.85em}
 .health-row:last-child{border:none}
 .dot-green{width:8px;height:8px;border-radius:50%;background:var(--green);display:inline-block;margin-right:6px;animation:blink 2s infinite}
+.dot-yellow{width:8px;height:8px;border-radius:50%;background:var(--yellow);display:inline-block;margin-right:6px}
 .dot-red{width:8px;height:8px;border-radius:50%;background:var(--red);display:inline-block;margin-right:6px}
-.msg-box{background:#060e0a;border:1px solid var(--border);border-radius:8px;padding:12px;font-size:.8em;line-height:1.6;margin-top:8px;min-height:60px;color:var(--txt)}
+.msg-box{background:#060e0a;border:1px solid var(--border);border-radius:8px;padding:12px;font-size:.8em;line-height:1.6;margin-top:8px;min-height:60px;color:var(--txt);white-space:pre-wrap}
 textarea{width:100%;background:#060e0a;border:1px solid var(--border);border-radius:8px;padding:10px;color:var(--txt);font-size:.85em;resize:none;font-family:inherit}
 textarea:focus{outline:none;border-color:var(--cyan)}
 .tabs{display:flex;gap:6px;margin-bottom:16px;overflow-x:auto;padding-bottom:4px}
 .tab{white-space:nowrap;padding:8px 14px;border-radius:8px;border:1px solid var(--border);font-size:.8em;cursor:pointer;color:var(--dim)}
 .tab.on{border-color:var(--green);color:var(--green);background:#0a1a10}
+/* Módulos grid */
+.mod-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:8px}
+@media(min-width:480px){.mod-grid{grid-template-columns:repeat(4,1fr)}}
+.mod-btn{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:14px 8px;text-align:center;cursor:pointer;transition:.15s}
+.mod-btn:active{background:var(--border)}
+.mod-icon{font-size:1.6em;display:block;margin-bottom:4px}
+.mod-name{font-size:.72em;color:var(--dim)}
+/* Quick chips */
+.chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+.chip{background:#060e0a;border:1px solid var(--border);color:var(--dim);padding:5px 10px;border-radius:20px;font-size:.75em;cursor:pointer;transition:.15s}
+.chip:active{background:var(--border);color:var(--txt)}
+/* Briefing */
+.briefing-text{font-size:.82em;line-height:1.7;color:var(--txt);white-space:pre-wrap}
+/* Disco bar */
+.disco-bar-bg{background:#060e0a;border-radius:6px;height:8px;margin-top:6px;overflow:hidden}
+.disco-bar-fill{height:100%;background:var(--green);border-radius:6px;transition:width .4s}
 </style>
 </head>
 <body>
@@ -67,7 +81,7 @@ textarea:focus{outline:none;border-color:var(--cyan)}
     oninput="pinInput(this.value)"
     onkeydown="if(event.key==='Enter')_checkPin()">
   <div id="pin-error" style="color:var(--red);font-size:.8em;min-height:18px"></div>
-  <button class="pin-btn primary" onclick="_checkPin()"
+  <button onclick="_checkPin()"
     style="width:220px;font-size:1em;padding:14px;margin-top:4px;
     background:#0c1410;border:1px solid var(--cyan);color:var(--cyan);
     border-radius:10px;cursor:pointer">Entrar →</button>
@@ -85,79 +99,125 @@ textarea:focus{outline:none;border-color:var(--cyan)}
 
   <div class="main">
     <div class="tabs">
-      <div class="tab on" onclick="showTab('contexto')">Contexto</div>
-      <div class="tab" onclick="showTab('sistema')">Sistema</div>
-      <div class="tab" onclick="showTab('usuarios')">Beta Testers</div>
-      <div class="tab" onclick="showTab('ia')">IA</div>
-      <div class="tab" onclick="showTab('control')">Control</div>
+      <div class="tab on"  onclick="showTab('resumen')">Resumen</div>
+      <div class="tab"     onclick="showTab('modulos')">Módulos</div>
+      <div class="tab"     onclick="showTab('sistema')">Sistema</div>
+      <div class="tab"     onclick="showTab('ia')">IA</div>
+      <div class="tab"     onclick="showTab('control')">Control</div>
     </div>
 
-    <!-- CONTEXTO DE TRABAJO -->
-    <div id="tab-contexto">
-      <div class="section-title">Negocios activos</div>
-      <div class="card">
-        <div class="health-row"><span>🔦 ATF — Actualiza Tus Faros</span><span style="color:var(--green)">Activo</span></div>
-        <div class="health-row"><span>🪵 Creaciones Milens — Laser</span><span style="color:var(--green)">Activo</span></div>
-        <div class="health-row"><span>🚗 CanbusFix — Red instaladores</span><span style="color:var(--green)">Activo</span></div>
-        <div class="health-row"><span>🤖 NEXUS Beta — Distribución</span><span style="color:var(--cyan)">En beta</span></div>
-      </div>
-
-      <div class="section-title">Pendientes activos</div>
-      <div class="card" id="ctx-pendientes">
-        <div class="health-row"><span>🔑 MELI_CLIENT_SECRET</span><span style="color:var(--yellow)">Pendiente</span></div>
-        <div class="health-row"><span>🎬 75 Videos ATF → TikTok/Reels</span><span style="color:var(--yellow)">Pendiente</span></div>
-        <div class="health-row"><span>☁️ Cloud deploy Railway</span><span style="color:var(--green)">Live</span></div>
-        <div class="health-row"><span>📱 APK Android — PWABuilder</span><span style="color:var(--yellow)">Pendiente</span></div>
-        <div class="health-row"><span>📦 Distribuir beta pack</span><span style="color:var(--yellow)">Pendiente</span></div>
-      </div>
-
-      <div class="section-title">Precios Aozoom (dist → pub)</div>
-      <div class="card">
-        <div class="health-row" style="font-size:.8em"><span>X1</span><span>$2,350 → $3,149</span></div>
-        <div class="health-row" style="font-size:.8em"><span>X2</span><span>$2,050 → $2,799</span></div>
-        <div class="health-row" style="font-size:.8em"><span>X4 ⭐ top venta</span><span>$1,990 → $2,699</span></div>
-        <div class="health-row" style="font-size:.8em"><span>X5/X6</span><span>$1,199 → $1,599</span></div>
-        <div class="health-row" style="font-size:.8em"><span>X7 niebla</span><span>$1,550 → $2,069</span></div>
-      </div>
-
-      <div class="section-title">Consultar contexto con IA</div>
-      <div class="card">
-        <textarea id="ctx-input" rows="2" placeholder="¿Cómo van las ventas? ¿Qué priorizo hoy?..."></textarea>
-        <button class="btn primary" onclick="consultarContexto()" style="margin-top:8px">Preguntar al cerebro →</button>
-        <div class="msg-box" id="ctx-resp" style="margin-top:10px">Pregúntame sobre el estado del negocio, prioridades, precios...</div>
-      </div>
-    </div>
-
-    <!-- SISTEMA -->
-    <div id="tab-sistema" style="display:none">
-      <div class="section-title">Estado del sistema</div>
+    <!-- ═══ TAB: RESUMEN ══════════════════════════════════════════════════════ -->
+    <div id="tab-resumen">
       <div class="stat-grid">
-        <div class="stat"><div class="val" id="st-usuarios">—</div><div class="lbl">Beta Testers</div></div>
-        <div class="stat"><div class="val" id="st-xp">—</div><div class="lbl">XP Total</div></div>
-        <div class="stat"><div class="val" id="st-uptime">✓</div><div class="lbl">Railway</div></div>
-        <div class="stat"><div class="val" id="st-groq">✓</div><div class="lbl">Groq IA</div></div>
+        <div class="stat"><div class="val" id="res-pedidos">—</div><div class="lbl">Pedidos activos</div></div>
+        <div class="stat"><div class="val" id="res-clientes">—</div><div class="lbl">Clientes</div></div>
+        <div class="stat"><div class="val" id="res-beta">—</div><div class="lbl">Beta Testers</div></div>
+        <div class="stat"><div class="val" id="res-disco">—</div><div class="lbl">Disco libre (GB)</div></div>
       </div>
 
+      <div class="section-title">Briefing Matutino</div>
+      <div class="card">
+        <div class="briefing-text" id="res-briefing">Cargando briefing...</div>
+      </div>
+
+      <div class="section-title">Resumen Financiero</div>
+      <div class="card">
+        <div class="briefing-text" id="res-finanzas" style="font-size:.78em;color:var(--dim)">Cargando finanzas...</div>
+      </div>
+
+      <div style="display:flex;justify-content:flex-end;margin-top:4px">
+        <span id="res-refresh-lbl" style="font-size:.68em;color:var(--dim)">Actualiza en 60s</span>
+      </div>
+    </div>
+
+    <!-- ═══ TAB: MÓDULOS ══════════════════════════════════════════════════════ -->
+    <div id="tab-modulos" style="display:none">
+      <div class="section-title">Negocio</div>
+      <div class="mod-grid">
+        <div class="mod-btn" onclick="window.location='/pedidos'"><span class="mod-icon">📦</span><span class="mod-name">Pedidos</span></div>
+        <div class="mod-btn" onclick="window.location='/clientes'"><span class="mod-icon">👥</span><span class="mod-name">Clientes</span></div>
+        <div class="mod-btn" onclick="window.location='/stock'"><span class="mod-icon">📦</span><span class="mod-name">Stock</span></div>
+        <div class="mod-btn" onclick="window.location='/cotizar'"><span class="mod-icon">💰</span><span class="mod-name">Cotizar</span></div>
+      </div>
+
+      <div class="section-title">Marketing</div>
+      <div class="mod-grid">
+        <div class="mod-btn" onclick="window.location='/marketing/panel'"><span class="mod-icon">📱</span><span class="mod-name">Marketing</span></div>
+        <div class="mod-btn" onclick="window.location='/video-studio'"><span class="mod-icon">🎬</span><span class="mod-name">Video Studio</span></div>
+        <div class="mod-btn" onclick="window.location='/estudio'"><span class="mod-icon">🎨</span><span class="mod-name">Estudio</span></div>
+        <div class="mod-btn" onclick="window.location='/cartoonizer'"><span class="mod-icon">🖼️</span><span class="mod-name">Cartoon</span></div>
+      </div>
+
+      <div class="section-title">Negocios</div>
+      <div class="mod-grid">
+        <div class="mod-btn" onclick="window.location='/atf'"><span class="mod-icon">🔦</span><span class="mod-name">ATF</span></div>
+        <div class="mod-btn" onclick="window.location='/canbusfix'"><span class="mod-icon">🚗</span><span class="mod-name">CanbusFix</span></div>
+        <div class="mod-btn" onclick="window.location='/milens'"><span class="mod-icon">🪵</span><span class="mod-name">Milens</span></div>
+        <div class="mod-btn" onclick="window.location='/autoventas'"><span class="mod-icon">📊</span><span class="mod-name">AutoVentas</span></div>
+      </div>
+
+      <div class="section-title">Sistema</div>
+      <div class="mod-grid">
+        <div class="mod-btn" onclick="window.location='/teens'"><span class="mod-icon">👶</span><span class="mod-name">Teens</span></div>
+        <div class="mod-btn" onclick="window.location='/agenda'"><span class="mod-icon">📅</span><span class="mod-name">Agenda</span></div>
+        <div class="mod-btn" onclick="window.location='/tienda'"><span class="mod-icon">🛒</span><span class="mod-name">Tienda</span></div>
+        <div class="mod-btn" onclick="window.location='/mercado'"><span class="mod-icon">🛒</span><span class="mod-name">ML</span></div>
+      </div>
+
+      <div class="section-title">Admin</div>
+      <div class="mod-grid">
+        <div class="mod-btn" onclick="window.location='/dashboard'"><span class="mod-icon">📊</span><span class="mod-name">Dashboard</span></div>
+        <div class="mod-btn" onclick="window.location='/historial'"><span class="mod-icon">📋</span><span class="mod-name">Historial</span></div>
+        <div class="mod-btn" onclick="window.location='/licencias'"><span class="mod-icon">🔑</span><span class="mod-name">Licencias</span></div>
+        <div class="mod-btn" onclick="window.location='/config_negocio'"><span class="mod-icon">⚙️</span><span class="mod-name">Config</span></div>
+      </div>
+    </div>
+
+    <!-- ═══ TAB: SISTEMA ══════════════════════════════════════════════════════ -->
+    <div id="tab-sistema" style="display:none">
       <div class="section-title">Servicios</div>
       <div class="card">
-        <div class="health-row"><span><span class="dot-green"></span>Railway Cloud</span><span style="color:var(--green)">Activo</span></div>
-        <div class="health-row"><span><span class="dot-green" id="dot-groq"></span>Groq IA</span><span id="lbl-groq" style="color:var(--green)">Verificando...</span></div>
-        <div class="health-row"><span><span class="dot-green"></span>NEXUS Teens</span><span style="color:var(--green)">Activo</span></div>
-        <div class="health-row"><span><span class="dot-green"></span>NEXUS Beta</span><span style="color:var(--green)">Activo</span></div>
-        <div class="health-row"><span><span id="dot-local" class="dot-red"></span>Servidor Local</span><span id="lbl-local" style="color:var(--red)">Offline</span></div>
+        <div class="health-row">
+          <span><span id="dot-groq" class="dot-yellow"></span>Groq IA</span>
+          <span id="lbl-groq" style="color:var(--yellow)">Verificando...</span>
+        </div>
+        <div class="health-row">
+          <span><span id="dot-local" class="dot-yellow"></span>Servidor Local</span>
+          <span id="lbl-local" style="color:var(--yellow)">Verificando...</span>
+        </div>
+        <div class="health-row">
+          <span><span class="dot-green"></span>Railway Cloud</span>
+          <span style="color:var(--green)">Activo</span>
+        </div>
+        <div class="health-row">
+          <span><span id="dot-corel" class="dot-yellow"></span>CorelDRAW</span>
+          <span id="lbl-corel" style="color:var(--yellow)">Verificando...</span>
+        </div>
+        <div class="health-row">
+          <span><span id="dot-silhouette" class="dot-yellow"></span>Silhouette</span>
+          <span id="lbl-silhouette" style="color:var(--yellow)">Verificando...</span>
+        </div>
       </div>
-    </div>
 
-    <!-- BETA TESTERS -->
-    <div id="tab-usuarios" style="display:none">
-      <div class="section-title">Beta Testers registrados</div>
+      <div class="section-title">Almacenamiento</div>
+      <div class="card">
+        <div style="display:flex;justify-content:space-between;font-size:.85em;margin-bottom:4px">
+          <span>Disco libre</span>
+          <span id="disco-label" style="color:var(--green)">—</span>
+        </div>
+        <div class="disco-bar-bg"><div class="disco-bar-fill" id="disco-bar" style="width:0%"></div></div>
+        <div id="disco-detail" style="font-size:.72em;color:var(--dim);margin-top:6px">Cargando...</div>
+      </div>
+
+      <div class="section-title">Beta Testers</div>
       <div class="card" id="lista-usuarios">
         <div style="color:var(--dim);font-size:.8em;text-align:center;padding:20px">Cargando...</div>
       </div>
-      <button class="btn primary" onclick="cargarUsuarios()">↻ Actualizar</button>
+
+      <button class="btn primary" onclick="cargarSistema()">↻ Refrescar todo</button>
     </div>
 
-    <!-- IA -->
+    <!-- ═══ TAB: IA ════════════════════════════════════════════════════════════ -->
     <div id="tab-ia" style="display:none">
       <div class="section-title">Consultar IA directa</div>
       <div class="card">
@@ -165,36 +225,68 @@ textarea:focus{outline:none;border-color:var(--cyan)}
         <button class="btn primary" onclick="consultarIA()" style="margin-top:8px">Enviar →</button>
         <div class="msg-box" id="ia-resp" style="margin-top:10px">Respuesta aquí...</div>
       </div>
+
+      <div class="section-title">Accesos rápidos</div>
+      <div class="chips">
+        <div class="chip" onclick="setIA('¿Qué priorizo hoy?')">¿Qué priorizo hoy?</div>
+        <div class="chip" onclick="setIA('Resumen de ventas')">Resumen de ventas</div>
+        <div class="chip" onclick="setIA('Ideas ATF')">Ideas ATF</div>
+        <div class="chip" onclick="setIA('Análisis CanbusFix')">Análisis CanbusFix</div>
+        <div class="chip" onclick="setIA('¿Cuáles son mis pendientes?')">Pendientes</div>
+      </div>
     </div>
 
-    <!-- CONTROL -->
+    <!-- ═══ TAB: CONTROL ══════════════════════════════════════════════════════ -->
     <div id="tab-control" style="display:none">
-      <div class="section-title">Mensaje a todos los beta testers</div>
+      <div class="section-title">Mensaje broadcast</div>
       <div class="card">
         <textarea id="broadcast-msg" rows="3" placeholder="Escribe un aviso para todos los usuarios..."></textarea>
         <button class="btn primary" onclick="broadcastMsg()">📢 Enviar aviso</button>
+        <div id="broadcast-status" style="font-size:.75em;color:var(--dim);margin-top:6px;min-height:16px"></div>
+      </div>
+
+      <div class="section-title">Precios Aozoom (dist → pub)</div>
+      <div class="card">
+        <div class="health-row" style="font-size:.82em"><span>X1</span><span>$2,350 → $3,149</span></div>
+        <div class="health-row" style="font-size:.82em"><span>X2</span><span>$2,050 → $2,799</span></div>
+        <div class="health-row" style="font-size:.82em"><span>X3</span><span>$2,350 → $3,149</span></div>
+        <div class="health-row" style="font-size:.82em"><span>X4 ⭐ top venta</span><span>$1,990 → $2,699</span></div>
+        <div class="health-row" style="font-size:.82em"><span>X5 / X6</span><span>$1,199 → $1,599</span></div>
+        <div class="health-row" style="font-size:.82em"><span>X7 niebla</span><span>$1,550 → $2,069</span></div>
+      </div>
+
+      <div class="section-title">Pendientes activos</div>
+      <div class="card">
+        <div class="health-row" style="font-size:.82em"><span>🔑 MELI_CLIENT_SECRET</span><span style="color:var(--yellow)">Pendiente</span></div>
+        <div class="health-row" style="font-size:.82em"><span>🎬 75 Videos ATF → TikTok/Reels</span><span style="color:var(--yellow)">Pendiente</span></div>
+        <div class="health-row" style="font-size:.82em"><span>☁️ Cloud deploy Railway</span><span style="color:var(--green)">Live</span></div>
+        <div class="health-row" style="font-size:.82em"><span>📱 APK Android — PWABuilder</span><span style="color:var(--yellow)">Pendiente</span></div>
+        <div class="health-row" style="font-size:.82em"><span>📦 Distribuir beta pack</span><span style="color:var(--yellow)">Pendiente</span></div>
       </div>
 
       <div class="section-title">Accesos rápidos</div>
       <div class="card">
-        <button class="btn" onclick="window.open('/bienvenida','_blank')">👁 Ver Bienvenida Beta</button>
-        <button class="btn" onclick="window.open('/teens','_blank')">👁 Ver NEXUS Teens</button>
+        <button class="btn" onclick="window.open('/bienvenida','_blank')">👁 Ver Beta</button>
+        <button class="btn" onclick="window.open('/teens','_blank')">👶 Ver Teens</button>
         <button class="btn" onclick="window.open('/manual','_blank')">📖 Ver Manual</button>
-        <button class="btn" onclick="window.open('/api/health','_blank')">🌐 Health Check</button>
-        <button class="btn danger" onclick="cerrarSesion()">🔒 Cerrar sesión admin</button>
+        <button class="btn" onclick="window.open('/api/health/check','_blank')">🌐 Health</button>
+        <button class="btn" onclick="window.open('/admin/desbloquear','_blank')">🔓 Desbloquear</button>
+        <button class="btn danger" onclick="cerrarSesion()" style="margin-top:14px">🔒 Cerrar sesión</button>
       </div>
     </div>
-  </div>
-</div>
+
+  </div><!-- /main -->
+</div><!-- /admin-panel -->
 
 <script>
-// ── PIN ───────────────────────────────────────────────────────────────────────
+// ── PIN ────────────────────────────────────────────────────────────────────────
 const PIN = 'nexus2024';
+const TABS = ['resumen','modulos','sistema','ia','control'];
 
-function pinInput(v) { /* live — Enter or button triggers check */ }
+function pinInput(v) { /* live — Enter o botón activa check */ }
 function _checkPin() {
-    const _pin = (document.getElementById('pin-input')||{value:''}).value;
-    if (_pin === PIN) {
+    const v = (document.getElementById('pin-input')||{value:''}).value;
+    if (v === PIN) {
         document.getElementById('pin-gate').style.display = 'none';
         document.getElementById('admin-panel').style.display = 'block';
         localStorage.setItem('nx_admin_auth', '1');
@@ -212,19 +304,20 @@ function cerrarSesion() {
     location.reload();
 }
 
-// ── TABS ─────────────────────────────────────────────────────────────────────
+// ── TABS ───────────────────────────────────────────────────────────────────────
 function showTab(t) {
-    ['contexto','sistema','usuarios','ia','control'].forEach(id => {
+    TABS.forEach(id => {
         const el = document.getElementById('tab-'+id);
-        if (el) el.style.display = id===t ? 'block' : 'none';
+        if (el) el.style.display = (id === t) ? 'block' : 'none';
     });
-    document.querySelectorAll('.tab').forEach((el,i) => {
-        el.classList.toggle('on', ['contexto','sistema','usuarios','ia','control'][i] === t);
+    document.querySelectorAll('.tab').forEach((el, i) => {
+        el.classList.toggle('on', TABS[i] === t);
     });
-    if (t === 'usuarios') cargarUsuarios();
+    if (t === 'sistema') cargarSistema();
+    if (t === 'resumen') cargarResumen();
 }
 
-// ── VOZ ───────────────────────────────────────────────────────────────────────
+// ── VOZ ────────────────────────────────────────────────────────────────────────
 function hablar(txt) {
     if (!window.speechSynthesis) return;
     speechSynthesis.cancel();
@@ -239,22 +332,130 @@ document.addEventListener('visibilitychange', () => {
     if (document.hidden && window.speechSynthesis) speechSynthesis.cancel();
 });
 
-// ── DATOS ─────────────────────────────────────────────────────────────────────
-function iniciarAdmin() {
-    cargarStats();
-    verificarGroq();
-    verificarLocal();
-    setInterval(cargarStats, 30000);
+// ── RESUMEN ────────────────────────────────────────────────────────────────────
+async function cargarResumen() {
+    // Pedidos
+    fetch('/api/pedidos').then(r => r.json()).then(d => {
+        const arr = Array.isArray(d) ? d : (d.pedidos || []);
+        const activos = arr.filter(p => p.estado && p.estado.toLowerCase() !== 'entregado' && p.estado.toLowerCase() !== 'cancelado');
+        document.getElementById('res-pedidos').textContent = activos.length;
+    }).catch(() => { document.getElementById('res-pedidos').textContent = '—'; });
+
+    // Clientes
+    fetch('/api/clientes').then(r => r.json()).then(d => {
+        const arr = Array.isArray(d) ? d : (d.clientes || []);
+        document.getElementById('res-clientes').textContent = arr.length;
+    }).catch(() => { document.getElementById('res-clientes').textContent = '—'; });
+
+    // Beta testers
+    fetch('/api/teens/admin/usuarios').then(r => r.json()).then(d => {
+        document.getElementById('res-beta').textContent = d.total || 0;
+    }).catch(() => { document.getElementById('res-beta').textContent = '—'; });
+
+    // Health / disco
+    fetch('/api/health/check').then(r => r.json()).then(d => {
+        const gb = d.disco ? d.disco.libre_gb : '—';
+        document.getElementById('res-disco').textContent = gb !== undefined ? gb : '—';
+    }).catch(() => { document.getElementById('res-disco').textContent = '—'; });
+
+    // Briefing
+    fetch('/api/briefing/texto').then(r => r.json()).then(d => {
+        document.getElementById('res-briefing').textContent = d.briefing || d.texto || 'Sin briefing disponible.';
+    }).catch(() => { document.getElementById('res-briefing').textContent = 'Sin conexión al briefing.'; });
+
+    // Finanzas
+    fetch('/api/finanzas/resumen').then(r => r.json()).then(d => {
+        const texto = d.resumen || d.texto || '';
+        const lineas = texto.split('\n').filter(l => l.trim()).slice(0, 4).join('\n');
+        document.getElementById('res-finanzas').textContent = lineas || 'Sin datos financieros.';
+    }).catch(() => { document.getElementById('res-finanzas').textContent = 'Sin conexión a finanzas.'; });
 }
 
-async function cargarStats() {
+let _resumenInterval = null;
+function iniciarResumenAutoRefresh() {
+    if (_resumenInterval) clearInterval(_resumenInterval);
+    let secs = 60;
+    const lbl = document.getElementById('res-refresh-lbl');
+    _resumenInterval = setInterval(() => {
+        secs--;
+        if (lbl) lbl.textContent = `Actualiza en ${secs}s`;
+        if (secs <= 0) {
+            secs = 60;
+            cargarResumen();
+        }
+    }, 1000);
+}
+
+// ── SISTEMA ────────────────────────────────────────────────────────────────────
+async function cargarSistema() {
+    // Groq
+    document.getElementById('dot-groq').className = 'dot-yellow';
+    document.getElementById('lbl-groq').textContent = 'Verificando...';
+    document.getElementById('lbl-groq').style.color = 'var(--yellow)';
     try {
-        const r = await fetch('/api/teens/admin/usuarios');
+        const r = await fetch('/api/asistente', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ texto: 'ping', session_id: 'admin' })
+        });
         const d = await r.json();
-        document.getElementById('st-usuarios').textContent = d.total || 0;
-        const xpTotal = (d.usuarios || []).reduce((s,u) => s + (u.xp||0), 0);
-        document.getElementById('st-xp').textContent = xpTotal;
-    } catch(e) {}
+        const ok = d.respuesta && !d.respuesta.toLowerCase().includes('error');
+        document.getElementById('dot-groq').className = ok ? 'dot-green' : 'dot-red';
+        document.getElementById('lbl-groq').textContent = ok ? 'Activo' : 'Error';
+        document.getElementById('lbl-groq').style.color = ok ? 'var(--green)' : 'var(--red)';
+    } catch(e) {
+        document.getElementById('dot-groq').className = 'dot-red';
+        document.getElementById('lbl-groq').textContent = 'Error';
+        document.getElementById('lbl-groq').style.color = 'var(--red)';
+    }
+
+    // Servidor local + apps + disco
+    document.getElementById('dot-local').className = 'dot-yellow';
+    document.getElementById('lbl-local').textContent = 'Verificando...';
+    document.getElementById('lbl-local').style.color = 'var(--yellow)';
+    try {
+        const r = await fetch('http://localhost:8000/api/health/check', { signal: AbortSignal.timeout(2000) });
+        const d = await r.json();
+        document.getElementById('dot-local').className = 'dot-green';
+        document.getElementById('lbl-local').textContent = 'Online';
+        document.getElementById('lbl-local').style.color = 'var(--green)';
+
+        // CorelDRAW
+        const apps = d.apps || {};
+        const corel = apps['CorelDRAW'] || apps['corel'] || null;
+        const corelOk = corel === true || corel === 'ok' || corel === 'activo';
+        document.getElementById('dot-corel').className = corelOk ? 'dot-green' : 'dot-red';
+        document.getElementById('lbl-corel').textContent = corelOk ? 'Activo' : (corel === false ? 'No detectado' : 'Instalado');
+        document.getElementById('lbl-corel').style.color = corelOk ? 'var(--green)' : 'var(--dim)';
+
+        // Silhouette
+        const silh = apps['Silhouette Studio'] || apps['silhouette'] || null;
+        const silhOk = silh === true || silh === 'ok' || silh === 'activo';
+        document.getElementById('dot-silhouette').className = silhOk ? 'dot-green' : 'dot-red';
+        document.getElementById('lbl-silhouette').textContent = silhOk ? 'Activo' : (silh === false ? 'No detectado' : 'Instalado');
+        document.getElementById('lbl-silhouette').style.color = silhOk ? 'var(--green)' : 'var(--dim)';
+
+        // Disco
+        if (d.disco) {
+            const libre = d.disco.libre_gb;
+            const total = d.disco.total_gb;
+            document.getElementById('disco-label').textContent = `${libre} GB libres`;
+            document.getElementById('disco-detail').textContent = `${libre} GB libres de ${total} GB totales`;
+            if (total && total > 0) {
+                const pct = Math.round((libre / total) * 100);
+                document.getElementById('disco-bar').style.width = pct + '%';
+                document.getElementById('disco-bar').style.background =
+                    pct > 30 ? 'var(--green)' : pct > 10 ? 'var(--yellow)' : 'var(--red)';
+            }
+        }
+    } catch(e) {
+        document.getElementById('dot-local').className = 'dot-red';
+        document.getElementById('lbl-local').textContent = 'Offline';
+        document.getElementById('lbl-local').style.color = 'var(--red)';
+    }
+
+    // Beta testers
+    cargarUsuarios();
 }
 
 async function cargarUsuarios() {
@@ -276,69 +477,20 @@ async function cargarUsuarios() {
             return `<div class="user-row">
                 <div>
                     <div class="user-name">${u.nombre || 'Sin nombre'}</div>
-                    <div class="user-meta">${u.id.slice(0,12)}... · ${u.xp || 0} XP</div>
+                    <div class="user-meta">${String(u.id||'').slice(0,12)}... · ${u.xp || 0} XP</div>
                 </div>
                 <span class="badge ${estado}">${estadoTxt}</span>
             </div>`;
         }).join('');
-        hablar(`${d.total} beta testers registrados`);
     } catch(e) {
         el.innerHTML = '<div style="color:var(--red);font-size:.8em;padding:10px">Error al cargar usuarios</div>';
     }
 }
 
-async function verificarGroq() {
-    try {
-        const r = await fetch('/api/asistente', {
-            method:'POST',
-            headers:{'Content-Type':'application/json'},
-            body: JSON.stringify({texto:'test', session_id:'admin'})
-        });
-        const d = await r.json();
-        const ok = d.respuesta && !d.respuesta.includes('Error');
-        document.getElementById('dot-groq').className = ok ? 'dot-green' : 'dot-red';
-        document.getElementById('lbl-groq').style.color = ok ? 'var(--green)' : 'var(--red)';
-        document.getElementById('lbl-groq').textContent = ok ? 'Activo' : 'Error';
-        document.getElementById('st-groq').textContent = ok ? '✓' : '✗';
-    } catch(e) {}
-}
-
-async function verificarLocal() {
-    try {
-        const r = await fetch('http://localhost:8000/api/health', {signal: AbortSignal.timeout(2000)});
-        if (r.ok) {
-            document.getElementById('dot-local').className = 'dot-green';
-            document.getElementById('lbl-local').style.color = 'var(--green)';
-            document.getElementById('lbl-local').textContent = 'Online';
-        }
-    } catch(e) {}
-}
-
-async function consultarContexto() {
-    const txt = document.getElementById('ctx-input').value.trim();
-    if (!txt) return;
-    document.getElementById('ctx-resp').textContent = 'Pensando...';
-    const contexto = `Contexto de trabajo Simplex GDL:
-- ATF (retrofit faros): X1=$2350/$3149, X2=$2050/$2799, X4=$1990/$2699 (top venta), X5/X6=$1199/$1599, X7=$1550/$2069
-- Milens: corte laser, cajas MDF/acrílico, grabado
-- CanbusFix: red instaladores, free/Pro$299/Elite$599
-- NEXUS Beta activo en Railway, PTT voz, social
-- Pendientes: MELI_CLIENT_SECRET, 75 videos ATF, APK Android, distribuir beta
-- Admin PIN: nexus2024 | Licencia ADMIN hasta 2036
-Pregunta de Anuar: ${txt}`;
-    try {
-        const r = await fetch('/api/asistente', {
-            method:'POST',
-            headers:{'Content-Type':'application/json'},
-            body: JSON.stringify({texto: contexto, session_id:'admin_ctx'})
-        });
-        const d = await r.json();
-        const resp = d.respuesta || 'Sin respuesta';
-        document.getElementById('ctx-resp').textContent = resp;
-        hablar(resp.slice(0, 200));
-    } catch(e) {
-        document.getElementById('ctx-resp').textContent = 'Error de conexión';
-    }
+// ── IA ─────────────────────────────────────────────────────────────────────────
+function setIA(txt) {
+    document.getElementById('ia-input').value = txt;
+    document.getElementById('ia-input').focus();
 }
 
 async function consultarIA() {
@@ -347,26 +499,54 @@ async function consultarIA() {
     document.getElementById('ia-resp').textContent = 'Pensando...';
     try {
         const r = await fetch('/api/asistente', {
-            method:'POST',
-            headers:{'Content-Type':'application/json'},
-            body: JSON.stringify({texto: txt, session_id:'admin'})
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ texto: txt, session_id: 'admin' })
         });
         const d = await r.json();
-        document.getElementById('ia-resp').textContent = d.respuesta || 'Sin respuesta';
-        hablar(d.respuesta?.slice(0, 200) || 'Listo');
+        const resp = d.respuesta || 'Sin respuesta';
+        document.getElementById('ia-resp').textContent = resp;
+        hablar(resp.slice(0, 200));
     } catch(e) {
         document.getElementById('ia-resp').textContent = 'Error de conexión';
     }
 }
 
-function broadcastMsg() {
+// ── CONTROL ────────────────────────────────────────────────────────────────────
+async function broadcastMsg() {
     const msg = document.getElementById('broadcast-msg').value.trim();
     if (!msg) return;
-    alert('Aviso guardado. Los usuarios lo verán en su próxima sesión.');
+    const lbl = document.getElementById('broadcast-status');
+    try {
+        const r = await fetch('/api/admin/broadcast', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ mensaje: msg })
+        });
+        if (r.ok) {
+            lbl.textContent = 'Aviso enviado a todos los usuarios.';
+            lbl.style.color = 'var(--green)';
+        } else {
+            throw new Error('no ok');
+        }
+    } catch(e) {
+        // Fallback: guardar local
+        const avisos = JSON.parse(localStorage.getItem('nx_avisos') || '[]');
+        avisos.push({ msg, ts: new Date().toISOString() });
+        localStorage.setItem('nx_avisos', JSON.stringify(avisos));
+        lbl.textContent = 'Guardado — los usuarios verán el aviso.';
+        lbl.style.color = 'var(--yellow)';
+    }
     document.getElementById('broadcast-msg').value = '';
+    setTimeout(() => { lbl.textContent = ''; }, 4000);
 }
 
-// ── INIT ──────────────────────────────────────────────────────────────────────
+// ── INIT ───────────────────────────────────────────────────────────────────────
+function iniciarAdmin() {
+    cargarResumen();
+    iniciarResumenAutoRefresh();
+}
+
 window.addEventListener('DOMContentLoaded', () => {
     if (localStorage.getItem('nx_admin_auth') === '1') {
         document.getElementById('pin-gate').style.display = 'none';
@@ -374,7 +554,6 @@ window.addEventListener('DOMContentLoaded', () => {
         iniciarAdmin();
         setTimeout(() => hablar('Panel admin activo.'), 600);
     } else {
-        // Auto-focus contraseña
         setTimeout(() => {
             const inp = document.getElementById('pin-input');
             if (inp) inp.focus();
@@ -398,10 +577,10 @@ window.addEventListener('DOMContentLoaded', () => {
                 activeTA.dispatchEvent(new Event('input'));
                 return;
             }
-            // 2. Comandos sociales (abrir apps, contestar WA/Messenger)
+            // 2. Comandos sociales
             const fueComandoSocial = await NxSocial.procesarSocial(txt);
             if (fueComandoSocial) return;
-            // 3. Cerebro completo NEXUS — navegar, ejecutar acciones, responder
+            // 3. Cerebro completo NEXUS
             await NxAdminBrain.procesarAdmin(txt);
         }
     });
