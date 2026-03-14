@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta property="og:title" content="ATF by Simplex — Portfolio de Trabajos">
+<meta property="og:description" content="Retrofit de faros LED profesional en Guadalajara. Ve nuestros trabajos terminados.">
+<title>ATF by Simplex — Trabajos</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:#070a0e;color:#e6edf3;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif}
+.header{background:#0d1117;border-bottom:1px solid #21262d;padding:16px 20px;position:sticky;top:0;z-index:10;display:flex;align-items:center;justify-content:space-between}
+.logo{font-size:28px;font-weight:900;color:#00d4ff;letter-spacing:-1px}
+.logo span{color:#7d8590;font-weight:400;font-size:13px;margin-left:6px}
+.wa-btn{background:#25D366;color:#000;font-weight:800;font-size:13px;padding:8px 16px;border-radius:8px;text-decoration:none}
+.hero{padding:40px 20px 24px;text-align:center}
+.hero h1{font-size:26px;font-weight:900;margin-bottom:8px}
+.hero p{font-size:14px;color:#7d8590;max-width:400px;margin:0 auto}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:16px;padding:16px 16px 80px;max-width:1000px;margin:0 auto}
+.card{background:#0d1117;border:1px solid #21262d;border-radius:14px;overflow:hidden;cursor:pointer;transition:.2s;text-decoration:none;color:inherit}
+.card:hover{border-color:#00d4ff40;transform:translateY(-2px)}
+.thumb{width:100%;aspect-ratio:16/9;background:#161b22;position:relative;overflow:hidden}
+.thumb img{width:100%;height:100%;object-fit:cover}
+.play-overlay{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:#00000060}
+.play-circle{width:52px;height:52px;border-radius:50%;background:#00d4ff20;border:2px solid #00d4ff80;display:flex;align-items:center;justify-content:center}
+.play-tri{width:0;height:0;border-style:solid;border-width:10px 0 10px 18px;border-color:transparent transparent transparent #00d4ff;margin-left:3px}
+.card-body{padding:16px}
+.card-title{font-size:16px;font-weight:700;margin-bottom:4px}
+.card-meta{font-size:12px;color:#7d8590;display:flex;gap:12px}
+.tag{display:inline-block;background:#00d4ff15;border:1px solid #00d4ff30;color:#00d4ff;font-size:10px;font-weight:700;padding:2px 8px;border-radius:8px;margin-right:6px;margin-top:6px}
+.footer{background:#0d1117;border-top:1px solid #21262d;padding:24px 20px;text-align:center;font-size:13px;color:#7d8590}
+.footer a{color:#00d4ff}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="logo">ATF <span>by Simplex</span></div>
+  <a href="https://wa.me/523326148674?text=Vi+sus+trabajos%2C+quiero+informes" class="wa-btn">Agendar cita</a>
+</div>
+
+<div class="hero">
+  <h1>Nuestros trabajos</h1>
+  <p>Retrofit de faros LED profesional · Tuning y Diseño de Iluminación Automotriz · Guadalajara</p>
+</div>
+
+<div class="grid" id="grid">
+  <!-- Los trabajos se cargan desde el array JS abajo -->
+</div>
+
+<div class="footer">
+  <p>📍 Longinos Cadena 1740, Col. Lomas de Polanco, Guadalajara</p>
+  <p style="margin-top:6px">📱 <a href="https://wa.me/523326148674">33 2614 8674</a> · Anuar Milan</p>
+</div>
+
+<script>
+// ─── TRABAJOS ATF ──────────────────────────────────────────────────────────
+// Para agregar un trabajo nuevo:
+// 1. Sube el video a Google Drive, compártelo público
+// 2. Saca el FILE_ID del link de Drive
+// 3. Agrega una entrada aquí con drive_id, titulo, auto, año, tags
+const TRABAJOS = [
+  {
+    titulo:   "Jetta A6 — Retrofit Completo",
+    auto:     "Volkswagen Jetta A6",
+    anno:     "2024",
+    tags:     ["Bi-LED", "Aozoom X4", "DRL"],
+    drive_id: "AQUI_ID_VIDEO_JETTA",   // <-- reemplazar con ID de Drive
+    thumb_id: "",                        // <-- opcional: ID de imagen Drive
+    page:     "atf-jetta.html",
+    featured: true,
+  },
+  // ── Agrega más trabajos aquí ──────────────────────────────────────────────
+  // {
+  //   titulo:   "Camry 2020 — X1 Full",
+  //   auto:     "Toyota Camry",
+  //   anno:     "2024",
+  //   tags:     ["Bi-LED", "Aozoom X1"],
+  //   drive_id: "ID_VIDEO_CAMRY",
+  //   page:     "atf-camry.html",
+  // },
+];
+
+const grid = document.getElementById('grid');
+
+TRABAJOS.forEach(t => {
+  const thumbSrc = t.thumb_id
+    ? `https://drive.google.com/thumbnail?id=${t.thumb_id}&sz=w600`
+    : `https://drive.google.com/thumbnail?id=${t.drive_id}&sz=w600`;
+
+  const tags = t.tags.map(tag => `<span class="tag">${tag}</span>`).join('');
+  const featured = t.featured ? '<span class="tag" style="background:#ff880020;border-color:#ff880040;color:#ff8800">DESTACADO</span>' : '';
+
+  grid.innerHTML += `
+    <a class="card" href="${t.page}">
+      <div class="thumb">
+        <img src="${thumbSrc}" alt="${t.titulo}" loading="lazy" onerror="this.style.display='none'">
+        <div class="play-overlay">
+          <div class="play-circle"><div class="play-tri"></div></div>
+        </div>
+      </div>
+      <div class="card-body">
+        <div class="card-title">${t.titulo}</div>
+        <div class="card-meta"><span>${t.auto}</span><span>${t.anno}</span></div>
+        <div style="margin-top:8px">${featured}${tags}</div>
+      </div>
+    </a>`;
+});
+</script>
+</body>
+</html>

@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<meta property="og:title" content="ATF by Simplex — Jetta A6 Retrofit">
+<meta property="og:description" content="Mira la transformación completa. Retrofit de faros LED profesional en Guadalajara.">
+<title>ATF by Simplex — Jetta A6</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{height:100%;background:#000;color:#fff;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;overflow:hidden}
+
+/* INTRO SCREEN */
+#intro{
+  position:fixed;inset:0;
+  background:linear-gradient(135deg,#050810 0%,#0a0f1a 50%,#050810 100%);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  z-index:20;cursor:pointer;
+}
+.glow-ring{
+  width:120px;height:120px;border-radius:50%;
+  border:2px solid #00d4ff40;
+  display:flex;align-items:center;justify-content:center;
+  margin-bottom:28px;position:relative;
+  animation:ring-pulse 2s infinite;
+}
+.glow-ring::before{
+  content:'';position:absolute;inset:-8px;border-radius:50%;
+  border:1px solid #00d4ff20;animation:ring-pulse 2s infinite .5s;
+}
+.play-icon{width:0;height:0;border-style:solid;border-width:20px 0 20px 36px;border-color:transparent transparent transparent #00d4ff;margin-left:6px}
+.logo-atf{font-size:52px;font-weight:900;color:#00d4ff;letter-spacing:-2px;line-height:1;text-shadow:0 0 40px #00d4ff60}
+.logo-sub{font-size:13px;color:#4a9ab5;letter-spacing:4px;text-transform:uppercase;margin-top:6px}
+.car-model{font-size:22px;font-weight:700;color:#fff;margin-top:20px}
+.car-sub{font-size:13px;color:#555;margin-top:4px}
+.tap-hint{font-size:12px;color:#333;margin-top:40px;letter-spacing:2px;text-transform:uppercase;animation:fade-blink 2s infinite}
+
+/* PLAYER */
+#player-wrap{position:fixed;inset:0;display:none;flex-direction:column;background:#000}
+.top-bar{
+  position:absolute;top:0;left:0;right:0;
+  padding:16px 20px;z-index:10;
+  background:linear-gradient(to bottom,#000c,transparent);
+  display:flex;align-items:center;gap:10px;
+}
+.bar-logo{font-size:18px;font-weight:900;color:#00d4ff;letter-spacing:-1px}
+.bar-sub{font-size:11px;color:#4a9ab5;letter-spacing:2px;text-transform:uppercase}
+
+#drive-frame{width:100%;height:100%;border:none}
+
+/* CTA al final */
+#cta-panel{
+  position:absolute;bottom:0;left:0;right:0;
+  background:linear-gradient(to top,#000 60%,transparent);
+  padding:40px 24px 32px;text-align:center;
+  display:none;animation:slide-up .4s ease;
+}
+.cta-title{font-size:20px;font-weight:800;margin-bottom:6px}
+.cta-sub{font-size:14px;color:#666;margin-bottom:20px}
+.btn-wa{
+  display:inline-flex;align-items:center;gap:10px;
+  background:#25D366;color:#000;font-weight:800;font-size:16px;
+  padding:16px 32px;border-radius:14px;text-decoration:none;
+  box-shadow:0 4px 24px #25D36640;
+  animation:pulse-btn 2s infinite;
+}
+.btn-wa svg{width:22px;height:22px;fill:#000}
+.btn-ver{
+  display:inline-block;margin-top:12px;
+  color:#00d4ff;font-size:14px;text-decoration:none;
+  border:1px solid #00d4ff30;padding:10px 24px;border-radius:10px;
+}
+
+/* Progress bar */
+#prog{position:absolute;bottom:0;left:0;height:3px;background:#00d4ff;width:0%;transition:width .5s}
+
+@keyframes ring-pulse{0%,100%{box-shadow:0 0 0 0 #00d4ff30}50%{box-shadow:0 0 0 12px #00d4ff10}}
+@keyframes fade-blink{0%,100%{opacity:.4}50%{opacity:1}}
+@keyframes slide-up{from{transform:translateY(20px);opacity:0}to{transform:translateY(0);opacity:1}}
+@keyframes pulse-btn{0%,100%{transform:scale(1)}50%{transform:scale(1.02)}}
+</style>
+</head>
+<body>
+
+<!-- INTRO -->
+<div id="intro" onclick="lanzar()">
+  <div class="glow-ring"><div class="play-icon"></div></div>
+  <div class="logo-atf">ATF</div>
+  <div class="logo-sub">by Simplex</div>
+  <div class="car-model">Jetta A6 — Retrofit LED</div>
+  <div class="car-sub">Transformación completa de iluminación</div>
+  <div class="tap-hint">Toca para ver</div>
+</div>
+
+<!-- PLAYER -->
+<div id="player-wrap">
+  <div class="top-bar">
+    <div>
+      <div class="bar-logo">ATF</div>
+      <div class="bar-sub">by Simplex · Retrofit GDL</div>
+    </div>
+  </div>
+
+  <!--
+    INSTRUCCION: Sube el video a Google Drive, compártelo como
+    "Cualquier persona con el enlace puede ver", copia el FILE_ID
+    del link (la parte larga entre /d/ y /view) y reemplaza
+    AQUI_VA_EL_ID_DE_DRIVE con ese valor.
+  -->
+  <iframe id="drive-frame"
+    src="https://drive.google.com/file/d/AQUI_VA_EL_ID_DE_DRIVE/preview"
+    allow="autoplay"
+    allowfullscreen>
+  </iframe>
+
+  <div id="prog"></div>
+
+  <!-- CTA: aparece después del video -->
+  <div id="cta-panel">
+    <div class="cta-title">¿Quieres estos faros?</div>
+    <div class="cta-sub">Agenda tu cita en Guadalajara — respuesta inmediata</div>
+    <a href="https://wa.me/523326148674?text=Vi+el+Jetta+A6+en+el+evento%2C+quiero+informes+de+retrofit" class="btn-wa">
+      <svg viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.115.549 4.1 1.51 5.83L0 24l6.335-1.48A11.934 11.934 0 0012 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 21.818a9.797 9.797 0 01-4.988-1.362l-.358-.212-3.763.879.938-3.65-.233-.374A9.786 9.786 0 012.182 12C2.182 6.57 6.57 2.182 12 2.182S21.818 6.57 21.818 12 17.43 21.818 12 21.818z"/></svg>
+      Agendar cita — WhatsApp
+    </a>
+    <br>
+    <a href="https://wa.me/523326148674" class="btn-ver">Ver más trabajos ATF →</a>
+  </div>
+</div>
+
+<script>
+function lanzar(){
+  document.getElementById('intro').style.display='none';
+  const pw = document.getElementById('player-wrap');
+  pw.style.display='flex';
+  // Mostrar CTA después de 45 segundos (ajusta según duración del video)
+  setTimeout(()=>{ document.getElementById('cta-panel').style.display='block'; }, 45000);
+}
+// Auto-lanzar en desktop
+setTimeout(lanzar, 1800);
+</script>
+</body>
+</html>
