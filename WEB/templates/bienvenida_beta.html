@@ -157,10 +157,39 @@ a:hover{text-decoration:underline}
 </div>
 
 <script>
-// Si ya completó onboarding, ir directo al dashboard
-if(localStorage.getItem('nexus_onboarding_done')==='1'){
-  window.location = '/dashboard';
-}
+// Verificar vigencia beta (30 días desde registro)
+(function(){
+  const inicio = localStorage.getItem('nexus_beta_inicio');
+  if (inicio) {
+    const dias = (Date.now() - parseInt(inicio)) / 86400000;
+    if (dias > 30) {
+      // Beta expirado — limpiar y mostrar mensaje
+      localStorage.removeItem('nexus_onboarding_done');
+      localStorage.removeItem('nexus_beta_inicio');
+      document.addEventListener('DOMContentLoaded', () => {
+        document.body.innerHTML = `
+          <div style="background:#070a0e;color:#e6edf3;font-family:monospace;min-height:100vh;
+            display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;padding:24px;text-align:center">
+            <div style="font-size:2em;font-weight:900;color:#00ff88;letter-spacing:2px">NEXUS</div>
+            <div style="font-size:1.1em;font-weight:700">Tu acceso beta ha expirado</div>
+            <div style="color:#7d8590;font-size:.9em;max-width:320px">
+              Tu periodo de 30 días como beta tester ha terminado.<br>
+              Contacta a Simplex para continuar.
+            </div>
+            <a href="https://wa.me/523326148674?text=Mi+beta+NEXUS+expiró,+quiero+renovar"
+               style="background:#25D366;color:#000;font-weight:800;padding:14px 28px;border-radius:10px;text-decoration:none;margin-top:8px">
+              WhatsApp Simplex →
+            </a>
+          </div>`;
+      });
+      return;
+    }
+  }
+  // Si ya completó onboarding y beta vigente, ir directo al dashboard
+  if(localStorage.getItem('nexus_onboarding_done')==='1'){
+    window.location = '/dashboard';
+  }
+})();
 
 let _perfil = {};
 
@@ -206,11 +235,65 @@ function saltarAPI(){
 }
 
 function irDashboard(){
-  // Marcar onboarding como completado
+  // Marcar onboarding como completado + vigencia 30 días
   localStorage.setItem('nexus_onboarding_done','1');
   localStorage.setItem('nexus_perfil', JSON.stringify(_perfil));
+  if (!localStorage.getItem('nexus_beta_inicio')) {
+    localStorage.setItem('nexus_beta_inicio', Date.now().toString());
+  }
   window.location = '/dashboard';
 }
+</script>
+
+<script>
+// VOZ NEXUS — browser speechSynthesis (funciona en cel sin deps)
+(function(){
+    function hablar(txt){
+        if(!window.speechSynthesis) return;
+        speechSynthesis.cancel();
+        const u = new SpeechSynthesisUtterance(txt);
+        u.lang = 'es-MX'; u.rate = 1.05; u.pitch = 1.0;
+        const vs = speechSynthesis.getVoices();
+        const mx = vs.find(v => v.lang === 'es-MX') || vs.find(v => v.lang.startsWith('es'));
+        if(mx) u.voice = mx;
+        speechSynthesis.speak(u);
+    }
+    window.NXhablar = hablar;
+    document.addEventListener('visibilitychange', () => {
+        if(document.hidden && window.speechSynthesis) speechSynthesis.cancel();
+    });
+    window.addEventListener('DOMContentLoaded', () => {
+        const _sesKey = 'nx_beta_saludo_' + new Date().toDateString();
+        if(sessionStorage.getItem(_sesKey)) return;
+        sessionStorage.setItem(_sesKey, '1');
+        const intentar = () => {
+            const vs = speechSynthesis.getVoices();
+            if(vs.length){
+                setTimeout(() => hablar('Bienvenido a NEXUS. Soy tu sistema de gestión inteligente. Vamos a configurarte.'), 800);
+            } else {
+                speechSynthesis.onvoiceschanged = () => setTimeout(() => hablar('Bienvenido a NEXUS. Soy tu sistema de gestión inteligente. Vamos a configurarte.'), 800);
+            }
+        };
+        setTimeout(intentar, 500);
+    });
+})();
+</script>
+
+
+<script src="/static/nx_ptt.js"></script>
+<script>
+window.addEventListener('DOMContentLoaded', () => {
+    NxPTT.init({
+        lang: 'es-MX',
+        onResult: (txt) => {
+            // Buscar input visible y enviar, o llamar al asistente
+            const input = document.querySelector('input[type=text]:not([hidden]),textarea:not([hidden])');
+            if (input) { input.value = txt; input.dispatchEvent(new Event('input')); }
+            if (window._nxPTTCallback) window._nxPTTCallback(txt);
+            else if (window.NX?.obResponder) window.NX.obResponder(txt);
+        }
+    });
+});
 </script>
 </body>
 </html>

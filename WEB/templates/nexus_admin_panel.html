@@ -160,7 +160,7 @@ function _checkPin() {
     if (_pin === PIN) {
         document.getElementById('pin-gate').style.display = 'none';
         document.getElementById('admin-panel').style.display = 'block';
-        sessionStorage.setItem('nx_admin_auth', '1');
+        localStorage.setItem('nx_admin_auth', '1');
         iniciarAdmin();
         setTimeout(() => hablar('Sistema activo. Bienvenido Anuar.'), 600);
     } else {
@@ -171,7 +171,7 @@ function _checkPin() {
     }
 }
 function cerrarSesion() {
-    sessionStorage.removeItem('nx_admin_auth');
+    localStorage.removeItem('nx_admin_auth');
     location.reload();
 }
 
@@ -303,7 +303,7 @@ function broadcastMsg() {
 
 // ── INIT ──────────────────────────────────────────────────────────────────────
 window.addEventListener('DOMContentLoaded', () => {
-    if (sessionStorage.getItem('nx_admin_auth') === '1') {
+    if (localStorage.getItem('nx_admin_auth') === '1') {
         document.getElementById('pin-gate').style.display = 'none';
         document.getElementById('admin-panel').style.display = 'block';
         iniciarAdmin();
