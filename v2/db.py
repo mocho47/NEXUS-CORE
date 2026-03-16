@@ -71,6 +71,19 @@ def init_db():
             especialidades  TEXT,
             activo          INTEGER DEFAULT 1
         );
+        CREATE TABLE IF NOT EXISTS proveedores (
+            id              INTEGER PRIMARY KEY AUTOINCREMENT,
+            nombre          TEXT NOT NULL,
+            empresa         TEXT,
+            telefono        TEXT,
+            categoria       TEXT,
+            productos       TEXT,
+            precio_notas    TEXT,
+            tiempo_entrega  TEXT,
+            condiciones     TEXT,
+            activo          INTEGER DEFAULT 1,
+            created_at      TEXT DEFAULT (datetime('now','localtime'))
+        );
         CREATE TABLE IF NOT EXISTS usuarios (
             id          INTEGER PRIMARY KEY AUTOINCREMENT,
             nombre      TEXT NOT NULL,

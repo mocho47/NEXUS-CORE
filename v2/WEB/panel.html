@@ -179,6 +179,7 @@ input:focus,select:focus,textarea:focus{border-color:var(--verde)}
     <div class="tab" onclick="verSeccion('vendedor')">Vendedor</div>
     <div class="tab" onclick="verSeccion('diseno')">Diseño</div>
     <div class="tab" onclick="verSeccion('canbusfix')">CanbusFix</div>
+    <div class="tab" onclick="verSeccion('proveedores')">Proveedores</div>
   </div>
 
   <!-- ── RESUMEN ─────────────────────────────────────────────────────────── -->
@@ -456,6 +457,46 @@ input:focus,select:focus,textarea:focus{border-color:var(--verde)}
     <div id="resultado-canbusfix" style="background:var(--bg2);border:1px solid var(--verde2);border-radius:10px;padding:14px;font-size:.85rem;white-space:pre-wrap;color:var(--text2);margin-top:12px"></div>
   </div>
 
+  <!-- ── PROVEEDORES ────────────────────────────────────────────────────────── -->
+  <div id="sec-proveedores" class="seccion">
+    <div style="display:flex;gap:6px;margin-bottom:8px;flex-wrap:wrap;align-items:center">
+      <button class="btn sec" style="padding:5px 10px;font-size:.75rem" onclick="cargarProveedores('')">Todos</button>
+      <button class="btn sec" style="padding:5px 10px;font-size:.75rem" onclick="cargarProveedores('material')">Materiales</button>
+      <button class="btn sec" style="padding:5px 10px;font-size:.75rem" onclick="cargarProveedores('maquila')">Maquila</button>
+      <button class="btn sec" style="padding:5px 10px;font-size:.75rem" onclick="cargarProveedores('equipo')">Equipo</button>
+      <button class="btn sec" style="padding:5px 10px;font-size:.75rem" onclick="cargarProveedores('distribuidor')">Distribuidores</button>
+      <input id="prov-buscar" type="text" placeholder="Buscar..."
+             style="flex:1;min-width:140px;padding:5px 10px;font-size:.78rem"
+             oninput="cargarProveedores('',this.value)">
+    </div>
+    <div id="tabla-proveedores"><div class="vacío">Cargando...</div></div>
+
+    <div class="form-rapido admin-only" style="margin-top:12px">
+      <h3>Registrar proveedor / distribuidor</h3>
+      <div class="row-form">
+        <input id="pv-nombre" placeholder="Nombre del contacto">
+        <input id="pv-empresa" placeholder="Empresa / Razón social">
+      </div>
+      <div class="row-form">
+        <input id="pv-tel" placeholder="WhatsApp" type="tel">
+        <select id="pv-cat">
+          <option value="material">Material / Insumo</option>
+          <option value="maquila">Maquila / Fabricación</option>
+          <option value="equipo">Equipo / Maquinaria</option>
+          <option value="distribuidor">Distribuidor</option>
+          <option value="otro">Otro</option>
+        </select>
+      </div>
+      <input id="pv-productos" placeholder="Qué suministra (ej: MDF, acrílico, tintas sublimación)">
+      <div class="row-form">
+        <input id="pv-precios" placeholder="Notas de precio (ej: MDF 3mm $85/lámina)">
+        <input id="pv-entrega" placeholder="Tiempo de entrega (ej: 1-2 días)">
+      </div>
+      <input id="pv-condiciones" placeholder="Condiciones de pago / notas">
+      <button class="btn" onclick="registrarProveedor()">+ Registrar proveedor</button>
+    </div>
+  </div>
+
 </div><!-- /panel-izq -->
 
 <!-- ═══════════════════════════════ PANEL DERECHO (CHAT) ═══════════════════ -->
@@ -592,7 +633,8 @@ function verSeccion(id) {
   if (id === 'pedidos')  cargarPedidos();
   if (id === 'pipeline') cargarPipeline();
   if (id === 'agenda')   cargarAgenda();
-  if (id === 'canbusfix')cargarCanbusfix();
+  if (id === 'canbusfix')   cargarCanbusfix();
+  if (id === 'proveedores') cargarProveedores('');
 }
 
 // ── CHAT ─────────────────────────────────────────────────────────────────────
@@ -1099,6 +1141,65 @@ async function moverPipeline(id, estado) {
   cargarResumen();
 }
 
+// ── PROVEEDORES ───────────────────────────────────────────────────────────────
+async function cargarProveedores(categoria, q) {
+  let url = BASE + '/api/proveedores';
+  const params = [];
+  if (categoria) params.push(`categoria=${encodeURIComponent(categoria)}`);
+  if (q)         params.push(`q=${encodeURIComponent(q)}`);
+  if (params.length) url += '?' + params.join('&');
+  const r = await fetch(url).then(x => x.json()).catch(() => null);
+  const cont = document.getElementById('tabla-proveedores');
+  const items = r && r.proveedores ? r.proveedores : [];
+  if (!items.length) {
+    cont.innerHTML = '<div class="vacío">Sin proveedores registrados</div>'; return;
+  }
+  cont.innerHTML = `<table class="tabla">
+    <thead><tr><th>Nombre</th><th>Empresa</th><th>Categoría</th><th>Suministra</th><th>Precio / Entrega</th><th>WA</th></tr></thead>
+    <tbody>${items.map(p => `
+      <tr>
+        <td><strong>${p.nombre}</strong></td>
+        <td style="color:var(--text3)">${p.empresa||'—'}</td>
+        <td><span class="badge" style="background:var(--bg3);color:var(--verde3);border:1px solid var(--verde2)">${p.categoria||'—'}</span></td>
+        <td style="font-size:.78rem" title="${p.productos||''}">${(p.productos||'').substring(0,40)}${(p.productos||'').length>40?'…':''}</td>
+        <td style="font-size:.75rem;color:var(--text3)">
+          ${p.precio_notas ? `<div>${p.precio_notas.substring(0,35)}</div>` : ''}
+          ${p.tiempo_entrega ? `<div style="color:var(--verde3)">⏱ ${p.tiempo_entrega}</div>` : ''}
+        </td>
+        <td>${p.telefono ? `<a href="https://wa.me/52${(p.telefono).replace(/\D/g,'')}" target="_blank" style="color:var(--verde)">${p.telefono}</a>` : '—'}</td>
+      </tr>
+      ${(p.condiciones||'').trim() ? `<tr><td colspan="6" style="padding:4px 10px 8px;color:var(--text3);font-size:.75rem;font-style:italic">📋 ${p.condiciones}</td></tr>` : ''}`
+    ).join('')}
+    </tbody></table>`;
+}
+
+async function registrarProveedor() {
+  const nombre = document.getElementById('pv-nombre').value.trim();
+  if (!nombre) { alert('Escribe el nombre del proveedor'); return; }
+  const r = await fetch(BASE + '/api/proveedor', {
+    method: 'POST',
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify({
+      nombre,
+      empresa:      document.getElementById('pv-empresa').value.trim(),
+      telefono:     document.getElementById('pv-tel').value.trim(),
+      categoria:    document.getElementById('pv-cat').value,
+      productos:    document.getElementById('pv-productos').value.trim(),
+      precio_notas: document.getElementById('pv-precios').value.trim(),
+      tiempo_entrega: document.getElementById('pv-entrega').value.trim(),
+      condiciones:  document.getElementById('pv-condiciones').value.trim(),
+    })
+  }).then(x => x.json()).catch(() => null);
+  if (r && r.ok) {
+    ['pv-nombre','pv-empresa','pv-tel','pv-productos','pv-precios','pv-entrega','pv-condiciones']
+      .forEach(id => document.getElementById(id).value = '');
+    cargarProveedores('');
+    agregar(`Proveedor registrado: ${nombre}`, 'nexus');
+  } else {
+    alert(r?.error || 'Error al registrar');
+  }
+}
+
 // ── CANBUSFIX ─────────────────────────────────────────────────────────────────
 async function cargarCanbusfix() {
   cargarInstaladores('');
@@ -1171,6 +1272,7 @@ document.addEventListener('keydown', e => {
     else if (['ins-nombre','ins-ciudad','ins-tel'].includes(id)) registrarInstalador();
     else if (['cbf-ciudad'].includes(id)) cargarInstaladores(document.getElementById('cbf-ciudad').value);
     else if (['msg-cliente'].includes(id)) generarMensaje();
+    else if (['pv-nombre','pv-empresa','pv-tel','pv-productos','pv-precios','pv-entrega','pv-condiciones'].includes(id)) registrarProveedor();
   }
   // Ctrl+/ → focus chat
   if (e.ctrlKey && e.key === '/') { e.preventDefault(); inp.focus(); }

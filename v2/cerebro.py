@@ -108,6 +108,10 @@ _INTENT_MAP = [
       "resumen de hoy", "buenos dias nexus", "como esta el dia"], "m00_briefing"),
 
     (["cliente", "clientes", "directorio", "contacto"], "m12_clientes"),
+
+    # Proveedores
+    (["proveedor", "proveedores", "distribuidor", "distribuidores",
+      "quien surte", "maquila", "materia prima", "donde compro"], "m18_proveedores"),
 ]
 
 def _intent_keywords(texto: str) -> str | None:

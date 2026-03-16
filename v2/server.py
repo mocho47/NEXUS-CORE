@@ -40,6 +40,7 @@ import motors.m16_publicar_redes
 import motors.m17_pipeline
 import motors.m00_briefing
 import motors.m_finanzas
+import motors.m18_proveedores
 
 app = FastAPI(title="NEXUS v2", version="2.0.0", docs_url=None, redoc_url=None)
 
@@ -270,6 +271,47 @@ async def api_clientes(q: str = "") -> JSONResponse:
     if q:
         return JSONResponse({"ok": True, "clientes": buscar_cliente(q)})
     return JSONResponse({"ok": True, "clientes": listar_clientes()})
+
+# ── PROVEEDORES ───────────────────────────────────────────────────────────────
+
+@app.get("/api/proveedores")
+async def api_proveedores(q: str = "", categoria: str = "") -> JSONResponse:
+    from motors.m18_proveedores import listar_proveedores
+    return JSONResponse({"ok": True, "proveedores": listar_proveedores(categoria=categoria, q=q)})
+
+@app.post("/api/proveedor")
+async def api_nuevo_proveedor(request: Request) -> JSONResponse:
+    data = await request.json()
+    nombre = data.get("nombre", "").strip()
+    if not nombre:
+        return JSONResponse({"ok": False, "error": "nombre requerido"}, status_code=400)
+    from motors.m18_proveedores import nuevo_proveedor
+    r = nuevo_proveedor(
+        nombre=nombre,
+        empresa=data.get("empresa", ""),
+        telefono=data.get("telefono", ""),
+        categoria=data.get("categoria", ""),
+        productos=data.get("productos", ""),
+        precio_notas=data.get("precio_notas", ""),
+        tiempo_entrega=data.get("tiempo_entrega", ""),
+        condiciones=data.get("condiciones", ""),
+    )
+    return JSONResponse(r)
+
+@app.put("/api/proveedor/{prov_id}")
+async def api_actualizar_proveedor(prov_id: int, request: Request) -> JSONResponse:
+    data = await request.json()
+    from db import _conn
+    campos = ["nombre","empresa","telefono","categoria","productos",
+              "precio_notas","tiempo_entrega","condiciones","activo"]
+    updates = {k: data[k] for k in campos if k in data}
+    if not updates:
+        return JSONResponse({"ok": False, "error": "nada que actualizar"}, status_code=400)
+    sets = ", ".join(f"{k}=?" for k in updates)
+    vals = list(updates.values()) + [prov_id]
+    with _conn() as c:
+        c.execute(f"UPDATE proveedores SET {sets} WHERE id=?", vals)
+    return JSONResponse({"ok": True, "id": prov_id})
 
 # ── USUARIOS / LOGIN ──────────────────────────────────────────────────────────
 
