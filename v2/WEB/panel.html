@@ -582,7 +582,23 @@ async function agendarInstalacion() {
 }
 
 async function cargarAgenda() {
-  const r = await nexus('ver agenda atf semana');
+  const r = await fetch(BASE + '/api/agenda').then(x => x.json()).catch(() => null);
+  const cont = document.getElementById('tabla-agenda');
+  const items = r && r.agenda ? r.agenda : [];
+  if (!items.length) {
+    cont.innerHTML = '<div class="vacío">Sin instalaciones en los próximos 7 días</div>'; return;
+  }
+  cont.innerHTML = `<table class="tabla">
+    <thead><tr><th>Fecha</th><th>Hora</th><th>Cliente</th><th>Kit</th><th>Carro</th></tr></thead>
+    <tbody>${items.map(i => `
+      <tr>
+        <td>${i.fecha}</td>
+        <td>${i.hora || '—'}</td>
+        <td>${i.cliente}</td>
+        <td>${i.modelo_kit || '—'}</td>
+        <td>${i.carro || '—'}</td>
+      </tr>`).join('')}
+    </tbody></table>`;
 }
 
 // ── VENDEDOR ─────────────────────────────────────────────────────────────────

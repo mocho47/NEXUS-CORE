@@ -115,6 +115,19 @@ async def api_actualizar_pedido(pedido_id: int, request: Request) -> JSONRespons
                       (estado, now(), pedido_id))
     return JSONResponse({"ok": True, "id": pedido_id, "estado": estado})
 
+@app.get("/api/agenda")
+async def api_agenda(dias: int = 7) -> JSONResponse:
+    from db import _conn, rows_to_list, now
+    from datetime import datetime, timedelta
+    hoy = now()[:10]
+    fin = (datetime.now() + timedelta(days=dias)).strftime("%Y-%m-%d")
+    with _conn() as c:
+        rows = rows_to_list(c.execute(
+            "SELECT * FROM agenda_atf WHERE fecha BETWEEN ? AND ? AND estado!='cancelado' ORDER BY fecha,hora",
+            (hoy, fin)
+        ).fetchall())
+    return JSONResponse({"ok": True, "agenda": rows})
+
 @app.get("/api/pipeline")
 async def api_pipeline() -> JSONResponse:
     from db import _conn, rows_to_list
