@@ -843,6 +843,22 @@ async function checkConexion() {
   }
 }
 
+// ── ATAJOS DE TECLADO ─────────────────────────────────────────────────────────
+document.addEventListener('keydown', e => {
+  // Enter en campos de formularios
+  const id = e.target.id;
+  if (e.key === 'Enter' && !e.shiftKey) {
+    if (['p-cliente','p-desc','p-servicio','p-fecha','p-precio'].includes(id)) crearPedido();
+    else if (['ag-cliente','ag-modelo','ag-carro','ag-fecha','ag-hora'].includes(id)) agendarInstalacion();
+    else if (['pip-cliente','pip-servicio','pip-valor'].includes(id)) crearProspecto();
+    else if (['ins-nombre','ins-ciudad','ins-tel'].includes(id)) registrarInstalador();
+    else if (['cbf-ciudad'].includes(id)) cargarInstaladores(document.getElementById('cbf-ciudad').value);
+    else if (['msg-cliente'].includes(id)) generarMensaje();
+  }
+  // Ctrl+/ → focus chat
+  if (e.ctrlKey && e.key === '/') { e.preventDefault(); inp.focus(); }
+});
+
 // ── INIT ──────────────────────────────────────────────────────────────────────
 window.addEventListener('DOMContentLoaded', () => {
   checkConexion();

@@ -165,6 +165,12 @@ async def api_nuevo_prospecto(request: Request) -> JSONResponse:
         )
     return JSONResponse({"ok": True, "id": cur.lastrowid, "cliente": cliente})
 
+@app.get("/api/finanzas")
+async def api_finanzas(periodo: str = "mes") -> JSONResponse:
+    from motors.m_finanzas import finanzas
+    r = finanzas(texto=periodo)
+    return JSONResponse({"ok": True, "finanzas": r.get("datos", {}), "resumen": r.get("respuesta", "")})
+
 @app.post("/api/agenda")
 async def api_nueva_cita(request: Request) -> JSONResponse:
     data    = await request.json()
