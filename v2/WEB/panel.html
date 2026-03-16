@@ -1,0 +1,618 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>NEXUS v2 — Taller Simplex</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#001810;--bg2:#002010;--bg3:#003020;
+  --verde:#00ff88;--verde2:#005040;--verde3:#4a9a6a;
+  --text:#e0ffe0;--text2:#8ab89a;--text3:#4a6a55;
+  --rojo:#ff4444;--amarillo:#ffcc44;
+}
+body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;min-height:100vh}
+
+/* HEADER */
+header{background:var(--bg2);border-bottom:1px solid var(--verde2);padding:12px 20px;display:flex;align-items:center;gap:16px}
+header h1{color:var(--verde);font-size:1.4rem;font-weight:700;letter-spacing:1px}
+header span{color:var(--text3);font-size:.8rem}
+#estado-dot{width:8px;height:8px;border-radius:50%;background:var(--verde);box-shadow:0 0 6px var(--verde);margin-left:auto}
+
+/* LAYOUT */
+.layout{display:grid;grid-template-columns:1fr 380px;height:calc(100vh - 57px);gap:0}
+@media(max-width:900px){.layout{grid-template-columns:1fr}}
+
+/* PANEL IZQUIERDO */
+.panel-izq{display:flex;flex-direction:column;padding:16px;gap:12px;overflow-y:auto}
+
+/* TABS */
+.tabs{display:flex;gap:6px;flex-wrap:wrap}
+.tab{background:var(--bg2);border:1px solid var(--verde2);color:var(--text3);
+     padding:8px 14px;border-radius:8px;cursor:pointer;font-size:.82rem;transition:.15s}
+.tab:hover,.tab.activo{background:var(--bg3);border-color:var(--verde);color:var(--verde)}
+
+/* CARDS */
+.cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:10px}
+.card{background:var(--bg2);border:1px solid var(--verde2);border-radius:10px;
+      padding:14px;cursor:pointer;transition:.15s}
+.card:hover{border-color:var(--verde);background:var(--bg3)}
+.card .num{font-size:1.6rem;font-weight:700;color:var(--verde)}
+.card .lbl{font-size:.75rem;color:var(--text2);margin-top:4px}
+
+/* TABLA */
+.tabla{width:100%;border-collapse:collapse;font-size:.82rem}
+.tabla th{background:var(--bg3);color:var(--verde);padding:8px;text-align:left;font-weight:600}
+.tabla td{padding:8px;border-bottom:1px solid var(--verde2);color:var(--text2)}
+.tabla tr:hover td{background:var(--bg3)}
+.badge{display:inline-block;padding:2px 8px;border-radius:20px;font-size:.72rem;font-weight:600}
+.badge.pendiente{background:#003020;color:#00ff88;border:1px solid #005040}
+.badge.en_proceso{background:#002030;color:#44aaff;border:1px solid #004060}
+.badge.listo{background:#203000;color:#88ff44;border:1px solid #405000}
+.badge.entregado{background:#101010;color:#666;border:1px solid #333}
+
+/* FORMULARIO RÁPIDO */
+.form-rapido{background:var(--bg2);border:1px solid var(--verde2);border-radius:10px;padding:16px;display:flex;flex-direction:column;gap:10px}
+.form-rapido h3{color:var(--verde3);font-size:.85rem;font-weight:600}
+.row-form{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+input,select,textarea{background:var(--bg);border:1px solid var(--verde2);color:var(--text);
+  padding:8px 12px;border-radius:8px;font-size:.85rem;outline:none;width:100%}
+input:focus,select:focus,textarea:focus{border-color:var(--verde)}
+.btn{background:var(--bg3);border:1px solid var(--verde);color:var(--verde);
+     padding:10px 18px;border-radius:8px;cursor:pointer;font-size:.85rem;font-weight:600;transition:.15s}
+.btn:hover{background:var(--verde);color:var(--bg)}
+.btn.sec{border-color:var(--verde2);color:var(--text2)}
+.btn.sec:hover{border-color:var(--verde3);color:var(--text)}
+
+/* PANEL DERECHO — CHAT */
+.panel-der{background:var(--bg2);border-left:1px solid var(--verde2);display:flex;flex-direction:column}
+.chat-header{padding:12px 16px;border-bottom:1px solid var(--verde2);color:var(--verde3);font-size:.82rem;font-weight:600}
+#chat{flex:1;overflow-y:auto;padding:12px;display:flex;flex-direction:column;gap:8px}
+.msg{padding:10px 14px;border-radius:10px;max-width:92%;font-size:.85rem;line-height:1.55;white-space:pre-wrap}
+.msg.user{background:var(--bg3);margin-left:auto;border:1px solid var(--verde2);color:var(--text)}
+.msg.nexus{background:var(--bg);border:1px solid #00ff8820;color:#b0ffda}
+.msg.error{background:#200010;border:1px solid #ff444420;color:#ff8888}
+.chat-inp{padding:12px;border-top:1px solid var(--verde2);display:flex;gap:8px}
+#inp{flex:1;background:var(--bg);border:1px solid var(--verde2);color:var(--text);
+     padding:10px 14px;border-radius:8px;font-size:.9rem;outline:none}
+#inp:focus{border-color:var(--verde)}
+#btn-send{background:var(--bg3);border:1px solid var(--verde);color:var(--verde);
+           padding:10px 16px;border-radius:8px;cursor:pointer;font-size:.9rem}
+#btn-send:hover{background:var(--verde);color:var(--bg)}
+
+/* ACCIONES RÁPIDAS */
+.acciones{display:flex;flex-wrap:wrap;gap:6px;padding:8px 12px;border-top:1px solid var(--verde2)}
+.accion{background:var(--bg);border:1px solid var(--verde2);color:var(--text3);
+         padding:5px 10px;border-radius:20px;cursor:pointer;font-size:.75rem;transition:.15s}
+.accion:hover{border-color:var(--verde3);color:var(--text2)}
+
+/* ESTADOS */
+.vacío{color:var(--text3);text-align:center;padding:32px;font-size:.85rem}
+
+/* SECCIÓN */
+.seccion{display:none}
+.seccion.activo{display:block}
+</style>
+</head>
+<body>
+
+<header>
+  <h1>NEXUS</h1>
+  <span>Taller Simplex — v2</span>
+  <div id="estado-dot"></div>
+</header>
+
+<div class="layout">
+<!-- ═══════════════════════════════ PANEL IZQUIERDO ════════════════════════ -->
+<div class="panel-izq">
+
+  <div class="tabs">
+    <div class="tab activo" onclick="verSeccion('resumen')">Resumen</div>
+    <div class="tab" onclick="verSeccion('pedidos')">Pedidos</div>
+    <div class="tab" onclick="verSeccion('cotizar')">Cotizar</div>
+    <div class="tab" onclick="verSeccion('agenda')">Agenda ATF</div>
+    <div class="tab" onclick="verSeccion('vendedor')">Vendedor</div>
+    <div class="tab" onclick="verSeccion('diseno')">Diseño</div>
+    <div class="tab" onclick="verSeccion('canbusfix')">CanbusFix</div>
+  </div>
+
+  <!-- ── RESUMEN ─────────────────────────────────────────────────────────── -->
+  <div id="sec-resumen" class="seccion activo">
+    <div class="cards" id="cards-resumen">
+      <div class="card"><div class="num" id="n-activos">—</div><div class="lbl">Pedidos activos</div></div>
+      <div class="card"><div class="num" id="n-hoy">—</div><div class="lbl">Entregan hoy</div></div>
+      <div class="card"><div class="num" id="n-atrasados" style="color:var(--rojo)">—</div><div class="lbl">Atrasados</div></div>
+      <div class="card"><div class="num" id="n-prospectos">—</div><div class="lbl">Prospectos activos</div></div>
+      <div class="card" onclick="nexus('finanzas del mes')" style="cursor:pointer">
+        <div class="num" id="n-ingresos">—</div><div class="lbl">Ingresos del mes</div>
+      </div>
+    </div>
+    <div id="briefing-txt" style="margin-top:12px;background:var(--bg2);border:1px solid var(--verde2);border-radius:10px;padding:14px;font-size:.82rem;color:var(--text2);white-space:pre-wrap;line-height:1.6"></div>
+  </div>
+
+  <!-- ── PEDIDOS ─────────────────────────────────────────────────────────── -->
+  <div id="sec-pedidos" class="seccion">
+    <div class="form-rapido" style="margin-bottom:12px">
+      <h3>Nuevo pedido</h3>
+      <div class="row-form">
+        <input id="p-cliente" placeholder="Cliente" type="text">
+        <input id="p-desc" placeholder="Descripción" type="text">
+      </div>
+      <div class="row-form">
+        <select id="p-servicio">
+          <option value="">Servicio</option>
+          <option value="laser">Láser</option>
+          <option value="sublimacion">Sublimación</option>
+          <option value="atf">ATF</option>
+          <option value="canbusfix">CanbusFix</option>
+        </select>
+        <input id="p-fecha" type="date" placeholder="Entrega">
+      </div>
+      <div class="row-form">
+        <input id="p-precio" type="number" placeholder="Precio $">
+        <button class="btn" onclick="crearPedido()">+ Registrar</button>
+      </div>
+    </div>
+    <div id="tabla-pedidos"><div class="vacío">Cargando...</div></div>
+  </div>
+
+  <!-- ── COTIZAR ─────────────────────────────────────────────────────────── -->
+  <div id="sec-cotizar" class="seccion">
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+
+      <!-- ATF -->
+      <div class="form-rapido">
+        <h3>Cotizar ATF</h3>
+        <select id="cot-modelo">
+          <option value="">Modelo Aozoom</option>
+          <option value="X1">X1 — $3,149</option>
+          <option value="X2">X2 — $2,799</option>
+          <option value="X3">X3 — $3,149</option>
+          <option value="X4">X4 — $2,699 (top)</option>
+          <option value="X5">X5 — $1,599</option>
+          <option value="X6">X6 — $1,599</option>
+          <option value="X7">X7 — $2,069</option>
+        </select>
+        <input id="cot-cliente-atf" placeholder="Cliente (opcional)">
+        <button class="btn" onclick="cotizarATF()">Cotizar</button>
+      </div>
+
+      <!-- Sublimación -->
+      <div class="form-rapido">
+        <h3>Cotizar Sublimación</h3>
+        <select id="cot-sub-tipo">
+          <option value="tarjeta">Tarjetas presentación</option>
+          <option value="lona_m2">Lona (m²)</option>
+          <option value="taza">Tazas</option>
+          <option value="playera">Playeras</option>
+          <option value="mousepad">Mousepads</option>
+        </select>
+        <input id="cot-sub-cant" type="number" placeholder="Cantidad" min="1">
+        <button class="btn" onclick="cotizarSub()">Cotizar</button>
+      </div>
+
+      <!-- Láser -->
+      <div class="form-rapido" style="grid-column:1/-1">
+        <h3>Cotizar Láser / Generar Caja</h3>
+        <div class="row-form">
+          <input id="cot-laser-dim" placeholder="Dimensiones: 30x20 o 20x15x8 (mm)">
+          <select id="cot-laser-mat">
+            <option value="mdf_3">MDF 3mm</option>
+            <option value="mdf_6">MDF 6mm</option>
+            <option value="acrilico">Acrílico</option>
+            <option value="triplay">Triplay</option>
+          </select>
+        </div>
+        <div class="row-form">
+          <button class="btn" onclick="cotizarLaser()">Cotizar corte</button>
+          <button class="btn sec" onclick="generarCaja()">Generar caja DXF</button>
+        </div>
+      </div>
+    </div>
+    <div id="resultado-cotizacion" style="margin-top:12px;background:var(--bg2);border:1px solid var(--verde2);border-radius:10px;padding:14px;font-size:.85rem;white-space:pre-wrap;display:none"></div>
+  </div>
+
+  <!-- ── AGENDA ATF ──────────────────────────────────────────────────────── -->
+  <div id="sec-agenda" class="seccion">
+    <div class="form-rapido" style="margin-bottom:12px">
+      <h3>Nueva instalación</h3>
+      <div class="row-form">
+        <input id="ag-cliente" placeholder="Cliente">
+        <select id="ag-modelo">
+          <option value="">Kit Aozoom</option>
+          <option value="X1">X1</option><option value="X2">X2</option>
+          <option value="X3">X3</option><option value="X4">X4</option>
+          <option value="X5">X5</option><option value="X6">X6</option>
+          <option value="X7">X7</option>
+        </select>
+      </div>
+      <div class="row-form">
+        <input id="ag-carro" placeholder="Carro / Modelo">
+        <input id="ag-fecha" type="date">
+      </div>
+      <div class="row-form">
+        <input id="ag-hora" type="time" placeholder="Hora">
+        <button class="btn" onclick="agendarInstalacion()">+ Agendar</button>
+      </div>
+    </div>
+    <div id="tabla-agenda"><div class="vacío">Cargando agenda...</div></div>
+  </div>
+
+  <!-- ── VENDEDOR ────────────────────────────────────────────────────────── -->
+  <div id="sec-vendedor" class="seccion">
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px">
+      <button class="btn" onclick="nexus('quien no ha pagado')">¿Quién no ha pagado?</button>
+      <button class="btn sec" onclick="nexus('ver pipeline')">Ver pipeline</button>
+      <button class="btn sec" onclick="nexus('mis pedidos atrasados')">Pedidos atrasados</button>
+      <button class="btn sec" onclick="nexus('ver prospectos activos')">Prospectos activos</button>
+    </div>
+    <div class="form-rapido">
+      <h3>Generar mensaje WhatsApp</h3>
+      <input id="msg-cliente" placeholder="Para quién">
+      <select id="msg-tipo">
+        <option value="followup">Follow-up</option>
+        <option value="cotizacion_atf">Cotización ATF</option>
+        <option value="cotizacion_laser">Cotización Láser</option>
+        <option value="cotizacion_sub">Cotización Sublimación</option>
+        <option value="listo">Pedido listo</option>
+        <option value="reactivacion">Reactivar cliente</option>
+      </select>
+      <button class="btn" onclick="generarMensaje()">Generar mensaje</button>
+    </div>
+    <div style="margin-top:12px">
+      <div class="form-rapido">
+        <h3>Publicación para redes</h3>
+        <div class="row-form">
+          <select id="pub-servicio">
+            <option value="atf">ATF</option>
+            <option value="laser">Láser Milens</option>
+            <option value="sub">Sublimación</option>
+            <option value="canbusfix">CanbusFix</option>
+          </select>
+          <select id="pub-red">
+            <option value="instagram">Instagram</option>
+            <option value="tiktok">TikTok</option>
+            <option value="facebook">Facebook</option>
+          </select>
+        </div>
+        <button class="btn" onclick="generarPost()">Generar post</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── DISEÑO ──────────────────────────────────────────────────────────── -->
+  <div id="sec-diseno" class="seccion">
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+      <div class="form-rapido">
+        <h3>Vectorizar imagen</h3>
+        <input id="vec-archivo" placeholder="Ruta del archivo...">
+        <select id="vec-modo">
+          <option value="bw">B/N — para láser</option>
+          <option value="color">Color — para sub/redes</option>
+        </select>
+        <button class="btn" onclick="vectorizar()">Vectorizar</button>
+      </div>
+      <div class="form-rapido">
+        <h3>Optimizar archivo</h3>
+        <input id="opt-archivo" placeholder="Ruta del archivo...">
+        <select id="opt-servicio">
+          <option value="sublimacion">Sublimación (300 DPI)</option>
+          <option value="laser">Láser (1200 DPI)</option>
+          <option value="lona">Lona gran formato (100 DPI)</option>
+          <option value="dtf">DTF (300 DPI)</option>
+        </select>
+        <button class="btn" onclick="optimizar()">Optimizar</button>
+      </div>
+      <div class="form-rapido" style="grid-column:1/-1">
+        <h3>Material ATF</h3>
+        <div class="row-form">
+          <button class="btn" onclick="nexus('qr atf')">Generar QR</button>
+          <button class="btn sec" onclick="nexus('tarjeta atf')">Tarjeta de presentación</button>
+          <button class="btn sec" onclick="nexus('portada atf')">Portada Instagram</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── CANBUSFIX ───────────────────────────────────────────────────────── -->
+  <div id="sec-canbusfix" class="seccion">
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px">
+      <button class="btn" onclick="nexus('ver catalogo canbusfix')">Catálogo servicios</button>
+      <button class="btn sec" onclick="nexus('instaladores en Guadalajara')">Instaladores GDL</button>
+    </div>
+    <div id="resultado-canbusfix" style="background:var(--bg2);border:1px solid var(--verde2);border-radius:10px;padding:14px;font-size:.85rem;white-space:pre-wrap;color:var(--text2)"></div>
+  </div>
+
+</div><!-- /panel-izq -->
+
+<!-- ═══════════════════════════════ PANEL DERECHO (CHAT) ═══════════════════ -->
+<div class="panel-der">
+  <div class="chat-header">NEXUS — Asistente de taller</div>
+  <div id="chat"></div>
+  <div class="acciones">
+    <span class="accion" onclick="nexus('briefing')">Briefing</span>
+    <span class="accion" onclick="nexus('mis pedidos activos')">Pedidos</span>
+    <span class="accion" onclick="nexus('cotiza X4')">Cotizar X4</span>
+    <span class="accion" onclick="nexus('finanzas del mes')">Finanzas</span>
+    <span class="accion" onclick="nexus('quien no ha pagado')">Sin pagar</span>
+    <span class="accion" onclick="nexus('ver pipeline')">Pipeline</span>
+  </div>
+  <div class="chat-inp">
+    <input id="inp" type="text" placeholder="Escribe o habla con NEXUS..." autocomplete="off">
+    <button id="btn-send" onclick="enviar()">↑</button>
+  </div>
+</div>
+</div><!-- /layout -->
+
+<script>
+const BASE = 'http://localhost:8001';
+
+// ── NAVEGACIÓN ────────────────────────────────────────────────────────────────
+function verSeccion(id) {
+  document.querySelectorAll('.seccion').forEach(s => s.classList.remove('activo'));
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('activo'));
+  document.getElementById('sec-' + id).classList.add('activo');
+  event.target.classList.add('activo');
+  if (id === 'pedidos')   cargarPedidos();
+  if (id === 'agenda')    cargarAgenda();
+  if (id === 'canbusfix') cargarCanbusfix();
+}
+
+// ── CHAT ─────────────────────────────────────────────────────────────────────
+const chat = document.getElementById('chat');
+const inp  = document.getElementById('inp');
+
+function agregar(txt, cls) {
+  const d = document.createElement('div');
+  d.className = 'msg ' + cls;
+  d.textContent = txt;
+  chat.appendChild(d);
+  chat.scrollTop = chat.scrollHeight;
+  return d;
+}
+
+async function nexus(texto) {
+  agregar(texto, 'user');
+  const cargando = agregar('...', 'nexus');
+  try {
+    const r = await fetch(BASE + '/api/nexus', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({texto})
+    }).then(x => x.json());
+    cargando.textContent = r.respuesta || JSON.stringify(r);
+    cargando.className   = 'msg ' + (r.ok ? 'nexus' : 'error');
+    // Actualizar UI si hay datos relevantes
+    if (r.datos && r.motor_usado) actualizarUI(r);
+    return r;
+  } catch(e) {
+    cargando.textContent = 'Error de conexión';
+    cargando.className   = 'msg error';
+  }
+}
+
+async function enviar() {
+  const txt = inp.value.trim();
+  if (!txt) return;
+  inp.value = '';
+  await nexus(txt);
+}
+inp.addEventListener('keydown', e => { if (e.key === 'Enter') enviar(); });
+
+// ── RESUMEN ───────────────────────────────────────────────────────────────────
+async function cargarResumen() {
+  try {
+    const r = await fetch(BASE + '/api/dashboard').then(x => x.json());
+    if (r.briefing) {
+      const d = r.briefing;
+      document.getElementById('n-activos').textContent    = d.total_activos || 0;
+      document.getElementById('n-hoy').textContent        = (d.entregas_hoy || []).length;
+      document.getElementById('n-atrasados').textContent  = (d.atrasados || []).length;
+      document.getElementById('n-prospectos').textContent = (d.prospectos || []).length;
+    }
+    if (r.finanzas) {
+      const total = r.finanzas.total || 0;
+      document.getElementById('n-ingresos').textContent = total > 0 ? '$' + total.toLocaleString('es-MX') : '$0';
+    }
+    document.getElementById('briefing-txt').textContent = r.resumen_texto || '';
+  } catch(e) { console.error('cargarResumen:', e); }
+}
+
+// ── PEDIDOS ───────────────────────────────────────────────────────────────────
+async function cargarPedidos() {
+  const r = await fetch(BASE + '/api/pedidos').then(x => x.json()).catch(() => null);
+  const cont = document.getElementById('tabla-pedidos');
+  const pedidos = r && r.pedidos ? r.pedidos : [];
+  if (!pedidos.length) {
+    cont.innerHTML = '<div class="vacío">Sin pedidos activos</div>'; return;
+  }
+  cont.innerHTML = `<table class="tabla">
+    <thead><tr><th>#</th><th>Cliente</th><th>Descripción</th><th>Precio</th><th>Entrega</th><th>Estado</th><th></th></tr></thead>
+    <tbody>${pedidos.map(p => `
+      <tr id="row-${p.id}">
+        <td>${p.id}</td>
+        <td>${p.cliente_nombre || '—'}</td>
+        <td>${(p.descripcion||'').substring(0,35)}</td>
+        <td contenteditable="true" onblur="guardarPrecio(${p.id},this)"
+            style="cursor:text;min-width:60px">${p.precio ? '$' + Number(p.precio).toLocaleString('es-MX') : '—'}</td>
+        <td>${p.fecha_entrega || '—'}</td>
+        <td><span class="badge ${p.estado}">${p.estado}</span></td>
+        <td style="white-space:nowrap">
+          ${p.estado !== 'en_proceso' ? `<button class="btn sec" style="padding:3px 8px;font-size:.72rem" onclick="cambiarEstado(${p.id},'en_proceso')">▶</button>` : ''}
+          ${p.estado !== 'listo'      ? `<button class="btn sec" style="padding:3px 8px;font-size:.72rem" onclick="cambiarEstado(${p.id},'listo')">✓</button>` : ''}
+          ${p.estado !== 'entregado'  ? `<button class="btn sec" style="padding:3px 8px;font-size:.72rem" onclick="cambiarEstado(${p.id},'entregado')">✔✔</button>` : ''}
+        </td>
+      </tr>`).join('')}
+    </tbody></table>`;
+}
+
+async function cambiarEstado(id, estado) {
+  await fetch(BASE + `/api/pedido/${id}`, {
+    method: 'PUT',
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify({estado})
+  });
+  cargarPedidos();
+  cargarResumen();
+}
+
+async function guardarPrecio(id, el) {
+  const txt = el.textContent.replace(/[$,\s]/g, '');
+  const precio = parseFloat(txt);
+  if (isNaN(precio)) return;
+  await fetch(BASE + `/api/pedido/${id}`, {
+    method: 'PUT',
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify({precio})
+  });
+  el.textContent = '$' + precio.toLocaleString('es-MX');
+}
+
+async function crearPedido() {
+  const cliente  = document.getElementById('p-cliente').value.trim();
+  const desc     = document.getElementById('p-desc').value.trim();
+  const servicio = document.getElementById('p-servicio').value;
+  const fecha    = document.getElementById('p-fecha').value;
+  const precio   = document.getElementById('p-precio').value;
+  if (!cliente || !desc) { alert('Cliente y descripción son requeridos'); return; }
+  const txt = `nuevo pedido para ${cliente} descripcion ${desc} servicio ${servicio} precio ${precio} fecha ${fecha}`;
+  const r = await nexus(txt);
+  if (r && r.ok) {
+    ['p-cliente','p-desc','p-precio'].forEach(id => document.getElementById(id).value = '');
+    cargarPedidos();
+  }
+}
+
+// ── COTIZACIONES ─────────────────────────────────────────────────────────────
+function mostrarCotizacion(r) {
+  const el = document.getElementById('resultado-cotizacion');
+  el.style.display = 'block';
+  el.style.color   = r.ok ? 'var(--text)' : 'var(--rojo)';
+  el.textContent   = r.respuesta || '';
+  if (r.datos && r.datos.whatsapp) {
+    const btn = document.createElement('button');
+    btn.className   = 'btn';
+    btn.style.marginTop = '10px';
+    btn.textContent = 'Copiar mensaje WA';
+    btn.onclick = () => {
+      navigator.clipboard.writeText(r.datos.whatsapp);
+      btn.textContent = 'Copiado ✓';
+      setTimeout(() => btn.textContent = 'Copiar mensaje WA', 2000);
+    };
+    el.appendChild(document.createElement('br'));
+    el.appendChild(btn);
+  }
+}
+
+async function cotizarATF() {
+  const modelo  = document.getElementById('cot-modelo').value;
+  const cliente = document.getElementById('cot-cliente-atf').value.trim();
+  if (!modelo) { alert('Selecciona un modelo'); return; }
+  const r = await fetch(BASE + '/api/nexus', {
+    method:'POST', headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({texto: `cotiza ${modelo}${cliente ? ' para ' + cliente : ''}`})
+  }).then(x => x.json());
+  mostrarCotizacion(r);
+}
+
+async function cotizarSub() {
+  const tipo = document.getElementById('cot-sub-tipo').value;
+  const cant = document.getElementById('cot-sub-cant').value || 50;
+  const r    = await fetch(BASE + '/api/nexus', {
+    method:'POST', headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({texto: `cotiza ${cant} ${tipo} sublimacion`})
+  }).then(x => x.json());
+  mostrarCotizacion(r);
+}
+
+async function cotizarLaser() {
+  const dim = document.getElementById('cot-laser-dim').value.trim();
+  const mat = document.getElementById('cot-laser-mat').value;
+  if (!dim) { alert('Escribe las dimensiones'); return; }
+  const r = await fetch(BASE + '/api/nexus', {
+    method:'POST', headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({texto: `cotiza laser ${dim} ${mat}`})
+  }).then(x => x.json());
+  mostrarCotizacion(r);
+}
+
+async function generarCaja() {
+  const dim = document.getElementById('cot-laser-dim').value.trim();
+  const mat = document.getElementById('cot-laser-mat').value;
+  if (!dim) { alert('Escribe 3 dimensiones: ancho x alto x prof'); return; }
+  const r = await nexus(`genera caja ${dim} ${mat}`);
+}
+
+// ── AGENDA ATF ────────────────────────────────────────────────────────────────
+async function agendarInstalacion() {
+  const cliente = document.getElementById('ag-cliente').value.trim();
+  const modelo  = document.getElementById('ag-modelo').value;
+  const carro   = document.getElementById('ag-carro').value.trim();
+  const fecha   = document.getElementById('ag-fecha').value;
+  const hora    = document.getElementById('ag-hora').value;
+  if (!cliente) { alert('Escribe el nombre del cliente'); return; }
+  const txt = `agenda instalacion ${modelo} para ${cliente} en ${carro || 'su carro'} fecha ${fecha} hora ${hora}`;
+  const r = await nexus(txt);
+  if (r && r.ok) cargarAgenda();
+}
+
+async function cargarAgenda() {
+  const r = await nexus('ver agenda atf semana');
+}
+
+// ── VENDEDOR ─────────────────────────────────────────────────────────────────
+async function generarMensaje() {
+  const cliente = document.getElementById('msg-cliente').value.trim();
+  const tipo    = document.getElementById('msg-tipo').value;
+  if (!cliente) { alert('Escribe el nombre del cliente'); return; }
+  await nexus(`redacta mensaje ${tipo} para ${cliente}`);
+}
+
+async function generarPost() {
+  const servicio = document.getElementById('pub-servicio').value;
+  const red      = document.getElementById('pub-red').value;
+  await nexus(`post de ${red} para ${servicio}`);
+}
+
+// ── DISEÑO ────────────────────────────────────────────────────────────────────
+async function vectorizar() {
+  const arch = document.getElementById('vec-archivo').value.trim();
+  const modo = document.getElementById('vec-modo').value;
+  if (!arch) { alert('Escribe la ruta del archivo'); return; }
+  await nexus(`vectoriza ${arch} modo ${modo}`);
+}
+
+async function optimizar() {
+  const arch = document.getElementById('opt-archivo').value.trim();
+  const svc  = document.getElementById('opt-servicio').value;
+  if (!arch) { alert('Escribe la ruta del archivo'); return; }
+  await nexus(`optimiza ${arch} para ${svc}`);
+}
+
+// ── CANBUSFIX ─────────────────────────────────────────────────────────────────
+async function cargarCanbusfix() {
+  const r = await fetch(BASE + '/api/nexus?q=catalogo+canbusfix').then(x => x.json()).catch(() => null);
+  if (r) document.getElementById('resultado-canbusfix').textContent = r.respuesta || '';
+}
+
+// ── ACTUALIZAR UI DESDE RESPUESTA ─────────────────────────────────────────────
+function actualizarUI(r) {
+  if (['m12_nuevo_pedido','m12_actualizar'].includes(r.motor_usado) && r.ok) {
+    setTimeout(() => { cargarPedidos(); cargarResumen(); }, 500);
+  }
+  if (r.motor_usado === 'm17_pipeline' && r.ok) {
+    cargarResumen();
+  }
+}
+
+// ── INIT ──────────────────────────────────────────────────────────────────────
+window.addEventListener('DOMContentLoaded', () => {
+  cargarResumen();
+  setInterval(cargarResumen, 60000);
+  inp.focus();
+  agregar('Listo. ¿Qué necesitas hoy?', 'nexus');
+});
+</script>
+</body>
+</html>
