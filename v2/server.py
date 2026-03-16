@@ -95,9 +95,16 @@ async def api_dashboard() -> JSONResponse:
     })
 
 @app.get("/api/pedidos")
-async def api_pedidos(estado: str = "") -> JSONResponse:
+async def api_pedidos(estado: str = "", q: str = "") -> JSONResponse:
     from motors.m12_pedidos_clientes import ver_pedidos
-    return JSONResponse({"ok": True, "pedidos": ver_pedidos(estado)})
+    pedidos = ver_pedidos(estado)
+    if q:
+        ql = q.lower()
+        pedidos = [p for p in pedidos if
+                   ql in (p.get("cliente_nombre") or "").lower() or
+                   ql in (p.get("descripcion") or "").lower() or
+                   ql in str(p.get("id",""))]
+    return JSONResponse({"ok": True, "pedidos": pedidos})
 
 @app.put("/api/pedido/{pedido_id}")
 async def api_actualizar_pedido(pedido_id: int, request: Request) -> JSONResponse:

@@ -164,11 +164,14 @@ input:focus,select:focus,textarea:focus{border-color:var(--verde)}
         <button class="btn" onclick="crearPedido()">+ Registrar</button>
       </div>
     </div>
-    <div style="display:flex;gap:6px;margin-bottom:8px;flex-wrap:wrap">
+    <div style="display:flex;gap:6px;margin-bottom:8px;flex-wrap:wrap;align-items:center">
       <button class="btn sec" style="padding:5px 10px;font-size:.75rem" onclick="cargarPedidos('')">Todos</button>
       <button class="btn sec" style="padding:5px 10px;font-size:.75rem" onclick="cargarPedidos('pendiente')">Pendiente</button>
       <button class="btn sec" style="padding:5px 10px;font-size:.75rem" onclick="cargarPedidos('en_proceso')">En proceso</button>
       <button class="btn sec" style="padding:5px 10px;font-size:.75rem;color:var(--amarillo)" onclick="cargarPedidos('listo')">Listos ✓</button>
+      <input id="pedidos-buscar" type="text" placeholder="Buscar cliente o descripción..."
+             style="flex:1;min-width:180px;padding:5px 10px;font-size:.78rem"
+             oninput="filtrarPedidos(this.value)">
     </div>
     <div id="tabla-pedidos"><div class="vacío">Cargando...</div></div>
   </div>
@@ -495,24 +498,24 @@ async function cargarResumen() {
 }
 
 function irAPedidosListos() {
-  // Ir al tab Pedidos y filtrar por listos
   document.querySelectorAll('.seccion').forEach(s => s.classList.remove('activo'));
   document.querySelectorAll('.tab').forEach(t => t.classList.remove('activo'));
   document.getElementById('sec-pedidos').classList.add('activo');
   document.querySelectorAll('.tab').forEach(t => {
     if (t.textContent.trim() === 'Pedidos') t.classList.add('activo');
   });
+  const sb = document.getElementById('pedidos-buscar');
+  if (sb) sb.value = '';
   cargarPedidos('listo');
 }
 
 // ── PEDIDOS ───────────────────────────────────────────────────────────────────
-async function cargarPedidos(estado) {
-  const url = BASE + '/api/pedidos' + (estado ? `?estado=${estado}` : '');
-  const r = await fetch(url).then(x => x.json()).catch(() => null);
+let _pedidosCargados = [];
+
+function renderPedidos(pedidos) {
   const cont = document.getElementById('tabla-pedidos');
-  const pedidos = r && r.pedidos ? r.pedidos : [];
   if (!pedidos.length) {
-    cont.innerHTML = '<div class="vacío">Sin pedidos activos</div>'; return;
+    cont.innerHTML = '<div class="vacío">Sin pedidos</div>'; return;
   }
   cont.innerHTML = `<table class="tabla">
     <thead><tr><th>#</th><th>Cliente</th><th>Descripción</th><th>Precio</th><th>Entrega</th><th>Estado</th><th></th></tr></thead>
@@ -520,7 +523,7 @@ async function cargarPedidos(estado) {
       <tr id="row-${p.id}">
         <td>${p.id}</td>
         <td>${p.cliente_nombre || '—'}</td>
-        <td>${(p.descripcion||'').substring(0,35)}</td>
+        <td title="${p.descripcion||''}">${(p.descripcion||'').substring(0,35)}${(p.descripcion||'').length>35?'…':''}</td>
         <td contenteditable="true" onblur="guardarPrecio(${p.id},this)"
             style="cursor:text;min-width:60px">${p.precio ? '$' + Number(p.precio).toLocaleString('es-MX') : '—'}</td>
         <td>${p.fecha_entrega || '—'}</td>
@@ -532,6 +535,25 @@ async function cargarPedidos(estado) {
         </td>
       </tr>`).join('')}
     </tbody></table>`;
+}
+
+function filtrarPedidos(q) {
+  if (!q) { renderPedidos(_pedidosCargados); return; }
+  const ql = q.toLowerCase();
+  renderPedidos(_pedidosCargados.filter(p =>
+    (p.cliente_nombre||'').toLowerCase().includes(ql) ||
+    (p.descripcion||'').toLowerCase().includes(ql) ||
+    String(p.id).includes(ql)
+  ));
+}
+
+async function cargarPedidos(estado) {
+  const url = BASE + '/api/pedidos' + (estado ? `?estado=${estado}` : '');
+  const r = await fetch(url).then(x => x.json()).catch(() => null);
+  _pedidosCargados = r && r.pedidos ? r.pedidos : [];
+  // Mantener filtro activo si hay texto en el buscador
+  const q = (document.getElementById('pedidos-buscar') || {}).value || '';
+  filtrarPedidos(q);
 }
 
 async function cambiarEstado(id, estado) {
