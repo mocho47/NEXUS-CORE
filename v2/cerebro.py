@@ -103,6 +103,12 @@ _INTENT_MAP = [
     (["finanzas", "cuanto gane", "cuánto gané", "ingresos",
       "facturacion", "ventas del mes", "cuanto llevo"], "m_finanzas"),
 
+    # Ayuda
+    (["que puedes", "qué puedes", "ayuda", "help", "comandos",
+      "como se usa", "cómo se usa", "describe lo que",
+      "que haces", "qué haces", "para que sirves",
+      "instrucciones", "manual"], "m00_ayuda"),
+
     # Briefing
     (["briefing", "qué tengo hoy", "que tengo hoy", "resumen del dia",
       "resumen de hoy", "buenos dias nexus", "como esta el dia"], "m00_briefing"),

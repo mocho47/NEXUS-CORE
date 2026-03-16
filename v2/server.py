@@ -39,6 +39,7 @@ import motors.m15_generar_mensaje
 import motors.m16_publicar_redes
 import motors.m17_pipeline
 import motors.m00_briefing
+import motors.m00_ayuda
 import motors.m_finanzas
 import motors.m18_proveedores
 
