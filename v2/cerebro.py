@@ -43,6 +43,20 @@ def motores_activos() -> list[str]:
 # ══════════════════════════════════════════════════════════════════════════════
 
 _INTENT_MAP = [
+    # ── AYUDA — SIEMPRE PRIMERO (preguntas sobre NEXUS mismo) ────────────────
+    # "cómo hago X", "puedes X", "ayuda", etc. deben ganar a cualquier keyword
+    (["como registro", "como creo un pedido", "como agrego",
+      "como cotizo", "como genero", "como cambio", "como busco",
+      "como agendo", "como uso", "como funciona", "como marco",
+      "como veo", "como mando", "como actualizo",
+      "cómo registro", "cómo creo", "cómo agrego",
+      "cómo cotizo", "cómo genero", "cómo cambio", "cómo busco",
+      "cómo agendo", "cómo uso", "cómo funciona", "cómo marco",
+      "puedes crear", "puedes hacer", "puedes generar",
+      "que puedes", "qué puedes", "ayuda", "help",
+      "comandos", "manual", "instrucciones",
+      "como se usa", "cómo se usa"], "m00_ayuda"),
+
     # ── CORE — PRIMERO (frases específicas, evitan false-match) ──────────────
     (["nuevo pedido", "registra pedido", "pedido para",
       "trabajo nuevo"], "m12_nuevo_pedido"),
