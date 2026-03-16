@@ -1,0 +1,31 @@
+# NEXUS v2 — Dependencias
+# Instalar: pip install -r requirements.txt
+
+# Servidor web
+fastapi==0.115.0
+uvicorn==0.32.0
+
+# Base de datos
+# (SQLite incluido en Python stdlib)
+
+# Variables de entorno
+python-dotenv==1.0.1
+
+# AI / LLM
+groq==0.11.0
+
+# Imágenes y diseño
+Pillow==11.0.0
+numpy==2.1.0
+
+# Generación de cajas láser (requiere boxes instalado)
+# Instalar por separado: pip install boxes
+
+# Conversión de archivos (opcional)
+pymupdf==1.24.0        # PDF → imagen
+ezdxf==1.3.0           # DXF para CAD
+vtracer==0.6.3         # Vectorización (requiere Rust)
+qrcode[pil]==8.0       # QR codes
+
+# Nota: vtracer puede requerir Microsoft C++ Build Tools en Windows
+# Si falla, omitir — m06b_vectorizar usa fallback sin vtracer
