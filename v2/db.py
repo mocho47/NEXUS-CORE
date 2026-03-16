@@ -71,7 +71,29 @@ def init_db():
             especialidades  TEXT,
             activo          INTEGER DEFAULT 1
         );
+        CREATE TABLE IF NOT EXISTS usuarios (
+            id          INTEGER PRIMARY KEY AUTOINCREMENT,
+            nombre      TEXT NOT NULL,
+            rol         TEXT DEFAULT 'operadora',
+            pin         TEXT NOT NULL,
+            activo      INTEGER DEFAULT 1,
+            created_at  TEXT DEFAULT (datetime('now','localtime'))
+        );
         """)
+    # Migrar tablas existentes si les falta creado_por
+    try:
+        c.execute("ALTER TABLE pedidos ADD COLUMN creado_por TEXT DEFAULT ''")
+    except Exception: pass
+    try:
+        c.execute("ALTER TABLE agenda_atf ADD COLUMN creado_por TEXT DEFAULT ''")
+    except Exception: pass
+    # Usuarios iniciales si no existen
+    with _conn() as c:
+        if not c.execute("SELECT 1 FROM usuarios LIMIT 1").fetchone():
+            c.executemany(
+                "INSERT INTO usuarios (nombre, rol, pin) VALUES (?,?,?)",
+                [("Anuar", "admin", "1111"), ("Rocio Hermosa", "operadora", "2222")]
+            )
     return True
 
 # ── Helpers ────────────────────────────────────────────────────────────────────

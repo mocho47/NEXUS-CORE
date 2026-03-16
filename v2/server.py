@@ -252,14 +252,16 @@ async def api_crear_pedido(request: Request) -> JSONResponse:
     desc     = data.get("descripcion", "").strip()
     servicio = data.get("servicio", "")
     fecha    = data.get("fecha_entrega", "")
-    precio   = data.get("precio") or 0
-    notas    = data.get("notas", "")
-    tel      = data.get("telefono", "")
+    precio      = data.get("precio") or 0
+    notas       = data.get("notas", "")
+    tel         = data.get("telefono", "")
+    creado_por  = data.get("creado_por", "")
     if not cliente or not desc:
         return JSONResponse({"ok": False, "error": "cliente y descripcion requeridos"}, status_code=400)
     from motors.m12_pedidos_clientes import nuevo_pedido
     r = nuevo_pedido(cliente=cliente, descripcion=desc, servicio=servicio,
-                     precio=float(precio), fecha_entrega=fecha, notas=notas, telefono=tel)
+                     precio=float(precio), fecha_entrega=fecha, notas=notas,
+                     telefono=tel, creado_por=creado_por)
     return JSONResponse(r)
 
 @app.get("/api/clientes")
@@ -268,6 +270,44 @@ async def api_clientes(q: str = "") -> JSONResponse:
     if q:
         return JSONResponse({"ok": True, "clientes": buscar_cliente(q)})
     return JSONResponse({"ok": True, "clientes": listar_clientes()})
+
+# ── USUARIOS / LOGIN ──────────────────────────────────────────────────────────
+
+@app.post("/api/login")
+async def api_login(request: Request) -> JSONResponse:
+    data = await request.json()
+    pin  = str(data.get("pin", "")).strip()
+    if not pin:
+        return JSONResponse({"ok": False, "error": "PIN requerido"}, status_code=400)
+    from db import _conn, rows_to_list
+    with _conn() as c:
+        row = c.execute(
+            "SELECT id, nombre, rol FROM usuarios WHERE pin=? AND activo=1 LIMIT 1",
+            (pin,)
+        ).fetchone()
+    if not row:
+        return JSONResponse({"ok": False, "error": "PIN incorrecto"}, status_code=401)
+    return JSONResponse({"ok": True, "id": row["id"], "nombre": row["nombre"], "rol": row["rol"]})
+
+@app.get("/api/usuarios")
+async def api_usuarios() -> JSONResponse:
+    from db import _conn, rows_to_list
+    with _conn() as c:
+        rows = rows_to_list(c.execute(
+            "SELECT id, nombre, rol, activo FROM usuarios ORDER BY id"
+        ).fetchall())
+    return JSONResponse({"ok": True, "usuarios": rows})
+
+@app.put("/api/usuario/{uid}/pin")
+async def api_cambiar_pin(uid: int, request: Request) -> JSONResponse:
+    data    = await request.json()
+    pin_nuevo = str(data.get("pin", "")).strip()
+    if len(pin_nuevo) < 4:
+        return JSONResponse({"ok": False, "error": "PIN mínimo 4 dígitos"}, status_code=400)
+    from db import _conn
+    with _conn() as c:
+        c.execute("UPDATE usuarios SET pin=? WHERE id=?", (pin_nuevo, uid))
+    return JSONResponse({"ok": True})
 
 # ── UI — panel completo ────────────────────────────────────────────────────────
 

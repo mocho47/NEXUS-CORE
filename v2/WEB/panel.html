@@ -98,6 +98,27 @@ input:focus,select:focus,textarea:focus{border-color:var(--verde)}
 .seccion{display:none}
 .seccion.activo{display:block}
 
+/* LOGIN */
+.login-bg{position:fixed;inset:0;background:var(--bg);z-index:200;display:flex;align-items:center;justify-content:center}
+.login-box{background:var(--bg2);border:1px solid var(--verde2);border-radius:16px;padding:40px 32px;width:320px;text-align:center}
+.login-box h1{color:var(--verde);font-size:1.8rem;margin-bottom:4px;letter-spacing:2px}
+.login-box p{color:var(--text3);font-size:.82rem;margin-bottom:28px}
+.pin-display{font-size:2rem;letter-spacing:12px;color:var(--verde);min-height:48px;margin-bottom:20px}
+.pin-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:12px}
+.pin-btn{background:var(--bg3);border:1px solid var(--verde2);color:var(--text);
+         padding:14px;border-radius:10px;cursor:pointer;font-size:1.1rem;font-weight:600;transition:.15s}
+.pin-btn:hover{background:var(--verde2);color:var(--verde)}
+.pin-btn:active{background:var(--verde);color:var(--bg)}
+.login-error{color:var(--rojo);font-size:.8rem;min-height:20px;margin-top:8px}
+.admin-only{display:none}
+/* USUARIO CHIP en header */
+.usuario-chip{display:flex;align-items:center;gap:6px;background:var(--bg3);
+              border:1px solid var(--verde2);border-radius:20px;padding:4px 12px;cursor:pointer}
+.usuario-chip .nombre{font-size:.78rem;color:var(--text2)}
+.usuario-chip .rol-badge{font-size:.65rem;padding:1px 6px;border-radius:10px;font-weight:700}
+.rol-badge.admin{background:#002030;color:#44aaff;border:1px solid #004060}
+.rol-badge.operadora{background:#002010;color:var(--verde3);border:1px solid var(--verde2)}
+
 /* MODAL */
 .modal-bg{position:fixed;inset:0;background:#00000088;z-index:100;display:flex;align-items:center;justify-content:center;padding:20px}
 .modal{background:var(--bg2);border:1px solid var(--verde2);border-radius:12px;width:100%;max-width:700px;max-height:80vh;display:flex;flex-direction:column}
@@ -110,11 +131,39 @@ input:focus,select:focus,textarea:focus{border-color:var(--verde)}
 </head>
 <body>
 
+<!-- LOGIN SCREEN -->
+<div id="login-screen" class="login-bg">
+  <div class="login-box">
+    <h1>NEXUS</h1>
+    <p>Taller Simplex — ingresa tu PIN</p>
+    <div class="pin-display" id="pin-display">· · · ·</div>
+    <div class="pin-grid">
+      <button class="pin-btn" onclick="pinPress('1')">1</button>
+      <button class="pin-btn" onclick="pinPress('2')">2</button>
+      <button class="pin-btn" onclick="pinPress('3')">3</button>
+      <button class="pin-btn" onclick="pinPress('4')">4</button>
+      <button class="pin-btn" onclick="pinPress('5')">5</button>
+      <button class="pin-btn" onclick="pinPress('6')">6</button>
+      <button class="pin-btn" onclick="pinPress('7')">7</button>
+      <button class="pin-btn" onclick="pinPress('8')">8</button>
+      <button class="pin-btn" onclick="pinPress('9')">9</button>
+      <button class="pin-btn" onclick="pinLimpiar()" style="color:var(--text3)">✕</button>
+      <button class="pin-btn" onclick="pinPress('0')">0</button>
+      <button class="pin-btn" onclick="pinEnter()" style="color:var(--verde)">→</button>
+    </div>
+    <div class="login-error" id="login-error"></div>
+  </div>
+</div>
+
 <header>
   <h1>NEXUS</h1>
-  <span>Taller Simplex — v2</span>
+  <span>Milens · ATF</span>
   <div id="alertas-header"></div>
   <div id="estado-dot"></div>
+  <div class="usuario-chip" onclick="cerrarSesion()" title="Cerrar sesión">
+    <span class="nombre" id="header-nombre">—</span>
+    <span class="rol-badge" id="header-rol">—</span>
+  </div>
 </header>
 
 <div class="layout">
@@ -142,7 +191,7 @@ input:focus,select:focus,textarea:focus{border-color:var(--verde)}
         <div class="num" id="n-listos" style="color:var(--amarillo)">—</div><div class="lbl">Listos p/entregar</div>
       </div>
       <div class="card"><div class="num" id="n-prospectos">—</div><div class="lbl">Prospectos activos</div></div>
-      <div class="card" onclick="nexus('finanzas del mes')" style="cursor:pointer">
+      <div class="card admin-only" onclick="nexus('finanzas del mes')" style="cursor:pointer">
         <div class="num" id="n-ingresos">—</div><div class="lbl">Ingresos del mes</div>
       </div>
     </div>
@@ -440,7 +489,99 @@ input:focus,select:focus,textarea:focus{border-color:var(--verde)}
 </div>
 
 <script>
-const BASE = 'http://localhost:8001';
+// Auto-detect server: si no corre en localhost, usar IP guardada
+const BASE_DEFAULT = 'http://localhost:8001';
+const BASE = localStorage.getItem('nexus_server') || BASE_DEFAULT;
+
+// ── SESIÓN / LOGIN ────────────────────────────────────────────────────────────
+let _usuario = null;  // { id, nombre, rol }
+
+function _cargarSesion() {
+  try { _usuario = JSON.parse(localStorage.getItem('nexus_usuario') || 'null'); }
+  catch { _usuario = null; }
+  return _usuario;
+}
+
+function _guardarSesion(u) {
+  _usuario = u;
+  localStorage.setItem('nexus_usuario', JSON.stringify(u));
+}
+
+function aplicarRol() {
+  if (!_usuario) return;
+  // Mostrar nombre y rol en header
+  document.getElementById('header-nombre').textContent = _usuario.nombre;
+  const rolEl = document.getElementById('header-rol');
+  rolEl.textContent = _usuario.rol;
+  rolEl.className = 'rol-badge ' + _usuario.rol;
+  // Elementos admin-only
+  if (_usuario.rol === 'admin') {
+    document.querySelectorAll('.admin-only').forEach(el => el.style.display = '');
+  } else {
+    document.querySelectorAll('.admin-only').forEach(el => el.style.display = 'none');
+  }
+}
+
+function esAdmin() { return _usuario && _usuario.rol === 'admin'; }
+
+function cerrarSesion() {
+  if (!confirm(`¿Cerrar sesión de ${_usuario?.nombre}?`)) return;
+  localStorage.removeItem('nexus_usuario');
+  _usuario = null;
+  document.getElementById('login-screen').style.display = 'flex';
+  pinLimpiar();
+}
+
+// ── PIN ───────────────────────────────────────────────────────────────────────
+let _pin = '';
+
+function pinPress(d) {
+  if (_pin.length >= 6) return;
+  _pin += d;
+  document.getElementById('pin-display').textContent = '●'.repeat(_pin.length);
+  document.getElementById('login-error').textContent = '';
+  if (_pin.length >= 4) setTimeout(pinEnter, 200);  // auto-submit al 4to dígito
+}
+
+function pinLimpiar() {
+  _pin = '';
+  document.getElementById('pin-display').textContent = '· · · ·';
+  document.getElementById('login-error').textContent = '';
+}
+
+async function pinEnter() {
+  if (!_pin) return;
+  try {
+    const r = await fetch(BASE + '/api/login', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({pin: _pin})
+    }).then(x => x.json());
+    if (r.ok) {
+      _guardarSesion({id: r.id, nombre: r.nombre, rol: r.rol});
+      document.getElementById('login-screen').style.display = 'none';
+      aplicarRol();
+      iniciarApp();
+    } else {
+      document.getElementById('login-error').textContent = 'PIN incorrecto';
+      document.getElementById('pin-display').textContent = '· · · ·';
+      _pin = '';
+    }
+  } catch {
+    document.getElementById('login-error').textContent = 'Sin conexión al servidor';
+    _pin = '';
+  }
+}
+
+// Teclado físico para PIN
+document.addEventListener('keydown', e => {
+  const ls = document.getElementById('login-screen');
+  if (ls && ls.style.display !== 'none') {
+    if (e.key >= '0' && e.key <= '9') pinPress(e.key);
+    if (e.key === 'Backspace') { _pin = _pin.slice(0,-1); document.getElementById('pin-display').textContent = _pin ? '●'.repeat(_pin.length) : '· · · ·'; }
+    if (e.key === 'Enter') pinEnter();
+  }
+});
 
 // ── NAVEGACIÓN ────────────────────────────────────────────────────────────────
 function verSeccion(id) {
@@ -667,10 +808,13 @@ async function cargarPedidos(estado) {
 }
 
 async function cambiarEstado(id, estado) {
+  if (estado === 'cancelado' && !esAdmin()) {
+    alert('Solo el administrador puede cancelar pedidos.'); return;
+  }
   await fetch(BASE + `/api/pedido/${id}`, {
     method: 'PUT',
     headers: {'Content-Type': 'application/json'},
-    body: JSON.stringify({estado})
+    body: JSON.stringify({estado, creado_por: _usuario?.nombre || ''})
   });
   cargarPedidos();
   cargarResumen();
@@ -690,6 +834,7 @@ async function guardarNotas(id, el) {
 }
 
 async function guardarPrecio(id, el) {
+  if (!esAdmin()) { cargarPedidos(); return; }  // operadora no edita precio
   const txt = el.textContent.replace(/[$,\s]/g, '');
   const precio = parseFloat(txt);
   if (isNaN(precio)) return;
@@ -713,7 +858,7 @@ async function crearPedido() {
   const r = await fetch(BASE + '/api/pedido', {
     method: 'POST',
     headers: {'Content-Type': 'application/json'},
-    body: JSON.stringify({cliente, descripcion: desc, servicio, fecha_entrega: fecha, precio, telefono: tel, notas})
+    body: JSON.stringify({cliente, descripcion: desc, servicio, fecha_entrega: fecha, precio, telefono: tel, notas, creado_por: _usuario?.nombre || ''})
   }).then(x => x.json()).catch(() => null);
   if (r && r.ok) {
     ['p-cliente','p-tel','p-desc','p-precio','p-notas'].forEach(id => document.getElementById(id).value = '');
@@ -1032,14 +1177,27 @@ document.addEventListener('keydown', e => {
 });
 
 // ── INIT ──────────────────────────────────────────────────────────────────────
-window.addEventListener('DOMContentLoaded', () => {
+function iniciarApp() {
+  aplicarRol();
   checkConexion();
   setInterval(checkConexion, 30000);
   cargarResumen();
   cargarAutocompleteClientes();
   setInterval(cargarResumen, 60000);
   inp.focus();
-  agregar('Listo. ¿Qué necesitas hoy?', 'nexus');
+  agregar(`Hola ${_usuario?.nombre || ''}! ¿Qué necesitas hoy?`, 'nexus');
+}
+
+window.addEventListener('DOMContentLoaded', () => {
+  const u = _cargarSesion();
+  if (u) {
+    // Sesión activa — entrar directo
+    document.getElementById('login-screen').style.display = 'none';
+    iniciarApp();
+  } else {
+    // Mostrar login
+    document.getElementById('login-screen').style.display = 'flex';
+  }
 });
 </script>
 </body>

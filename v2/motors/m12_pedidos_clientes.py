@@ -44,16 +44,16 @@ def listar_clientes() -> list:
 
 def nuevo_pedido(cliente: str, descripcion: str, servicio: str = "",
                  precio: float = 0, fecha_entrega: str = "",
-                 notas: str = "", telefono: str = "") -> dict:
+                 notas: str = "", telefono: str = "", creado_por: str = "") -> dict:
     cliente_id = _buscar_o_crear_cliente(cliente, telefono)
     with _conn() as c:
         cur = c.execute(
             """INSERT INTO pedidos
                (cliente_id, cliente_nombre, descripcion, servicio, precio,
-                fecha_entrega, notas, estado)
-               VALUES (?,?,?,?,?,?,?,'pendiente')""",
+                fecha_entrega, notas, estado, creado_por)
+               VALUES (?,?,?,?,?,?,?,'pendiente',?)""",
             (cliente_id, cliente, descripcion, servicio,
-             precio, fecha_entrega, notas)
+             precio, fecha_entrega, notas, creado_por)
         )
         pid = cur.lastrowid
     return {"ok": True, "id": pid, "cliente": cliente, "descripcion": descripcion}
