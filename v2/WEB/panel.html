@@ -147,9 +147,10 @@ input:focus,select:focus,textarea:focus{border-color:var(--verde)}
       <div class="row-form">
         <input id="p-cliente" placeholder="Cliente" type="text" list="lista-clientes" autocomplete="off">
         <datalist id="lista-clientes"></datalist>
-        <input id="p-desc" placeholder="Descripción" type="text">
+        <input id="p-tel" placeholder="Teléfono (opcional)" type="tel">
       </div>
       <div class="row-form">
+        <input id="p-desc" placeholder="Descripción del trabajo" type="text">
         <select id="p-servicio">
           <option value="">Servicio</option>
           <option value="laser">Láser</option>
@@ -157,18 +158,22 @@ input:focus,select:focus,textarea:focus{border-color:var(--verde)}
           <option value="atf">ATF</option>
           <option value="canbusfix">CanbusFix</option>
         </select>
-        <input id="p-fecha" type="date" placeholder="Entrega">
       </div>
       <div class="row-form">
+        <input id="p-fecha" type="date" placeholder="Entrega">
         <input id="p-precio" type="number" placeholder="Precio $">
+      </div>
+      <div class="row-form">
+        <input id="p-notas" placeholder="Notas internas (opcional)">
         <button class="btn" onclick="crearPedido()">+ Registrar</button>
       </div>
     </div>
     <div style="display:flex;gap:6px;margin-bottom:8px;flex-wrap:wrap;align-items:center">
-      <button class="btn sec" style="padding:5px 10px;font-size:.75rem" onclick="cargarPedidos('')">Todos</button>
+      <button class="btn sec" style="padding:5px 10px;font-size:.75rem" onclick="cargarPedidos('')">Activos</button>
       <button class="btn sec" style="padding:5px 10px;font-size:.75rem" onclick="cargarPedidos('pendiente')">Pendiente</button>
       <button class="btn sec" style="padding:5px 10px;font-size:.75rem" onclick="cargarPedidos('en_proceso')">En proceso</button>
       <button class="btn sec" style="padding:5px 10px;font-size:.75rem;color:var(--amarillo)" onclick="cargarPedidos('listo')">Listos ✓</button>
+      <button class="btn sec" style="padding:5px 10px;font-size:.75rem;color:var(--text3)" onclick="cargarPedidos('entregado')">Entregados</button>
       <input id="pedidos-buscar" type="text" placeholder="Buscar cliente o descripción..."
              style="flex:1;min-width:180px;padding:5px 10px;font-size:.78rem"
              oninput="filtrarPedidos(this.value)">
@@ -519,22 +524,41 @@ function renderPedidos(pedidos) {
   }
   cont.innerHTML = `<table class="tabla">
     <thead><tr><th>#</th><th>Cliente</th><th>Descripción</th><th>Precio</th><th>Entrega</th><th>Estado</th><th></th></tr></thead>
-    <tbody>${pedidos.map(p => `
-      <tr id="row-${p.id}">
+    <tbody>${pedidos.map(p => {
+      const notas = (p.notas || '').trim();
+      const desc  = p.descripcion || '';
+      return `
+      <tr id="row-${p.id}" style="${notas ? 'cursor:pointer' : ''}"
+          ${notas ? `onclick="toggleNotas(${p.id})" title="Ver notas"` : ''}>
         <td>${p.id}</td>
         <td>${p.cliente_nombre || '—'}</td>
-        <td title="${p.descripcion||''}">${(p.descripcion||'').substring(0,35)}${(p.descripcion||'').length>35?'…':''}</td>
+        <td title="${desc}">${desc.substring(0,35)}${desc.length>35?'…':''}${notas?'<span style="color:var(--verde3);font-size:.7rem;margin-left:4px">📝</span>':''}</td>
         <td contenteditable="true" onblur="guardarPrecio(${p.id},this)"
+            onclick="event.stopPropagation()"
             style="cursor:text;min-width:60px">${p.precio ? '$' + Number(p.precio).toLocaleString('es-MX') : '—'}</td>
         <td>${p.fecha_entrega || '—'}</td>
         <td><span class="badge ${p.estado}">${p.estado}</span></td>
-        <td style="white-space:nowrap">
-          ${p.estado !== 'en_proceso' ? `<button class="btn sec" style="padding:3px 8px;font-size:.72rem" onclick="cambiarEstado(${p.id},'en_proceso')">▶</button>` : ''}
-          ${p.estado !== 'listo'      ? `<button class="btn sec" style="padding:3px 8px;font-size:.72rem" onclick="cambiarEstado(${p.id},'listo')">✓</button>` : ''}
-          ${p.estado !== 'entregado'  ? `<button class="btn sec" style="padding:3px 8px;font-size:.72rem" onclick="cambiarEstado(${p.id},'entregado')">✔✔</button>` : ''}
+        <td style="white-space:nowrap" onclick="event.stopPropagation()">
+          ${p.estado !== 'en_proceso' && p.estado !== 'entregado' ? `<button class="btn sec" style="padding:3px 8px;font-size:.72rem" title="En proceso" onclick="cambiarEstado(${p.id},'en_proceso')">▶</button>` : ''}
+          ${p.estado !== 'listo' && p.estado !== 'entregado'      ? `<button class="btn sec" style="padding:3px 8px;font-size:.72rem" title="Marcar listo" onclick="cambiarEstado(${p.id},'listo')">✓</button>` : ''}
+          ${p.estado !== 'entregado'  ? `<button class="btn sec" style="padding:3px 8px;font-size:.72rem" title="Entregado" onclick="cambiarEstado(${p.id},'entregado')">✔✔</button>` : ''}
+          ${p.estado !== 'cancelado'  ? `<button class="btn sec" style="padding:3px 8px;font-size:.72rem;color:var(--rojo)" title="Cancelar" onclick="confirmarCancelar(${p.id},'${(p.cliente_nombre||'').replace(/'/g,'')}')">&times;</button>` : ''}
         </td>
-      </tr>`).join('')}
+      </tr>
+      ${notas ? `<tr id="notas-${p.id}" style="display:none"><td colspan="7" style="padding:6px 12px 10px;background:var(--bg3);color:var(--text2);font-size:.78rem;font-style:italic;border-left:3px solid var(--verde3)">📝 ${notas}</td></tr>` : ''}`;
+    }).join('')}
     </tbody></table>`;
+}
+
+function toggleNotas(id) {
+  const row = document.getElementById('notas-' + id);
+  if (row) row.style.display = row.style.display === 'none' ? 'table-row' : 'none';
+}
+
+function confirmarCancelar(id, cliente) {
+  if (confirm(`¿Cancelar pedido #${id} de ${cliente}?`)) {
+    cambiarEstado(id, 'cancelado');
+  }
 }
 
 function filtrarPedidos(q) {
@@ -584,16 +608,19 @@ async function crearPedido() {
   const servicio = document.getElementById('p-servicio').value;
   const fecha    = document.getElementById('p-fecha').value;
   const precio   = parseFloat(document.getElementById('p-precio').value) || 0;
+  const tel      = document.getElementById('p-tel').value.trim();
+  const notas    = document.getElementById('p-notas').value.trim();
   if (!cliente || !desc) { alert('Cliente y descripción son requeridos'); return; }
   const r = await fetch(BASE + '/api/pedido', {
     method: 'POST',
     headers: {'Content-Type': 'application/json'},
-    body: JSON.stringify({cliente, descripcion: desc, servicio, fecha_entrega: fecha, precio})
+    body: JSON.stringify({cliente, descripcion: desc, servicio, fecha_entrega: fecha, precio, telefono: tel, notas})
   }).then(x => x.json()).catch(() => null);
   if (r && r.ok) {
-    ['p-cliente','p-desc','p-precio'].forEach(id => document.getElementById(id).value = '');
+    ['p-cliente','p-tel','p-desc','p-precio','p-notas'].forEach(id => document.getElementById(id).value = '');
     cargarPedidos();
     cargarResumen();
+    cargarAutocompleteClientes();
     agregar(`Pedido #${r.id} registrado para ${cliente}.`, 'nexus');
   } else {
     alert(r ? r.error || 'Error al crear pedido' : 'Error de conexión');
@@ -894,7 +921,7 @@ document.addEventListener('keydown', e => {
   // Enter en campos de formularios
   const id = e.target.id;
   if (e.key === 'Enter' && !e.shiftKey) {
-    if (['p-cliente','p-desc','p-servicio','p-fecha','p-precio'].includes(id)) crearPedido();
+    if (['p-cliente','p-tel','p-desc','p-servicio','p-fecha','p-precio','p-notas'].includes(id)) crearPedido();
     else if (['ag-cliente','ag-modelo','ag-carro','ag-fecha','ag-hora'].includes(id)) agendarInstalacion();
     else if (['pip-cliente','pip-servicio','pip-valor'].includes(id)) crearProspecto();
     else if (['ins-nombre','ins-ciudad','ins-tel'].includes(id)) registrarInstalador();

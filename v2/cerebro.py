@@ -57,7 +57,8 @@ _INTENT_MAP = [
     (["cotiza atf", "kit atf", " x1", " x2", " x3", " x4", " x5", " x6", " x7",
       "aozoom", "biled", "bi-led", "faros", "retrofit"], "m07_cotizar_atf"),
     (["agenda instalacion", "agenda atf", "agendar instalacion",
-      "cita atf", "instalacion para", "instalación para"], "m08_agenda_atf"),
+      "nueva instalacion", "cita atf", "instalacion para",
+      "instalación para", "instalar "], "m08_agenda_atf"),
     (["tarjeta atf", "material atf", "qr atf"], "m09_material_atf"),
 
     # Milens — Láser (keywords más específicos para evitar conflicto con "pedido de caja")

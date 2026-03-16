@@ -251,11 +251,12 @@ async def api_crear_pedido(request: Request) -> JSONResponse:
     fecha    = data.get("fecha_entrega", "")
     precio   = data.get("precio") or 0
     notas    = data.get("notas", "")
+    tel      = data.get("telefono", "")
     if not cliente or not desc:
         return JSONResponse({"ok": False, "error": "cliente y descripcion requeridos"}, status_code=400)
     from motors.m12_pedidos_clientes import nuevo_pedido
     r = nuevo_pedido(cliente=cliente, descripcion=desc, servicio=servicio,
-                     precio=float(precio), fecha_entrega=fecha, notas=notas)
+                     precio=float(precio), fecha_entrega=fecha, notas=notas, telefono=tel)
     return JSONResponse(r)
 
 @app.get("/api/clientes")
