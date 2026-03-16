@@ -124,6 +124,9 @@ input:focus,select:focus,textarea:focus{border-color:var(--verde)}
       <div class="card"><div class="num" id="n-activos">—</div><div class="lbl">Pedidos activos</div></div>
       <div class="card"><div class="num" id="n-hoy">—</div><div class="lbl">Entregan hoy</div></div>
       <div class="card"><div class="num" id="n-atrasados" style="color:var(--rojo)">—</div><div class="lbl">Atrasados</div></div>
+      <div class="card" onclick="irAPedidosListos()" style="cursor:pointer">
+        <div class="num" id="n-listos" style="color:var(--amarillo)">—</div><div class="lbl">Listos p/entregar</div>
+      </div>
       <div class="card"><div class="num" id="n-prospectos">—</div><div class="lbl">Prospectos activos</div></div>
       <div class="card" onclick="nexus('finanzas del mes')" style="cursor:pointer">
         <div class="num" id="n-ingresos">—</div><div class="lbl">Ingresos del mes</div>
@@ -154,6 +157,12 @@ input:focus,select:focus,textarea:focus{border-color:var(--verde)}
         <input id="p-precio" type="number" placeholder="Precio $">
         <button class="btn" onclick="crearPedido()">+ Registrar</button>
       </div>
+    </div>
+    <div style="display:flex;gap:6px;margin-bottom:8px;flex-wrap:wrap">
+      <button class="btn sec" style="padding:5px 10px;font-size:.75rem" onclick="cargarPedidos('')">Todos</button>
+      <button class="btn sec" style="padding:5px 10px;font-size:.75rem" onclick="cargarPedidos('pendiente')">Pendiente</button>
+      <button class="btn sec" style="padding:5px 10px;font-size:.75rem" onclick="cargarPedidos('en_proceso')">En proceso</button>
+      <button class="btn sec" style="padding:5px 10px;font-size:.75rem;color:var(--amarillo)" onclick="cargarPedidos('listo')">Listos ✓</button>
     </div>
     <div id="tabla-pedidos"><div class="vacío">Cargando...</div></div>
   </div>
@@ -433,6 +442,7 @@ async function cargarResumen() {
       document.getElementById('n-activos').textContent    = d.total_activos || 0;
       document.getElementById('n-hoy').textContent        = (d.entregas_hoy || []).length;
       document.getElementById('n-atrasados').textContent  = (d.atrasados || []).length;
+      document.getElementById('n-listos').textContent     = (d.listos || []).length;
       document.getElementById('n-prospectos').textContent = (d.prospectos || []).length;
     }
     if (r.finanzas) {
@@ -443,9 +453,21 @@ async function cargarResumen() {
   } catch(e) { console.error('cargarResumen:', e); }
 }
 
+function irAPedidosListos() {
+  // Ir al tab Pedidos y filtrar por listos
+  document.querySelectorAll('.seccion').forEach(s => s.classList.remove('activo'));
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('activo'));
+  document.getElementById('sec-pedidos').classList.add('activo');
+  document.querySelectorAll('.tab').forEach(t => {
+    if (t.textContent.trim() === 'Pedidos') t.classList.add('activo');
+  });
+  cargarPedidos('listo');
+}
+
 // ── PEDIDOS ───────────────────────────────────────────────────────────────────
-async function cargarPedidos() {
-  const r = await fetch(BASE + '/api/pedidos').then(x => x.json()).catch(() => null);
+async function cargarPedidos(estado) {
+  const url = BASE + '/api/pedidos' + (estado ? `?estado=${estado}` : '');
+  const r = await fetch(url).then(x => x.json()).catch(() => null);
   const cont = document.getElementById('tabla-pedidos');
   const pedidos = r && r.pedidos ? r.pedidos : [];
   if (!pedidos.length) {
