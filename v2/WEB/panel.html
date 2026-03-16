@@ -140,7 +140,8 @@ input:focus,select:focus,textarea:focus{border-color:var(--verde)}
     <div class="form-rapido" style="margin-bottom:12px">
       <h3>Nuevo pedido</h3>
       <div class="row-form">
-        <input id="p-cliente" placeholder="Cliente" type="text">
+        <input id="p-cliente" placeholder="Cliente" type="text" list="lista-clientes" autocomplete="off">
+        <datalist id="lista-clientes"></datalist>
         <input id="p-desc" placeholder="Descripción" type="text">
       </div>
       <div class="row-form">
@@ -520,13 +521,20 @@ async function crearPedido() {
   const desc     = document.getElementById('p-desc').value.trim();
   const servicio = document.getElementById('p-servicio').value;
   const fecha    = document.getElementById('p-fecha').value;
-  const precio   = document.getElementById('p-precio').value;
+  const precio   = parseFloat(document.getElementById('p-precio').value) || 0;
   if (!cliente || !desc) { alert('Cliente y descripción son requeridos'); return; }
-  const txt = `nuevo pedido para ${cliente} descripcion ${desc} servicio ${servicio} precio ${precio} fecha ${fecha}`;
-  const r = await nexus(txt);
+  const r = await fetch(BASE + '/api/pedido', {
+    method: 'POST',
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify({cliente, descripcion: desc, servicio, fecha_entrega: fecha, precio})
+  }).then(x => x.json()).catch(() => null);
   if (r && r.ok) {
     ['p-cliente','p-desc','p-precio'].forEach(id => document.getElementById(id).value = '');
     cargarPedidos();
+    cargarResumen();
+    agregar(`Pedido #${r.id} registrado para ${cliente}.`, 'nexus');
+  } else {
+    alert(r ? r.error || 'Error al crear pedido' : 'Error de conexión');
   }
 }
 
@@ -727,9 +735,19 @@ function actualizarUI(r) {
   }
 }
 
+// ── CLIENTES AUTOCOMPLETE ─────────────────────────────────────────────────────
+async function cargarAutocompleteClientes() {
+  const r = await fetch(BASE + '/api/clientes').then(x => x.json()).catch(() => null);
+  if (!r || !r.clientes) return;
+  const dl = document.getElementById('lista-clientes');
+  if (!dl) return;
+  dl.innerHTML = r.clientes.map(c => `<option value="${c.nombre}">`).join('');
+}
+
 // ── INIT ──────────────────────────────────────────────────────────────────────
 window.addEventListener('DOMContentLoaded', () => {
   cargarResumen();
+  cargarAutocompleteClientes();
   setInterval(cargarResumen, 60000);
   inp.focus();
   agregar('Listo. ¿Qué necesitas hoy?', 'nexus');

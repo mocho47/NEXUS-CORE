@@ -165,6 +165,29 @@ async def api_nuevo_prospecto(request: Request) -> JSONResponse:
         )
     return JSONResponse({"ok": True, "id": cur.lastrowid, "cliente": cliente})
 
+@app.post("/api/pedido")
+async def api_crear_pedido(request: Request) -> JSONResponse:
+    data     = await request.json()
+    cliente  = data.get("cliente", "").strip()
+    desc     = data.get("descripcion", "").strip()
+    servicio = data.get("servicio", "")
+    fecha    = data.get("fecha_entrega", "")
+    precio   = data.get("precio") or 0
+    notas    = data.get("notas", "")
+    if not cliente or not desc:
+        return JSONResponse({"ok": False, "error": "cliente y descripcion requeridos"}, status_code=400)
+    from motors.m12_pedidos_clientes import nuevo_pedido
+    r = nuevo_pedido(cliente=cliente, descripcion=desc, servicio=servicio,
+                     precio=float(precio), fecha_entrega=fecha, notas=notas)
+    return JSONResponse(r)
+
+@app.get("/api/clientes")
+async def api_clientes(q: str = "") -> JSONResponse:
+    from motors.m12_pedidos_clientes import buscar_cliente, listar_clientes
+    if q:
+        return JSONResponse({"ok": True, "clientes": buscar_cliente(q)})
+    return JSONResponse({"ok": True, "clientes": listar_clientes()})
+
 # ── UI — panel completo ────────────────────────────────────────────────────────
 
 @app.get("/", response_class=HTMLResponse)
