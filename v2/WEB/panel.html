@@ -112,6 +112,7 @@ input:focus,select:focus,textarea:focus{border-color:var(--verde)}
     <div class="tab" onclick="verSeccion('pedidos')">Pedidos</div>
     <div class="tab" onclick="verSeccion('cotizar')">Cotizar</div>
     <div class="tab" onclick="verSeccion('agenda')">Agenda ATF</div>
+    <div class="tab" onclick="verSeccion('pipeline')">Pipeline</div>
     <div class="tab" onclick="verSeccion('vendedor')">Vendedor</div>
     <div class="tab" onclick="verSeccion('diseno')">Diseño</div>
     <div class="tab" onclick="verSeccion('canbusfix')">CanbusFix</div>
@@ -239,6 +240,28 @@ input:focus,select:focus,textarea:focus{border-color:var(--verde)}
     <div id="tabla-agenda"><div class="vacío">Cargando agenda...</div></div>
   </div>
 
+  <!-- ── PIPELINE ──────────────────────────────────────────────────────── -->
+  <div id="sec-pipeline" class="seccion">
+    <div class="form-rapido" style="margin-bottom:12px">
+      <h3>Nuevo prospecto</h3>
+      <div class="row-form">
+        <input id="pip-cliente" placeholder="Nombre del cliente">
+        <select id="pip-servicio">
+          <option value="">Servicio</option>
+          <option value="atf">ATF Retrofit</option>
+          <option value="laser">Laser Milens</option>
+          <option value="sub">Sublimacion</option>
+          <option value="canbusfix">CanbusFix</option>
+        </select>
+      </div>
+      <div class="row-form">
+        <input id="pip-valor" type="number" placeholder="Valor estimado $">
+        <button class="btn" onclick="crearProspecto()">+ Agregar</button>
+      </div>
+    </div>
+    <div id="tabla-pipeline"><div class="vacío">Cargando pipeline...</div></div>
+  </div>
+
   <!-- ── VENDEDOR ────────────────────────────────────────────────────────── -->
   <div id="sec-vendedor" class="seccion">
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px">
@@ -354,9 +377,10 @@ function verSeccion(id) {
   document.querySelectorAll('.tab').forEach(t => t.classList.remove('activo'));
   document.getElementById('sec-' + id).classList.add('activo');
   event.target.classList.add('activo');
-  if (id === 'pedidos')   cargarPedidos();
-  if (id === 'agenda')    cargarAgenda();
-  if (id === 'canbusfix') cargarCanbusfix();
+  if (id === 'pedidos')  cargarPedidos();
+  if (id === 'pipeline') cargarPipeline();
+  if (id === 'agenda')   cargarAgenda();
+  if (id === 'canbusfix')cargarCanbusfix();
 }
 
 // ── CHAT ─────────────────────────────────────────────────────────────────────
@@ -588,6 +612,65 @@ async function optimizar() {
   const svc  = document.getElementById('opt-servicio').value;
   if (!arch) { alert('Escribe la ruta del archivo'); return; }
   await nexus(`optimiza ${arch} para ${svc}`);
+}
+
+// ── PIPELINE ──────────────────────────────────────────────────────────────────
+const ESTADOS_PIPELINE = ['prospecto','cotizado','seguimiento','cerrado','perdido'];
+
+async function cargarPipeline() {
+  const r = await fetch(BASE + '/api/pipeline').then(x => x.json()).catch(() => null);
+  const cont = document.getElementById('tabla-pipeline');
+  const items = r && r.pipeline ? r.pipeline : [];
+  if (!items.length) {
+    cont.innerHTML = '<div class="vacío">Sin prospectos activos</div>'; return;
+  }
+  cont.innerHTML = `<table class="tabla">
+    <thead><tr><th>#</th><th>Cliente</th><th>Servicio</th><th>Valor</th><th>Estado</th><th></th></tr></thead>
+    <tbody>${items.map(p => `
+      <tr>
+        <td>${p.id}</td>
+        <td>${p.cliente}</td>
+        <td>${p.servicio || '—'}</td>
+        <td>${p.valor ? '$' + Number(p.valor).toLocaleString('es-MX') : '—'}</td>
+        <td><span class="badge ${p.estado}">${p.estado}</span></td>
+        <td>
+          <select style="background:var(--bg);border:1px solid var(--verde2);color:var(--text2);padding:3px 6px;border-radius:6px;font-size:.72rem"
+                  onchange="moverPipeline(${p.id},this.value)">
+            <option value="">mover...</option>
+            ${ESTADOS_PIPELINE.filter(e => e !== p.estado).map(e => `<option value="${e}">${e}</option>`).join('')}
+          </select>
+        </td>
+      </tr>`).join('')}
+    </tbody></table>`;
+}
+
+async function crearProspecto() {
+  const cliente  = document.getElementById('pip-cliente').value.trim();
+  const servicio = document.getElementById('pip-servicio').value;
+  const valor    = parseFloat(document.getElementById('pip-valor').value) || 0;
+  if (!cliente) { alert('Escribe el nombre del cliente'); return; }
+  const r = await fetch(BASE + '/api/prospecto', {
+    method: 'POST',
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify({cliente, servicio, valor})
+  }).then(x => x.json());
+  if (r.ok) {
+    document.getElementById('pip-cliente').value = '';
+    document.getElementById('pip-valor').value   = '';
+    cargarPipeline();
+    cargarResumen();
+  }
+}
+
+async function moverPipeline(id, estado) {
+  if (!estado) return;
+  await fetch(BASE + `/api/prospecto/${id}`, {
+    method: 'PUT',
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify({estado})
+  });
+  cargarPipeline();
+  cargarResumen();
 }
 
 // ── CANBUSFIX ─────────────────────────────────────────────────────────────────

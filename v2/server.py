@@ -124,6 +124,18 @@ async def api_pipeline() -> JSONResponse:
         ).fetchall())
     return JSONResponse({"ok": True, "pipeline": rows})
 
+@app.put("/api/prospecto/{prospecto_id}")
+async def api_mover_prospecto(prospecto_id: int, request: Request) -> JSONResponse:
+    data   = await request.json()
+    estado = data.get("estado", "")
+    if not estado:
+        return JSONResponse({"ok": False, "error": "estado requerido"}, status_code=400)
+    from db import _conn, now
+    with _conn() as c:
+        c.execute("UPDATE pipeline SET estado=?, updated_at=? WHERE id=?",
+                  (estado, now(), prospecto_id))
+    return JSONResponse({"ok": True, "id": prospecto_id, "estado": estado})
+
 @app.post("/api/prospecto")
 async def api_nuevo_prospecto(request: Request) -> JSONResponse:
     data    = await request.json()
