@@ -152,6 +152,7 @@ input:focus,select:focus,textarea:focus{border-color:var(--verde)}
       <button class="pin-btn" onclick="pinEnter()" style="color:var(--verde)">→</button>
     </div>
     <div class="login-error" id="login-error"></div>
+    <div style="margin-top:16px;color:var(--text3);font-size:.72rem" id="login-server-info"></div>
   </div>
 </div>
 
@@ -530,9 +531,17 @@ input:focus,select:focus,textarea:focus{border-color:var(--verde)}
 </div>
 
 <script>
-// Auto-detect server: si no corre en localhost, usar IP guardada
-const BASE_DEFAULT = 'http://localhost:8001';
-const BASE = localStorage.getItem('nexus_server') || BASE_DEFAULT;
+// Auto-detect server: acepta ?server=IP en URL, guarda en localStorage
+(function() {
+  const params = new URLSearchParams(window.location.search);
+  const serverParam = params.get('server');
+  if (serverParam) {
+    localStorage.setItem('nexus_server', 'http://' + serverParam + ':8001');
+    // Limpiar URL sin recargar
+    history.replaceState({}, '', '/');
+  }
+})();
+const BASE = localStorage.getItem('nexus_server') || 'http://localhost:8001';
 
 // ── SESIÓN / LOGIN ────────────────────────────────────────────────────────────
 let _usuario = null;  // { id, nombre, rol }
@@ -1291,13 +1300,15 @@ function iniciarApp() {
 }
 
 window.addEventListener('DOMContentLoaded', () => {
+  // Mostrar a qué servidor se conecta en login
+  const srvEl = document.getElementById('login-server-info');
+  if (srvEl) srvEl.textContent = 'Servidor: ' + BASE;
+
   const u = _cargarSesion();
   if (u) {
-    // Sesión activa — entrar directo
     document.getElementById('login-screen').style.display = 'none';
     iniciarApp();
   } else {
-    // Mostrar login
     document.getElementById('login-screen').style.display = 'flex';
   }
 });
