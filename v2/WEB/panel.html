@@ -362,6 +362,22 @@ input:focus,select:focus,textarea:focus{border-color:var(--verde)}
       </div>
     </div>
     <div id="tabla-instaladores"><div class="vacío">Cargando...</div></div>
+    <div class="form-rapido" style="margin-top:12px">
+      <h3>Registrar nuevo instalador</h3>
+      <div class="row-form">
+        <input id="ins-nombre" placeholder="Nombre completo">
+        <input id="ins-ciudad" placeholder="Ciudad">
+      </div>
+      <div class="row-form">
+        <input id="ins-tel" placeholder="WhatsApp (10 dígitos)">
+        <select id="ins-esp">
+          <option value="CanbusFix">CanbusFix</option>
+          <option value="ATF,CanbusFix">ATF + CanbusFix</option>
+          <option value="ATF,CanbusFix,Milens">ATF + CanbusFix + Milens</option>
+        </select>
+      </div>
+      <button class="btn" onclick="registrarInstalador()">+ Registrar instalador</button>
+    </div>
     <div id="resultado-canbusfix" style="background:var(--bg2);border:1px solid var(--verde2);border-radius:10px;padding:14px;font-size:.85rem;white-space:pre-wrap;color:var(--text2);margin-top:12px"></div>
   </div>
 
@@ -614,9 +630,36 @@ async function agendarInstalacion() {
   const fecha   = document.getElementById('ag-fecha').value;
   const hora    = document.getElementById('ag-hora').value;
   if (!cliente) { alert('Escribe el nombre del cliente'); return; }
-  const txt = `agenda instalacion ${modelo} para ${cliente} en ${carro || 'su carro'} fecha ${fecha} hora ${hora}`;
-  const r = await nexus(txt);
-  if (r && r.ok) cargarAgenda();
+  const r = await fetch(BASE + '/api/agenda', {
+    method: 'POST',
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify({cliente, modelo_kit: modelo, carro, fecha, hora})
+  }).then(x => x.json()).catch(() => null);
+  if (r && r.ok) {
+    ['ag-cliente','ag-carro'].forEach(id => document.getElementById(id).value = '');
+    cargarAgenda();
+    agregar(`Instalacion agendada #${r.id} para ${cliente}.`, 'nexus');
+  } else {
+    alert(r ? r.error || 'Error' : 'Error de conexion');
+  }
+}
+
+async function registrarInstalador() {
+  const nombre = document.getElementById('ins-nombre').value.trim();
+  const ciudad = document.getElementById('ins-ciudad').value.trim();
+  const tel    = document.getElementById('ins-tel').value.trim();
+  const esp    = document.getElementById('ins-esp').value;
+  if (!nombre) { alert('Escribe el nombre del instalador'); return; }
+  const r = await fetch(BASE + '/api/instalador', {
+    method: 'POST',
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify({nombre, ciudad, telefono: tel, especialidades: esp})
+  }).then(x => x.json()).catch(() => null);
+  if (r && r.ok) {
+    ['ins-nombre','ins-ciudad','ins-tel'].forEach(id => document.getElementById(id).value = '');
+    cargarInstaladores('');
+    agregar(`Instalador #${r.id} registrado: ${nombre} — ${ciudad}.`, 'nexus');
+  }
 }
 
 async function cargarAgenda() {

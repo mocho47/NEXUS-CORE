@@ -165,6 +165,36 @@ async def api_nuevo_prospecto(request: Request) -> JSONResponse:
         )
     return JSONResponse({"ok": True, "id": cur.lastrowid, "cliente": cliente})
 
+@app.post("/api/agenda")
+async def api_nueva_cita(request: Request) -> JSONResponse:
+    data    = await request.json()
+    cliente = data.get("cliente", "").strip()
+    if not cliente:
+        return JSONResponse({"ok": False, "error": "cliente requerido"}, status_code=400)
+    from db import _conn, now
+    with _conn() as c:
+        cur = c.execute(
+            "INSERT INTO agenda_atf (cliente, modelo_kit, carro, fecha, hora, telefono, notas) VALUES (?,?,?,?,?,?,?)",
+            (cliente, data.get("modelo_kit",""), data.get("carro",""),
+             data.get("fecha", now()[:10]), data.get("hora",""),
+             data.get("telefono",""), data.get("notas",""))
+        )
+    return JSONResponse({"ok": True, "id": cur.lastrowid, "cliente": cliente})
+
+@app.post("/api/instalador")
+async def api_nuevo_instalador(request: Request) -> JSONResponse:
+    data   = await request.json()
+    nombre = data.get("nombre", "").strip()
+    if not nombre:
+        return JSONResponse({"ok": False, "error": "nombre requerido"}, status_code=400)
+    from db import _conn
+    with _conn() as c:
+        cur = c.execute(
+            "INSERT INTO instaladores_canbusfix (nombre, ciudad, telefono, especialidades) VALUES (?,?,?,?)",
+            (nombre, data.get("ciudad",""), data.get("telefono",""), data.get("especialidades",""))
+        )
+    return JSONResponse({"ok": True, "id": cur.lastrowid, "nombre": nombre})
+
 @app.get("/api/instaladores")
 async def api_instaladores(ciudad: str = "") -> JSONResponse:
     from db import _conn, rows_to_list
