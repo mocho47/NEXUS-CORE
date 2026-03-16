@@ -351,10 +351,18 @@ input:focus,select:focus,textarea:focus{border-color:var(--verde)}
   <!-- ── CANBUSFIX ───────────────────────────────────────────────────────── -->
   <div id="sec-canbusfix" class="seccion">
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px">
-      <button class="btn" onclick="nexus('ver catalogo canbusfix')">Catálogo servicios</button>
-      <button class="btn sec" onclick="nexus('instaladores en Guadalajara')">Instaladores GDL</button>
+      <button class="btn" onclick="nexus('catalogo canbusfix')">Catálogo servicios</button>
+      <button class="btn sec" onclick="cargarInstaladores('')">Todos instaladores</button>
     </div>
-    <div id="resultado-canbusfix" style="background:var(--bg2);border:1px solid var(--verde2);border-radius:10px;padding:14px;font-size:.85rem;white-space:pre-wrap;color:var(--text2)"></div>
+    <div class="form-rapido" style="margin-bottom:12px">
+      <h3>Buscar por ciudad</h3>
+      <div class="row-form">
+        <input id="cbf-ciudad" placeholder="Ciudad (ej: Guadalajara)">
+        <button class="btn sec" onclick="cargarInstaladores(document.getElementById('cbf-ciudad').value)">Buscar</button>
+      </div>
+    </div>
+    <div id="tabla-instaladores"><div class="vacío">Cargando...</div></div>
+    <div id="resultado-canbusfix" style="background:var(--bg2);border:1px solid var(--verde2);border-radius:10px;padding:14px;font-size:.85rem;white-space:pre-wrap;color:var(--text2);margin-top:12px"></div>
   </div>
 
 </div><!-- /panel-izq -->
@@ -721,8 +729,28 @@ async function moverPipeline(id, estado) {
 
 // ── CANBUSFIX ─────────────────────────────────────────────────────────────────
 async function cargarCanbusfix() {
-  const r = await fetch(BASE + '/api/nexus?q=catalogo+canbusfix').then(x => x.json()).catch(() => null);
-  if (r) document.getElementById('resultado-canbusfix').textContent = r.respuesta || '';
+  cargarInstaladores('');
+}
+
+async function cargarInstaladores(ciudad) {
+  const url = BASE + '/api/instaladores' + (ciudad ? `?ciudad=${encodeURIComponent(ciudad)}` : '');
+  const r = await fetch(url).then(x => x.json()).catch(() => null);
+  const cont = document.getElementById('tabla-instaladores');
+  const items = r && r.instaladores ? r.instaladores : [];
+  if (!items.length) {
+    cont.innerHTML = `<div class="vacío">Sin instaladores${ciudad ? ' en ' + ciudad : ''}</div>`; return;
+  }
+  cont.innerHTML = `<table class="tabla">
+    <thead><tr><th>Nombre</th><th>Ciudad</th><th>WhatsApp</th><th>Especialidades</th></tr></thead>
+    <tbody>${items.map(i => `
+      <tr>
+        <td>${i.nombre}</td>
+        <td>${i.ciudad || '—'}</td>
+        <td><a href="https://wa.me/52${(i.telefono||'').replace(/\D/g,'')}" target="_blank"
+               style="color:var(--verde)">${i.telefono || '—'}</a></td>
+        <td style="font-size:.75rem;color:var(--text3)">${i.especialidades || '—'}</td>
+      </tr>`).join('')}
+    </tbody></table>`;
 }
 
 // ── ACTUALIZAR UI DESDE RESPUESTA ─────────────────────────────────────────────

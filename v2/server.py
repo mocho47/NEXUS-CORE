@@ -165,6 +165,21 @@ async def api_nuevo_prospecto(request: Request) -> JSONResponse:
         )
     return JSONResponse({"ok": True, "id": cur.lastrowid, "cliente": cliente})
 
+@app.get("/api/instaladores")
+async def api_instaladores(ciudad: str = "") -> JSONResponse:
+    from db import _conn, rows_to_list
+    with _conn() as c:
+        if ciudad:
+            rows = rows_to_list(c.execute(
+                "SELECT * FROM instaladores_canbusfix WHERE ciudad LIKE ? AND activo=1 ORDER BY ciudad",
+                (f"%{ciudad}%",)
+            ).fetchall())
+        else:
+            rows = rows_to_list(c.execute(
+                "SELECT * FROM instaladores_canbusfix WHERE activo=1 ORDER BY ciudad"
+            ).fetchall())
+    return JSONResponse({"ok": True, "instaladores": rows})
+
 @app.post("/api/pedido")
 async def api_crear_pedido(request: Request) -> JSONResponse:
     data     = await request.json()
