@@ -816,7 +816,25 @@ async function cargarAutocompleteClientes() {
 }
 
 // ── INIT ──────────────────────────────────────────────────────────────────────
+// ── ESTADO CONEXIÓN ────────────────────────────────────────────────────────────
+const dot = document.getElementById('estado-dot');
+async function checkConexion() {
+  try {
+    const r = await fetch(BASE + '/api/health', {signal: AbortSignal.timeout(3000)}).then(x => x.json());
+    dot.style.background    = r.ok ? 'var(--verde)' : 'var(--amarillo)';
+    dot.style.boxShadow     = r.ok ? '0 0 6px var(--verde)' : '0 0 6px var(--amarillo)';
+    dot.title               = r.ok ? `${r.motores} motores activos` : 'Servidor respondió con error';
+  } catch {
+    dot.style.background = 'var(--rojo)';
+    dot.style.boxShadow  = '0 0 6px var(--rojo)';
+    dot.title            = 'Sin conexión al servidor';
+  }
+}
+
+// ── INIT ──────────────────────────────────────────────────────────────────────
 window.addEventListener('DOMContentLoaded', () => {
+  checkConexion();
+  setInterval(checkConexion, 30000);
   cargarResumen();
   cargarAutocompleteClientes();
   setInterval(cargarResumen, 60000);
