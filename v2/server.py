@@ -165,6 +165,25 @@ async def api_nuevo_prospecto(request: Request) -> JSONResponse:
         )
     return JSONResponse({"ok": True, "id": cur.lastrowid, "cliente": cliente})
 
+@app.post("/api/upload")
+async def api_upload(request: Request) -> JSONResponse:
+    """Recibe un archivo, lo guarda en MERCH_OUTPUT/uploads/ y devuelve la ruta."""
+    from fastapi import UploadFile, File, Form
+    import shutil, uuid
+    from pathlib import Path
+    upload_dir = Path("C:/nexus/MERCH_OUTPUT/uploads")
+    upload_dir.mkdir(parents=True, exist_ok=True)
+    form  = await request.form()
+    file  = form.get("file")
+    if not file or not hasattr(file, "filename"):
+        return JSONResponse({"ok": False, "error": "sin archivo"}, status_code=400)
+    uid   = uuid.uuid4().hex[:8]
+    name  = Path(file.filename).stem + f"_{uid}" + Path(file.filename).suffix
+    dest  = upload_dir / name
+    with open(str(dest), "wb") as f:
+        shutil.copyfileobj(file.file, f)
+    return JSONResponse({"ok": True, "ruta": str(dest), "nombre": name})
+
 @app.get("/api/finanzas")
 async def api_finanzas(periodo: str = "mes") -> JSONResponse:
     from motors.m_finanzas import finanzas

@@ -324,7 +324,9 @@ input:focus,select:focus,textarea:focus{border-color:var(--verde)}
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
       <div class="form-rapido">
         <h3>Vectorizar imagen</h3>
-        <input id="vec-archivo" placeholder="Ruta del archivo...">
+        <input id="vec-file-input" type="file" accept=".png,.jpg,.jpeg,.bmp,.tif"
+               style="font-size:.78rem;padding:6px" onchange="previewArchivoVec(this)">
+        <input id="vec-archivo" placeholder="O escribe la ruta..." style="margin-top:4px">
         <select id="vec-modo">
           <option value="bw">B/N — para láser</option>
           <option value="color">Color — para sub/redes</option>
@@ -333,7 +335,9 @@ input:focus,select:focus,textarea:focus{border-color:var(--verde)}
       </div>
       <div class="form-rapido">
         <h3>Optimizar archivo</h3>
-        <input id="opt-archivo" placeholder="Ruta del archivo...">
+        <input id="opt-file-input" type="file" accept=".png,.jpg,.jpeg,.pdf,.tif,.bmp"
+               style="font-size:.78rem;padding:6px" onchange="previewArchivoOpt(this)">
+        <input id="opt-archivo" placeholder="O escribe la ruta..." style="margin-top:4px">
         <select id="opt-servicio">
           <option value="sublimacion">Sublimación (300 DPI)</option>
           <option value="laser">Láser (1200 DPI)</option>
@@ -709,17 +713,37 @@ async function generarPost() {
 }
 
 // ── DISEÑO ────────────────────────────────────────────────────────────────────
+async function subirArchivo(inputId) {
+  const fileInput = document.getElementById(inputId);
+  if (!fileInput || !fileInput.files[0]) return null;
+  const fd = new FormData();
+  fd.append('file', fileInput.files[0]);
+  const r = await fetch(BASE + '/api/upload', {method:'POST', body: fd}).then(x => x.json()).catch(() => null);
+  return r && r.ok ? r.ruta : null;
+}
+
+async function previewArchivoVec(input) {
+  if (input.files[0]) document.getElementById('vec-archivo').value = input.files[0].name;
+}
+
+async function previewArchivoOpt(input) {
+  if (input.files[0]) document.getElementById('opt-archivo').value = input.files[0].name;
+}
+
 async function vectorizar() {
-  const arch = document.getElementById('vec-archivo').value.trim();
-  const modo = document.getElementById('vec-modo').value;
-  if (!arch) { alert('Escribe la ruta del archivo'); return; }
+  // Intentar subir archivo si hay uno seleccionado
+  const subida = await subirArchivo('vec-file-input');
+  const arch   = subida || document.getElementById('vec-archivo').value.trim();
+  const modo   = document.getElementById('vec-modo').value;
+  if (!arch) { alert('Selecciona o escribe la ruta del archivo'); return; }
   await nexus(`vectoriza ${arch} modo ${modo}`);
 }
 
 async function optimizar() {
-  const arch = document.getElementById('opt-archivo').value.trim();
-  const svc  = document.getElementById('opt-servicio').value;
-  if (!arch) { alert('Escribe la ruta del archivo'); return; }
+  const subida = await subirArchivo('opt-file-input');
+  const arch   = subida || document.getElementById('opt-archivo').value.trim();
+  const svc    = document.getElementById('opt-servicio').value;
+  if (!arch) { alert('Selecciona o escribe la ruta del archivo'); return; }
   await nexus(`optimiza ${arch} para ${svc}`);
 }
 
