@@ -108,10 +108,10 @@ async def api_pedidos(estado: str = "", q: str = "") -> JSONResponse:
 
 @app.put("/api/pedido/{pedido_id}")
 async def api_actualizar_pedido(pedido_id: int, request: Request) -> JSONResponse:
-    from motors.m12_pedidos_clientes import actualizar_estado
     data   = await request.json()
     estado = data.get("estado", "")
     precio = data.get("precio")
+    notas  = data.get("notas")
     from db import _conn, now
     with _conn() as c:
         if precio is not None:
@@ -120,7 +120,10 @@ async def api_actualizar_pedido(pedido_id: int, request: Request) -> JSONRespons
         if estado:
             c.execute("UPDATE pedidos SET estado=?, updated_at=? WHERE id=?",
                       (estado, now(), pedido_id))
-    return JSONResponse({"ok": True, "id": pedido_id, "estado": estado})
+        if notas is not None:
+            c.execute("UPDATE pedidos SET notas=?, updated_at=? WHERE id=?",
+                      (notas, now(), pedido_id))
+    return JSONResponse({"ok": True, "id": pedido_id})
 
 @app.get("/api/agenda")
 async def api_agenda(dias: int = 7) -> JSONResponse:

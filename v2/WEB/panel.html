@@ -97,6 +97,15 @@ input:focus,select:focus,textarea:focus{border-color:var(--verde)}
 /* SECCIÓN */
 .seccion{display:none}
 .seccion.activo{display:block}
+
+/* MODAL */
+.modal-bg{position:fixed;inset:0;background:#00000088;z-index:100;display:flex;align-items:center;justify-content:center;padding:20px}
+.modal{background:var(--bg2);border:1px solid var(--verde2);border-radius:12px;width:100%;max-width:700px;max-height:80vh;display:flex;flex-direction:column}
+.modal-header{padding:14px 18px;border-bottom:1px solid var(--verde2);display:flex;align-items:center;gap:10px}
+.modal-header h2{color:var(--verde);font-size:1rem;flex:1}
+.modal-close{background:none;border:none;color:var(--text3);cursor:pointer;font-size:1.2rem;padding:4px 8px}
+.modal-close:hover{color:var(--rojo)}
+.modal-body{padding:16px;overflow-y:auto;flex:1}
 </style>
 </head>
 <body>
@@ -419,6 +428,17 @@ input:focus,select:focus,textarea:focus{border-color:var(--verde)}
 </div>
 </div><!-- /layout -->
 
+<!-- MODAL HISTORIAL CLIENTE -->
+<div id="modal-cliente" class="modal-bg" style="display:none" onclick="cerrarModal(event)">
+  <div class="modal">
+    <div class="modal-header">
+      <h2 id="modal-titulo">Historial</h2>
+      <button class="modal-close" onclick="cerrarModalDirecto()">✕</button>
+    </div>
+    <div class="modal-body" id="modal-body"></div>
+  </div>
+</div>
+
 <script>
 const BASE = 'http://localhost:8001';
 
@@ -528,10 +548,12 @@ function renderPedidos(pedidos) {
       const notas = (p.notas || '').trim();
       const desc  = p.descripcion || '';
       return `
-      <tr id="row-${p.id}" style="${notas ? 'cursor:pointer' : ''}"
-          ${notas ? `onclick="toggleNotas(${p.id})" title="Ver notas"` : ''}>
+      <tr id="row-${p.id}" style="cursor:pointer"
+          onclick="toggleNotas(${p.id})" title="${notas ? 'Ver/editar notas' : 'Agregar notas'}">
         <td>${p.id}</td>
-        <td>${p.cliente_nombre || '—'}</td>
+        <td><span style="cursor:pointer;color:var(--verde3);text-decoration:underline dotted"
+            onclick="event.stopPropagation();verHistorialCliente('${(p.cliente_nombre||'').replace(/'/g,"\\'")}')"
+            title="Ver historial">${p.cliente_nombre || '—'}</span></td>
         <td title="${desc}">${desc.substring(0,35)}${desc.length>35?'…':''}${notas?'<span style="color:var(--verde3);font-size:.7rem;margin-left:4px">📝</span>':''}</td>
         <td contenteditable="true" onblur="guardarPrecio(${p.id},this)"
             onclick="event.stopPropagation()"
@@ -545,7 +567,16 @@ function renderPedidos(pedidos) {
           ${p.estado !== 'cancelado'  ? `<button class="btn sec" style="padding:3px 8px;font-size:.72rem;color:var(--rojo)" title="Cancelar" onclick="confirmarCancelar(${p.id},'${(p.cliente_nombre||'').replace(/'/g,'')}')">&times;</button>` : ''}
         </td>
       </tr>
-      ${notas ? `<tr id="notas-${p.id}" style="display:none"><td colspan="7" style="padding:6px 12px 10px;background:var(--bg3);color:var(--text2);font-size:.78rem;font-style:italic;border-left:3px solid var(--verde3)">📝 ${notas}</td></tr>` : ''}`;
+      <tr id="notas-${p.id}" style="display:none">
+        <td colspan="7" style="padding:6px 12px 10px;background:var(--bg3);border-left:3px solid var(--verde3)">
+          <span style="color:var(--verde3);font-size:.75rem">📝 Notas: </span>
+          <span id="notas-txt-${p.id}" contenteditable="true"
+                onblur="guardarNotas(${p.id},this)"
+                onkeydown="if(event.key==='Enter'){event.preventDefault();this.blur()}"
+                style="color:var(--text2);font-size:.78rem;font-style:italic;outline:none;min-width:100px;display:inline-block"
+          >${notas || 'Sin notas — clic para editar'}</span>
+        </td>
+      </tr>`;
     }).join('')}
     </tbody></table>`;
 }
@@ -560,6 +591,61 @@ function confirmarCancelar(id, cliente) {
     cambiarEstado(id, 'cancelado');
   }
 }
+
+// ── MODAL HISTORIAL CLIENTE ────────────────────────────────────────────────────
+async function verHistorialCliente(nombre) {
+  document.getElementById('modal-titulo').textContent = `Historial: ${nombre}`;
+  document.getElementById('modal-body').innerHTML = '<div class="vacío">Cargando...</div>';
+  document.getElementById('modal-cliente').style.display = 'flex';
+
+  const r = await fetch(`${BASE}/api/pedidos?q=${encodeURIComponent(nombre)}&estado=`)
+    .then(x => x.json()).catch(() => null);
+  // También buscar entregados
+  const r2 = await fetch(`${BASE}/api/pedidos?q=${encodeURIComponent(nombre)}&estado=entregado`)
+    .then(x => x.json()).catch(() => null);
+
+  // Unir y deduplicar
+  const todos = [...(r?.pedidos || []), ...(r2?.pedidos || [])];
+  const uniq  = Object.values(Object.fromEntries(todos.map(p => [p.id, p])));
+  uniq.sort((a,b) => b.id - a.id);
+
+  if (!uniq.length) {
+    document.getElementById('modal-body').innerHTML = '<div class="vacío">Sin pedidos registrados</div>';
+    return;
+  }
+
+  const total = uniq.reduce((s,p) => s + (p.precio || 0), 0);
+  document.getElementById('modal-body').innerHTML = `
+    <div style="margin-bottom:12px;color:var(--text2);font-size:.82rem">
+      ${uniq.length} pedido${uniq.length>1?'s':''} · Total facturado: <strong style="color:var(--verde)">$${total.toLocaleString('es-MX')}</strong>
+    </div>
+    <table class="tabla">
+      <thead><tr><th>#</th><th>Descripción</th><th>Precio</th><th>Entrega</th><th>Estado</th></tr></thead>
+      <tbody>${uniq.map(p => `
+        <tr>
+          <td>${p.id}</td>
+          <td title="${p.descripcion||''}">${(p.descripcion||'').substring(0,45)}${(p.descripcion||'').length>45?'…':''}</td>
+          <td>${p.precio ? '$'+Number(p.precio).toLocaleString('es-MX') : '—'}</td>
+          <td>${p.fecha_entrega||'—'}</td>
+          <td><span class="badge ${p.estado}">${p.estado}</span></td>
+        </tr>
+        ${(p.notas||'').trim() ? `<tr><td colspan="5" style="padding:4px 10px 8px;color:var(--text3);font-size:.75rem;font-style:italic">📝 ${p.notas}</td></tr>` : ''}`
+      ).join('')}
+      </tbody>
+    </table>
+    <div style="margin-top:10px;display:flex;gap:8px">
+      <button class="btn sec" onclick="cerrarModalDirecto();nexus('redacta mensaje followup para ${nombre.replace(/'/g,"\\'")}')">Mensaje WA</button>
+      <button class="btn sec" onclick="cerrarModalDirecto();nexus('redacta mensaje reactivacion para ${nombre.replace(/'/g,"\\'")}')">Reactivar</button>
+    </div>`;
+}
+
+function cerrarModal(e) {
+  if (e.target.id === 'modal-cliente') cerrarModalDirecto();
+}
+function cerrarModalDirecto() {
+  document.getElementById('modal-cliente').style.display = 'none';
+}
+document.addEventListener('keydown', e => { if (e.key === 'Escape') cerrarModalDirecto(); });
 
 function filtrarPedidos(q) {
   if (!q) { renderPedidos(_pedidosCargados); return; }
@@ -588,6 +674,19 @@ async function cambiarEstado(id, estado) {
   });
   cargarPedidos();
   cargarResumen();
+}
+
+async function guardarNotas(id, el) {
+  const notas = el.textContent.trim();
+  if (notas === 'Sin notas — clic para editar') return;
+  await fetch(BASE + `/api/pedido/${id}`, {
+    method: 'PUT',
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify({notas})
+  });
+  // Update cache
+  const p = _pedidosCargados.find(x => x.id === id);
+  if (p) p.notas = notas;
 }
 
 async function guardarPrecio(id, el) {

@@ -60,6 +60,28 @@ def detectar_oportunidades(texto: str = "", dias: int = 7, **_) -> dict:
                 "detalle": f"Sin mover desde {p['updated_at'][:10]} [{p['estado']}] — {p.get('servicio','')}"
             })
 
+        # 4. Clientes dormidos — último pedido entregado hace >30 días, sin activos
+        hace30 = (datetime.now() - timedelta(days=30)).strftime("%Y-%m-%d")
+        dormidos = rows_to_list(c.execute(
+            """SELECT cliente_nombre, MAX(updated_at) as ultima, COUNT(*) as total
+               FROM pedidos
+               WHERE estado='entregado'
+               GROUP BY cliente_id
+               HAVING ultima < ?
+               AND cliente_id NOT IN (
+                   SELECT DISTINCT cliente_id FROM pedidos
+                   WHERE estado NOT IN ('entregado','cancelado')
+               )
+               ORDER BY ultima ASC LIMIT 10""",
+            (hace30 + " 00:00",)
+        ).fetchall())
+        for p in dormidos:
+            oportunidades.append({
+                "tipo": "REACTIVAR",
+                "cliente": p["cliente_nombre"],
+                "detalle": f"Ultimo trabajo: {(p['ultima'] or '')[:10]} ({p['total']} pedido{'s' if p['total']>1 else ''} historico{'s' if p['total']>1 else ''})"
+            })
+
     if not oportunidades:
         return {
             "ok": True,
