@@ -19,6 +19,10 @@ header{background:var(--bg2);border-bottom:1px solid var(--verde2);padding:12px 
 header h1{color:var(--verde);font-size:1.4rem;font-weight:700;letter-spacing:1px}
 header span{color:var(--text3);font-size:.8rem}
 #estado-dot{width:8px;height:8px;border-radius:50%;background:var(--verde);box-shadow:0 0 6px var(--verde);margin-left:auto}
+#alertas-header{display:flex;gap:6px;margin-left:8px}
+.alerta-chip{padding:3px 10px;border-radius:20px;font-size:.72rem;font-weight:700;cursor:pointer;transition:.15s}
+.alerta-chip.rojo{background:#200010;color:var(--rojo);border:1px solid #ff444440}
+.alerta-chip.amarillo{background:#201000;color:var(--amarillo);border:1px solid #ffcc4440}
 
 /* LAYOUT */
 .layout{display:grid;grid-template-columns:1fr 380px;height:calc(100vh - 57px);gap:0}
@@ -100,6 +104,7 @@ input:focus,select:focus,textarea:focus{border-color:var(--verde)}
 <header>
   <h1>NEXUS</h1>
   <span>Taller Simplex — v2</span>
+  <div id="alertas-header"></div>
   <div id="estado-dot"></div>
 </header>
 
@@ -469,6 +474,13 @@ async function cargarResumen() {
       document.getElementById('n-atrasados').textContent  = (d.atrasados || []).length;
       document.getElementById('n-listos').textContent     = (d.listos || []).length;
       document.getElementById('n-prospectos').textContent = (d.prospectos || []).length;
+      // Alertas en header
+      const chips = [];
+      const at = (d.atrasados || []).length;
+      const li = (d.listos || []).length;
+      if (at > 0) chips.push(`<span class="alerta-chip rojo" onclick="irAPedidosListos()" title="Ver atrasados">⚠ ${at} atrasado${at>1?'s':''}</span>`);
+      if (li > 0) chips.push(`<span class="alerta-chip amarillo" onclick="irAPedidosListos()" title="Ver listos para entregar">📦 ${li} listo${li>1?'s':''}</span>`);
+      document.getElementById('alertas-header').innerHTML = chips.join('');
     }
     if (r.finanzas) {
       const total = r.finanzas.total || 0;
