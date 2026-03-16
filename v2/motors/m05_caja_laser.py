@@ -17,11 +17,12 @@ OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
 BOXES_EXE = r"C:\Program Files\Python312\Scripts\boxes.exe"
 
 MATERIALES = {
-    "mdf_3":    {"nombre": "MDF 3mm",      "grosor": 3.0,  "kerf": 0.22},
-    "mdf_6":    {"nombre": "MDF 6mm",      "grosor": 6.0,  "kerf": 0.25},
-    "acrilico": {"nombre": "Acrilico 3mm", "grosor": 3.0,  "kerf": 0.18},
-    "triplay":  {"nombre": "Triplay 4mm",  "grosor": 4.0,  "kerf": 0.25},
-    "carton":   {"nombre": "Carton 2mm",   "grosor": 2.0,  "kerf": 0.15},
+    "mdf_3":    {"nombre": "MDF 2.7mm",        "grosor": 2.7, "kerf": 0.20},
+    "mdf_6":    {"nombre": "MDF 5.5mm",        "grosor": 5.5, "kerf": 0.25},
+    "multiplay":{"nombre": "Multiplay 4mm",    "grosor": 4.0, "kerf": 0.25},
+    "acrilico": {"nombre": "Acrílico 3mm",     "grosor": 3.0, "kerf": 0.18},
+    "acrilico_6":{"nombre": "Acrílico 6mm",   "grosor": 6.0, "kerf": 0.20},
+    "carton":   {"nombre": "Cartón 2mm",       "grosor": 2.0, "kerf": 0.15},
 }
 
 TIPOS = {

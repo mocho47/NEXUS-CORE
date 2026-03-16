@@ -53,7 +53,7 @@ def cotizar_laser(texto: str = "", material: str = "", ancho: float = 0,
         return {"ok": True, "respuesta": "\n".join(lineas)}
 
     mat = MATERIALES_LASER.get(material, MATERIALES_LASER["mdf_3"])
-    area_cm2 = ancho * alto  # dimensiones en cm
+    area_cm2 = (ancho * alto) / 100  # mm² → cm²
 
     # Tiempo estimado de corte (aprox 1 min por 50cm² para corte, 30cm² para grabado)
     velocidad = 50 if tipo == "corte" else 30
