@@ -55,7 +55,7 @@ MODELOS_GROQ = {
     "default": "llama-3.3-70b-versatile",
 }
 
-MODELO_OLLAMA_DEFAULT = "phi3:mini"
+MODELO_OLLAMA_DEFAULT = "qwen2.5:7b"
 TIMEOUT_SOLICITUD = 60  # segundos
 
 
@@ -81,12 +81,14 @@ class AIClient:
         """
         self.groq_api_key = config.get("GROQ_API_KEY", "")
         self.zai_api_key = config.get("ZAI_API_KEY", "")
+        self.openrouter_api_key = config.get("OPENROUTER_API_KEY", "") or config.get("DEEPSEEK_API_KEY", "")
         self.ollama_url = config.get("OLLAMA_URL", "http://localhost:11434")
         self.default_personality = config.get("default_personality", "nexus")
 
         # URL de endpoints
         self.groq_endpoint = "https://api.groq.com/openai/v1/chat/completions"
         self.zai_endpoint = "https://open.bigmodel.cn/api/paas/v4/chat/completions"
+        self.openrouter_endpoint = "https://openrouter.ai/api/v1/chat/completions"
         self.ollama_chat_endpoint = f"{self.ollama_url}/api/chat"
         self.ollama_tags_endpoint = f"{self.ollama_url}/api/tags"
 
@@ -94,9 +96,10 @@ class AIClient:
         self._ultima_respuesta = ""
         self._ultima_pregunta = ""
 
-        logger.info("AIClient inicializado. Groq: %s, Z.ai: %s, Ollama: %s",
+        logger.info("AIClient inicializado. Groq: %s, Z.ai: %s, OpenRouter: %s, Ollama: %s",
                      "SI" if self.groq_api_key else "NO",
                      "SI" if self.zai_api_key else "NO",
+                     "SI" if self.openrouter_api_key else "NO",
                      self.ollama_url)
 
     def _obtener_prompt_sistema(self, personality: str) -> str:
@@ -209,7 +212,16 @@ class AIClient:
                 return respuesta
             logger.warning("Z.ai fallo, intentando Ollama local...")
 
-        # --- Estrategia 5: Ollama local para modo sin conexion ---
+        # --- Estrategia 5: OpenRouter (Nemotron/DeepSeek) como nube terciaria ---
+        if self.openrouter_api_key:
+            logger.info("Enrutando a OpenRouter como alternativa.")
+            respuesta = await self._call_openrouter(mensajes_preparados)
+            if respuesta:
+                self._guardar_cache(pregunta_actual, respuesta)
+                return respuesta
+            logger.warning("OpenRouter fallo, intentando Ollama local...")
+
+        # --- Estrategia 6: Ollama local para modo sin conexion ---
         logger.info("Intentando Ollama local para modo sin conexion...")
         respuesta = await self._call_ollama(mensajes_preparados, MODELO_OLLAMA_DEFAULT)
         if respuesta:
@@ -331,6 +343,33 @@ class AIClient:
             return None
         except Exception as e:
             logger.error("Error inesperado al llamar a Z.ai: %s", e)
+            return None
+
+    async def _call_openrouter(self, messages: list[dict]) -> Optional[str]:
+        """Llama a OpenRouter (Nemotron 70B / DeepSeek) como nube terciaria."""
+        logger.debug("Llamando a OpenRouter")
+        try:
+            cabeceras = {
+                "Authorization": f"Bearer {self.openrouter_api_key}",
+                "Content-Type": "application/json",
+                "HTTP-Referer": "http://localhost:8003",
+            }
+            cuerpo = {
+                "model": "nvidia/llama-3.1-nemotron-70b-instruct",
+                "messages": messages,
+                "temperature": 0.7,
+                "max_tokens": 2048,
+            }
+            async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=TIMEOUT_SOLICITUD)) as session:
+                async with session.post(self.openrouter_endpoint, headers=cabeceras, json=cuerpo) as resp:
+                    if resp.status == 200:
+                        datos = await resp.json()
+                        return datos["choices"][0]["message"]["content"]
+                    texto_error = await resp.text()
+                    logger.error("Error OpenRouter (HTTP %d): %s", resp.status, texto_error[:300])
+                    return None
+        except Exception as e:
+            logger.error("Error al llamar a OpenRouter: %s", e)
             return None
 
     async def _call_ollama(self, messages: list[dict], model: str) -> Optional[str]:

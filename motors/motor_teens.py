@@ -237,6 +237,20 @@ async def health():
     return {"status": "ok", "motor": "teens", "version": "3.0"}
 
 
+@app.post("/execute")
+async def execute(request: dict):
+    """Punto de entrada genérico desde nexus_core."""
+    action = request.get("action", "")
+    data = request.get("data", {})
+    familia_id = data.get("session_id", "default")
+
+    if action in ("process_query", "list_missions"):
+        misiones = await listar_misiones(familia_id)
+        return {"ok": True, "misiones": misiones, "motor": "teens"}
+
+    return {"ok": True, "motor": "teens", "action": action, "mensaje": "Módulo Teens activo. Usa /teens/misiones para gestionar misiones."}
+
+
 if __name__ == "__main__":
     import uvicorn
     port = int(os.getenv("TEENS_PORT", 8005))

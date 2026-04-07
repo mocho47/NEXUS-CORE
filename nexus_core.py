@@ -249,6 +249,7 @@ async def evento_inicio():
         ai_cliente = AIClient({
             "GROQ_API_KEY": _os.getenv("GROQ_API_KEY", ""),
             "ZAI_API_KEY": _os.getenv("ZAI_API_KEY", ""),
+            "OPENROUTER_API_KEY": _os.getenv("OPENROUTER_API_KEY", "") or _os.getenv("DEEPSEEK_API_KEY", ""),
             "OLLAMA_URL": _os.getenv("OLLAMA_URL", "http://localhost:11434"),
         })
         logger.info("✓ Cliente de IA inicializado")
@@ -511,6 +512,19 @@ async def estado_motores():
                 "activo": motor_estado.get(k, {}).get("activo", False),
                 "detalles": motor_estado.get(k, {}).get("detalles")}
             for k, v in MOTORES.items()}
+
+
+@app.post("/motors/refresh")
+async def refrescar_motores():
+    """Re-verifica el estado de todos los motores (útil después de arrancar los motores)."""
+    global motor_estado
+    resultados = {}
+    for nombre_motor, info_motor in MOTORES.items():
+        estado = await verificar_motor(info_motor["puerto"], info_motor["nombre"])
+        motor_estado[nombre_motor] = estado
+        resultados[nombre_motor] = {"activo": estado["activo"], "puerto": info_motor["puerto"]}
+    activos = sum(1 for v in resultados.values() if v["activo"])
+    return {"ok": True, "motores_activos": activos, "total": len(MOTORES), "detalle": resultados}
 
 
 @app.get("/ai/status")

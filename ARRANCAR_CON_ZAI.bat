@@ -23,6 +23,9 @@ start "Motor Watchdog"  /min python motors\motor_watchdog.py
 start "Motor Forja"     /min python motors\motor_forja.py
 timeout /t 10 /nobreak >nul
 
+REM Refrescar estado de motores en el core
+curl -s -X POST http://localhost:8003/motors/refresh >nul 2>&1
+
 REM Abrir panel (PROMPT_ZAI activo automaticamente — no necesita pegar nada)
 start "" http://localhost:8003/
 
