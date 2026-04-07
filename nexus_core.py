@@ -80,6 +80,9 @@ MOTORES = {
     "motor_redes":    {"puerto": 8010, "nombre": "Redes Sociales",
         "descripcion": "Instagram, Facebook, TikTok, WhatsApp",
         "alternativas": "publicación manual en redes"},
+    "motor_forja":    {"puerto": 8012, "nombre": "FORJA Emprendedores",
+        "descripcion": "Diagnóstico negocio, plan, MLM comisiones, coaching",
+        "alternativas": "asesoría manual"},
 }
 
 # ── Palabras clave para enrutamiento ────────────────────────

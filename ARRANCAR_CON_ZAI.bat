@@ -20,6 +20,7 @@ start "Motor Reportes"  /min python motors\motor_reportes.py
 start "Motor Sistema"   /min python motors\motor_sistema.py
 start "Motor Redes"     /min python motors\motor_redes.py
 start "Motor Watchdog"  /min python motors\motor_watchdog.py
+start "Motor Forja"     /min python motors\motor_forja.py
 timeout /t 10 /nobreak >nul
 
 REM Abrir panel (PROMPT_ZAI activo automaticamente — no necesita pegar nada)
