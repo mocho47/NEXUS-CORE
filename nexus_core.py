@@ -87,12 +87,13 @@ MOTORES = {
 
 # ── Palabras clave para enrutamiento ────────────────────────
 REGLAS_ENRUTAMIENTO = [
-    {"palabras": ["convertir", "dxf", "pdf", "archivo"], "motor": "motor_archivos"},
-    {"palabras": ["diseño", "cortar", "rdw", "silhouette", "plotter"], "motor": "motor_diseno"},
-    {"palabras": ["cliente", "pedido", "venta", "inventario", "stock"], "motor": "motor_negocios"},
-    {"palabras": ["misión", "mision", "puntos", "recompensa", "coach"], "motor": "motor_coaching"},
-    {"palabras": ["publicar", "post", "instagram", "facebook", "redes"], "motor": "motor_social"},
-    {"palabras": ["forja", "emprendedor", "diagnóstico", "diagnostico", "comisión"], "motor": "motor_forja"},
+    {"palabras": ["cotizar", "costo", "presupuesto", "aozoom", "faro", "retrofit", "instalacion", "instalación"], "motor": "motor_atf"},
+    {"palabras": ["mision", "misión", "puntos", "recompensa", "canje", "hijo", "familia", "papá", "mamá"], "motor": "motor_teens"},
+    {"palabras": ["pago", "factura", "cobro", "abono", "finanzas", "ingreso", "gasto"], "motor": "motor_pagos"},
+    {"palabras": ["reporte", "resumen", "estadística", "estadistica", "semana", "ventas del"], "motor": "motor_reportes"},
+    {"palabras": ["publicar", "post", "instagram", "facebook", "tiktok", "redes", "story"], "motor": "motor_redes"},
+    {"palabras": ["proceso", "cpu", "ram", "disco", "sistema", "reiniciar motor", "git push"], "motor": "motor_sistema"},
+    {"palabras": ["forja", "emprendedor", "diagnóstico", "diagnostico", "comisión", "referido", "plan de negocio"], "motor": "motor_forja"},
 ]
 
 # ── Respuestas degradadas (sin IA) ──────────────────────────
