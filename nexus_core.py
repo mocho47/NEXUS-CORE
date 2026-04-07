@@ -25,6 +25,17 @@ logging.basicConfig(level=logging.INFO,
 logger = logging.getLogger("nexus_core")
 
 # ── Personalidades disponibles ──────────────────────────────
+# Prompt maestro cargado desde archivo (se actualiza con comando "activar contexto")
+_PROMPT_MAESTRO = None
+def _cargar_prompt_maestro():
+    global _PROMPT_MAESTRO
+    try:
+        from pathlib import Path
+        _PROMPT_MAESTRO = Path("C:/NEXUS_v3_NEW/PROMPT_ZAI.md").read_text(encoding="utf-8")
+    except:
+        _PROMPT_MAESTRO = None
+_cargar_prompt_maestro()
+
 PERSONALIDADES = {
     "asistente": {"nombre": "NEXUS Asistente",
         "prompt": "Eres NEXUS, un asistente inteligente de propósito general. "
@@ -419,7 +430,7 @@ async def endpoint_chat(request: Request):
                                          "ai_provider": "ninguno (motor no disponible)"})
 
     # f) Construir prompt para la IA
-    prompt_sistema = PERSONALIDADES[personalidad_key]["prompt"]
+    prompt_sistema = _PROMPT_MAESTRO if _PROMPT_MAESTRO else PERSONALIDADES[personalidad_key]["prompt"]
     if resultado_motor and resultado_motor.get("exito"):
         datos_brutos = json.dumps(resultado_motor.get("datos", {}), ensure_ascii=False, indent=2)
         prompt_sistema += (

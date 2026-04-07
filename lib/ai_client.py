@@ -127,13 +127,10 @@ class AIClient:
         """
         prompt_sistema = self._obtener_prompt_sistema(personality)
 
-        # Verificar si ya existe un mensaje de sistema
+        # Si ya viene un system prompt desde nexus_core, respetarlo
         if messages and messages[0].get("role") == "system":
-            # Reemplazar el primer mensaje de sistema con la personalidad
-            mensajes_preparados = [{"role": "system", "content": prompt_sistema}]
-            mensajes_preparados.extend(messages[1:])
+            mensajes_preparados = list(messages)
         else:
-            # Agregar prompt de sistema al inicio
             mensajes_preparados = [{"role": "system", "content": prompt_sistema}]
             mensajes_preparados.extend(messages)
 
