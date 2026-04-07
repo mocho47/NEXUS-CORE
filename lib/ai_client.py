@@ -56,6 +56,7 @@ MODELOS_GROQ = {
 }
 
 MODELO_OLLAMA_DEFAULT = "qwen2.5:7b"
+MODELO_OLLAMA_GLM = "glm4:latest"
 TIMEOUT_SOLICITUD = 60  # segundos
 
 
@@ -221,8 +222,15 @@ class AIClient:
                 return respuesta
             logger.warning("OpenRouter fallo, intentando Ollama local...")
 
-        # --- Estrategia 6: Ollama local para modo sin conexion ---
-        logger.info("Intentando Ollama local para modo sin conexion...")
+        # --- Estrategia 6: GLM-4 local (Ollama) ---
+        logger.info("Intentando GLM-4 local (Ollama)...")
+        respuesta = await self._call_ollama(mensajes_preparados, MODELO_OLLAMA_GLM)
+        if respuesta:
+            self._guardar_cache(pregunta_actual, respuesta)
+            return respuesta
+
+        # --- Estrategia 7: Qwen2.5 local (Ollama) ---
+        logger.info("Intentando Qwen2.5 local (Ollama)...")
         respuesta = await self._call_ollama(mensajes_preparados, MODELO_OLLAMA_DEFAULT)
         if respuesta:
             self._guardar_cache(pregunta_actual, respuesta)
