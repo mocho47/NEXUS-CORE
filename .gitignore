@@ -1,0 +1,36 @@
+# Secretos — NUNCA al repo
+.env
+*.env
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+*.egg-info/
+dist/
+build/
+.venv/
+venv/
+env/
+
+# Datos de usuario y runtime
+data/*.db
+data/*.sqlite
+backups/
+logs/*.log
+logs/*.json
+output/
+uploads/
+*.tmp
+
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# IDE
+.vscode/
+.idea/
+*.swp

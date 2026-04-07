@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NEXUS v3 — Manual de Usuario</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Segoe UI', sans-serif; background: #0a0a0f; color: #e2e8f0; line-height: 1.6; }
+  .header { background: linear-gradient(135deg, #1a1a2e, #16213e); padding: 40px 20px; text-align: center; border-bottom: 1px solid #2d3748; }
+  .header h1 { font-size: 2.5rem; color: #38bdf8; letter-spacing: 2px; }
+  .header p { color: #94a3b8; margin-top: 8px; }
+  .container { max-width: 900px; margin: 0 auto; padding: 40px 20px; }
+  .section { background: #111827; border: 1px solid #1e293b; border-radius: 12px; padding: 28px; margin-bottom: 24px; }
+  .section h2 { color: #38bdf8; font-size: 1.2rem; margin-bottom: 16px; display: flex; align-items: center; gap: 10px; }
+  .section h3 { color: #7dd3fc; font-size: 1rem; margin: 16px 0 8px; }
+  .badge { background: #0ea5e9; color: white; font-size: 0.7rem; padding: 2px 8px; border-radius: 99px; font-weight: 600; }
+  .badge.green { background: #10b981; }
+  .badge.yellow { background: #f59e0b; }
+  .badge.red { background: #ef4444; }
+  table { width: 100%; border-collapse: collapse; font-size: 0.9rem; margin-top: 10px; }
+  th { background: #1e293b; color: #94a3b8; padding: 10px 14px; text-align: left; font-weight: 600; }
+  td { padding: 10px 14px; border-bottom: 1px solid #1e293b; color: #cbd5e1; }
+  tr:hover td { background: #1a2035; }
+  code { background: #1e293b; color: #38bdf8; padding: 2px 7px; border-radius: 4px; font-size: 0.85em; font-family: monospace; }
+  .cmd { background: #0d1117; border: 1px solid #30363d; border-radius: 8px; padding: 12px 16px; font-family: monospace; font-size: 0.85rem; color: #58a6ff; margin: 8px 0; }
+  .tip { background: #0c1a2e; border-left: 3px solid #38bdf8; padding: 12px 16px; border-radius: 0 8px 8px 0; color: #94a3b8; font-size: 0.9rem; margin: 10px 0; }
+  .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  @media(max-width:600px){ .grid2 { grid-template-columns: 1fr; } }
+  .tag { display: inline-block; background: #1e293b; color: #7dd3fc; font-size: 0.75rem; padding: 2px 8px; border-radius: 4px; margin: 2px; }
+  a { color: #38bdf8; text-decoration: none; }
+  a:hover { text-decoration: underline; }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>NEXUS v3</h1>
+  <p>by Simplex &nbsp;·&nbsp; Manual de Usuario &nbsp;·&nbsp; v3.0.0</p>
+  <p style="margin-top:12px">
+    <a href="/">Chat Principal</a> &nbsp;·&nbsp;
+    <a href="/panel">Panel</a> &nbsp;·&nbsp;
+    <a href="/motors/status">Estado Motores</a>
+  </p>
+</div>
+
+<div class="container">
+
+  <!-- QUÉ ES -->
+  <div class="section">
+    <h2>🧠 ¿Qué es NEXUS?</h2>
+    <p>NEXUS v3 es tu orquestador inteligente de negocios. Coordina múltiples motores especializados y proveedores de IA para que tú solo veas el resultado. <strong>Soluciones simples a procesos complejos.</strong></p>
+    <div class="tip">Principio: NEXUS dirige, nunca hace el trabajo sucio. Tú hablas, NEXUS actúa.</div>
+  </div>
+
+  <!-- ACCESO RÁPIDO -->
+  <div class="section">
+    <h2>🔗 URLs del sistema</h2>
+    <table>
+      <tr><th>Pantalla</th><th>URL</th><th>Descripción</th></tr>
+      <tr><td>Chat principal</td><td><a href="http://localhost:8003/">localhost:8003/</a></td><td>Interfaz de chat con personalidades</td></tr>
+      <tr><td>Panel</td><td><a href="http://localhost:8003/panel">localhost:8003/panel</a></td><td>Dashboard general</td></tr>
+      <tr><td>Este manual</td><td><a href="http://localhost:8003/manual">localhost:8003/manual</a></td><td>Manual de usuario</td></tr>
+      <tr><td>Estado motores</td><td><a href="http://localhost:8003/motors/status">localhost:8003/motors/status</a></td><td>JSON estado de motores</td></tr>
+      <tr><td>Estado IA</td><td><a href="http://localhost:8003/ai/status">localhost:8003/ai/status</a></td><td>Proveedores IA disponibles</td></tr>
+    </table>
+  </div>
+
+  <!-- CHAT -->
+  <div class="section">
+    <h2>💬 Chat — Cómo usarlo</h2>
+    <h3>Personalidades disponibles</h3>
+    <table>
+      <tr><th>Personalidad</th><th>Cuándo usarla</th></tr>
+      <tr><td><span class="tag">asistente</span></td><td>Consultas generales, dudas, información</td></tr>
+      <tr><td><span class="tag">creativo</span></td><td>Ideas de diseño, contenido, publicidad</td></tr>
+      <tr><td><span class="tag">analista</span></td><td>Análisis de datos, métricas, reportes</td></tr>
+      <tr><td><span class="tag">coach</span></td><td>Estrategia de negocio, metas, motivación</td></tr>
+      <tr><td><span class="tag">tecnicos</span></td><td>Problemas técnicos, software, hardware</td></tr>
+    </table>
+    <h3>API POST /chat</h3>
+    <div class="cmd">{"message": "tu pregunta", "personality": "coach", "session_id": "mi-sesion"}</div>
+    <div class="tip">El <code>session_id</code> mantiene el contexto de conversación. Usa el mismo para continuar un hilo.</div>
+  </div>
+
+  <!-- PROVEEDORES IA -->
+  <div class="section">
+    <h2>🤖 Proveedores de IA</h2>
+    <table>
+      <tr><th>Proveedor</th><th>Modelo</th><th>Uso ideal</th><th>Velocidad</th></tr>
+      <tr><td><span class="badge green">Groq</span></td><td>llama-3.3-70b / 3.1-8b</td><td>Respuestas en tiempo real</td><td>⚡ Rápido</td></tr>
+      <tr><td><span class="badge">Z.ai</span></td><td>GLM-5</td><td>Alternativa cuando Groq falla</td><td>⚡ Rápido</td></tr>
+      <tr><td><span class="badge yellow">Ollama</span></td><td>qwen2.5:7b</td><td>Sin internet (local)</td><td>🐢 Lento (sin GPU)</td></tr>
+    </table>
+    <div class="tip">Fallback automático: si Groq falla → Z.ai → Ollama. Sin interrupciones.</div>
+  </div>
+
+  <!-- MOTORES NUEVOS -->
+  <div class="section">
+    <h2>⚙️ Motores especializados v3</h2>
+    <div class="grid2">
+      <div>
+        <h3>motor_atf — Puerto 8004</h3>
+        <table>
+          <tr><th>Endpoint</th><th>Función</th></tr>
+          <tr><td><code>GET /atf/kits</code></td><td>Lista precios Aozoom</td></tr>
+          <tr><td><code>POST /atf/cotizar</code></td><td>Genera cotización</td></tr>
+          <tr><td><code>POST /atf/agendar</code></td><td>Nueva cita instalación</td></tr>
+          <tr><td><code>GET /atf/agenda</code></td><td>Ver agenda</td></tr>
+          <tr><td><code>POST /atf/pipeline</code></td><td>Nuevo prospecto</td></tr>
+          <tr><td><code>GET /atf/pipeline</code></td><td>Ver pipeline</td></tr>
+          <tr><td><code>PUT /atf/pipeline/{id}</code></td><td>Mover prospecto</td></tr>
+        </table>
+      </div>
+      <div>
+        <h3>motor_auth — Puerto 8006</h3>
+        <table>
+          <tr><th>Endpoint</th><th>Función</th></tr>
+          <tr><td><code>POST /auth/login</code></td><td>Login con rol+PIN</td></tr>
+          <tr><td><code>POST /auth/verify</code></td><td>Verificar token</td></tr>
+          <tr><td><code>POST /auth/logout</code></td><td>Cerrar sesión</td></tr>
+          <tr><td><code>POST /auth/set-pin</code></td><td>Configurar PIN</td></tr>
+          <tr><td><code>GET /auth/estado</code></td><td>Estado del sistema</td></tr>
+        </table>
+      </div>
+    </div>
+    <div class="grid2" style="margin-top:16px">
+      <div>
+        <h3>motor_pagos — Puerto 8007</h3>
+        <table>
+          <tr><th>Endpoint</th><th>Función</th></tr>
+          <tr><td><code>POST /pagos/cotizacion</code></td><td>Nueva cotización</td></tr>
+          <tr><td><code>GET /pagos/cotizaciones</code></td><td>Ver cotizaciones</td></tr>
+          <tr><td><code>POST /pagos/registrar</code></td><td>Registrar pago</td></tr>
+          <tr><td><code>GET /pagos/listar</code></td><td>Listar pagos</td></tr>
+          <tr><td><code>GET /pagos/resumen</code></td><td>Resumen financiero</td></tr>
+        </table>
+      </div>
+      <div>
+        <h3>motor_reportes — Puerto 8008</h3>
+        <table>
+          <tr><th>Endpoint</th><th>Función</th></tr>
+          <tr><td><code>GET /reportes/resumen-diario</code></td><td>Resumen del día</td></tr>
+          <tr><td><code>GET /reportes/resumen-semana</code></td><td>Últimos 7 días</td></tr>
+          <tr><td><code>POST /reportes/analisis-ia</code></td><td>Análisis con IA</td></tr>
+          <tr><td><code>GET /reportes/pipeline-analytics</code></td><td>Funnel de ventas</td></tr>
+          <tr><td><code>GET /reportes/estado-proveedores-ia</code></td><td>Estado IA</td></tr>
+        </table>
+      </div>
+    </div>
+    <div style="margin-top:16px">
+      <h3>motor_teens — Puerto 8005</h3>
+      <table>
+        <tr><th>Endpoint</th><th>Función</th></tr>
+        <tr><td><code>POST /teens/misiones</code></td><td>Crear misión familiar</td></tr>
+        <tr><td><code>GET /teens/misiones/{familia_id}</code></td><td>Ver misiones de familia</td></tr>
+        <tr><td><code>PUT /teens/misiones/{id}/completar</code></td><td>Teen marca completada</td></tr>
+        <tr><td><code>PUT /teens/misiones/{id}/aprobar</code></td><td>Padre aprueba + puntos</td></tr>
+        <tr><td><code>GET /teens/eventos/{familia_id}</code></td><td>SSE tiempo real</td></tr>
+      </table>
+    </div>
+  </div>
+
+  <!-- ROLES Y AUTH -->
+  <div class="section">
+    <h2>🔐 Roles del sistema</h2>
+    <table>
+      <tr><th>Rol</th><th>PIN default</th><th>Permisos</th></tr>
+      <tr><td><span class="badge red">admin</span></td><td><code>nexus2026</code></td><td>Acceso total (*)</td></tr>
+      <tr><td><span class="badge">padre</span></td><td>Configurar en onboarding</td><td>Ver todo, aprobar misiones, gestionar familia</td></tr>
+      <tr><td><span class="badge yellow">hijo</span></td><td>Configurar en onboarding</td><td>Ver misiones, completar, ver recompensas</td></tr>
+      <tr><td><span class="badge green">vendedor</span></td><td>Configurar</td><td>Pedidos, clientes, cotizaciones</td></tr>
+      <tr><td><span class="badge">instalador</span></td><td>Configurar</td><td>Ver agenda, actualizar estado</td></tr>
+    </table>
+    <div class="tip">Flujo: <code>POST /auth/login</code> → obtienes <code>token</code> → úsalo en headers o body de endpoints protegidos.</div>
+  </div>
+
+  <!-- COTIZACIÓN ATF RÁPIDA -->
+  <div class="section">
+    <h2>💡 Precios Aozoom (referencia)</h2>
+    <table>
+      <tr><th>Kit</th><th>Dist.</th><th>Público</th><th>Ganancia</th></tr>
+      <tr><td>X1 Bi-LED</td><td>$2,350</td><td>$3,149</td><td>$799</td></tr>
+      <tr><td>X2 Bi-LED (compacto)</td><td>$2,050</td><td>$2,799</td><td>$749</td></tr>
+      <tr><td>X3 Bi-LED (alta pot.)</td><td>$2,350</td><td>$3,149</td><td>$799</td></tr>
+      <tr><td><strong>X4 TOP ⭐</strong></td><td>$1,990</td><td>$2,699</td><td>$709</td></tr>
+      <tr><td>X5 LED</td><td>$1,199</td><td>$1,599</td><td>$400</td></tr>
+      <tr><td>X6 LED</td><td>$1,199</td><td>$1,599</td><td>$400</td></tr>
+      <tr><td>X7 Bi-LED</td><td>$1,550</td><td>$2,069</td><td>$519</td></tr>
+    </table>
+    <div class="tip">Instalación estándar: +$500 MXN. Total típico X4: $3,199 MXN.</div>
+  </div>
+
+  <!-- ARRANCAR -->
+  <div class="section">
+    <h2>🚀 Arrancar NEXUS v3</h2>
+    <h3>Servidor principal</h3>
+    <div class="cmd">cd /c/NEXUS_v3_NEW && PYTHONIOENCODING=utf-8 python nexus_core.py</div>
+    <h3>Motores individuales (puertos propios)</h3>
+    <div class="cmd">python motors/motor_atf.py      # puerto 8004
+python motors/motor_auth.py     # puerto 8006
+python motors/motor_teens.py    # puerto 8005
+python motors/motor_pagos.py    # puerto 8007
+python motors/motor_reportes.py # puerto 8008</div>
+    <div class="tip">Próximo paso: crear <code>NEXUS_v3.bat</code> que arranque todo con un doble-click.</div>
+  </div>
+
+  <!-- STACK -->
+  <div class="section">
+    <h2>📦 Stack técnico</h2>
+    <div class="grid2">
+      <div>
+        <h3>Backend</h3>
+        <span class="tag">FastAPI</span> <span class="tag">uvicorn</span>
+        <span class="tag">aiosqlite</span> <span class="tag">aiohttp</span>
+        <span class="tag">Jinja2</span> <span class="tag">python-dotenv</span>
+      </div>
+      <div>
+        <h3>IA</h3>
+        <span class="tag">Groq API</span> <span class="tag">Z.ai GLM-5</span>
+        <span class="tag">Ollama local</span> <span class="tag">OpenRouter</span>
+      </div>
+      <div>
+        <h3>Pendiente (roadmap)</h3>
+        <span class="tag">LiteLLM</span> <span class="tag">Docker Compose</span>
+        <span class="tag">Redis</span> <span class="tag">Open WebUI</span>
+      </div>
+      <div>
+        <h3>Puerto asignado</h3>
+        <p style="font-size:0.85rem; color:#94a3b8">
+          8003 — Core NEXUS v3<br>
+          8004 — ATF<br>
+          8005 — Teens<br>
+          8006 — Auth<br>
+          8007 — Pagos<br>
+          8008 — Reportes
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <p style="text-align:center; color:#4a5568; font-size:0.8rem; padding: 20px 0">
+    NEXUS v3 by Simplex · 2026 · <a href="/">Volver al chat</a>
+  </p>
+
+</div>
+</body>
+</html>

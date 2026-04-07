@@ -1,0 +1,37 @@
+# ============================================================
+# NEXUS v3 by Simplex - Dependencias Python
+# Actualizado: 2025
+# ============================================================
+
+# Servidor web y API
+fastapi==0.115.6
+uvicorn[standard]==0.34.0
+python-multipart==0.0.20
+
+# Configuracion y entorno
+python-dotenv==1.0.1
+
+# Base de datos
+aiosqlite==0.20.0
+
+# Cliente HTTP async
+aiohttp==3.11.11
+httpx==0.28.1
+
+# Plantillas HTML
+jinja2==3.1.5
+
+# Texto a voz (Microsoft Edge TTS - gratis)
+edge-tts==6.1.18
+
+# Procesamiento de imagenes
+Pillow==11.1.0
+
+# Archivos DXF (diseno CNC/laser)
+ezdxf==1.4.3
+
+# Manipulacion de PDF
+PyPDF2==3.0.1
+
+# SVG a PNG/PDF
+cairosvg==2.7.1
