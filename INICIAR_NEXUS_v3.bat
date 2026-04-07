@@ -15,6 +15,8 @@ start "NEXUS Auth"     /min python motors\motor_auth.py
 start "NEXUS Teens"    /min python motors\motor_teens.py
 start "NEXUS Pagos"    /min python motors\motor_pagos.py
 start "NEXUS Reportes" /min python motors\motor_reportes.py
+start "NEXUS Sistema"  /min python motors\motor_sistema.py
+start "NEXUS Redes"    /min python motors\motor_redes.py
 
 REM Esperar que todo arranque
 timeout /t 8 /nobreak >nul
