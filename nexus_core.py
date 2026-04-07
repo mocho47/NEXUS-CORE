@@ -25,16 +25,19 @@ logging.basicConfig(level=logging.INFO,
 logger = logging.getLogger("nexus_core")
 
 # ── Personalidades disponibles ──────────────────────────────
-# Prompt maestro cargado desde archivo (se actualiza con comando "activar contexto")
-_PROMPT_MAESTRO = None
-def _cargar_prompt_maestro():
-    global _PROMPT_MAESTRO
+# Prompt maestro — se carga al inicio y se reintenta en cada chat si es None
+_PROMPT_ZAI_PATH = "C:/NEXUS_v3_NEW/PROMPT_ZAI.md"
+
+def _leer_prompt_maestro() -> str | None:
     try:
         from pathlib import Path
-        _PROMPT_MAESTRO = Path("C:/NEXUS_v3_NEW/PROMPT_ZAI.md").read_text(encoding="utf-8")
-    except:
-        _PROMPT_MAESTRO = None
-_cargar_prompt_maestro()
+        return Path(_PROMPT_ZAI_PATH).read_text(encoding="utf-8")
+    except Exception as e:
+        print(f"[WARN] No se pudo leer {_PROMPT_ZAI_PATH}: {e}")
+        return None
+
+_PROMPT_MAESTRO = _leer_prompt_maestro()
+print(f"[PROMPT_ZAI] {'Cargado OK (' + str(len(_PROMPT_MAESTRO)) + ' chars)' if _PROMPT_MAESTRO else 'FALLIDO — usando personalidad por defecto'}", flush=True)
 
 PERSONALIDADES = {
     "asistente": {"nombre": "NEXUS Asistente",
@@ -430,7 +433,10 @@ async def endpoint_chat(request: Request):
                                          "ai_provider": "ninguno (motor no disponible)"})
 
     # f) Construir prompt para la IA
-    prompt_sistema = _PROMPT_MAESTRO if _PROMPT_MAESTRO else PERSONALIDADES[personalidad_key]["prompt"]
+    # Intentar cargar prompt maestro si no está en memoria
+    prompt_zai = _PROMPT_MAESTRO or _leer_prompt_maestro()
+    prompt_sistema = prompt_zai if prompt_zai else PERSONALIDADES[personalidad_key]["prompt"]
+    logger.info("PROMPT activo: %s", "PROMPT_ZAI.md" if prompt_zai else f"PERSONALIDADES[{personalidad_key}]")
     if resultado_motor and resultado_motor.get("exito"):
         datos_brutos = json.dumps(resultado_motor.get("datos", {}), ensure_ascii=False, indent=2)
         prompt_sistema += (
