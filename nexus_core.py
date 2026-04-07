@@ -356,21 +356,22 @@ async def endpoint_chat(request: Request):
     if personalidad_key not in PERSONALIDADES:
         personalidad_key = "asistente"
     session_id = body.get("session_id") or str(uuid.uuid4())
+    # Convertir session_id string a int estable para la DB
+    session_int = abs(hash(session_id)) % 2147483647
     motor_utilizado = None
     resultado_motor = None
     proveedor_usado = "ninguno"
 
     # a) Guardar mensaje del usuario
     try:
-        database.guardar_mensaje(session_id=session_id, rol="user",
-                                 contenido=mensaje, personalidad=personalidad_key)
+        await database.save_message(session_id=session_int, role="user", content=mensaje)
     except Exception as exc:
         logger.warning("No se pudo guardar mensaje del usuario: %s", exc)
 
     # b) Obtener últimos 20 mensajes de contexto
     historial = []
     try:
-        historial = database.obtener_mensajes(session_id, limite=20)
+        historial = await database.get_session_messages(session_int, limit=20)
     except Exception as exc:
         logger.warning("No se pudo recuperar historial: %s", exc)
 
@@ -424,8 +425,7 @@ async def endpoint_chat(request: Request):
             msj_err = resultado_motor.get("mensaje_friendly",
                                           f"El módulo de {info_motor['nombre']} no está disponible.")
             try:
-                database.guardar_mensaje(session_id=session_id, rol="assistant",
-                                         contenido=msj_err, personalidad=personalidad_key)
+                await database.save_message(session_id=session_int, role="assistant", content=msj_err)
             except Exception:
                 pass
             return JSONResponse(content={"response": msj_err, "personality": personalidad_key,
@@ -447,12 +447,13 @@ async def endpoint_chat(request: Request):
     if contexto_memoria:
         prompt_sistema += contexto_memoria
 
-    # Formatear historial para la IA
+    # Formatear historial para la IA (DB usa role/content, no rol/contenido)
     mensajes_ia = [{"role": "system", "content": prompt_sistema}]
     for msg in historial:
-        rol = msg.get("rol", "user")
-        if rol in ("user", "assistant"):
-            mensajes_ia.append({"role": rol, "content": msg.get("contenido", "")})
+        rol = msg.get("role", msg.get("rol", "user"))
+        contenido = msg.get("content", msg.get("contenido", ""))
+        if rol in ("user", "assistant") and contenido:
+            mensajes_ia.append({"role": rol, "content": contenido})
 
     # Llamar a la IA
     respuesta_ia = ""
@@ -476,8 +477,7 @@ async def endpoint_chat(request: Request):
 
     # g) Guardar respuesta de la IA
     try:
-        database.guardar_mensaje(session_id=session_id, rol="assistant",
-                                 contenido=respuesta_ia, personalidad=personalidad_key)
+        await database.save_message(session_id=session_int, role="assistant", content=respuesta_ia)
     except Exception as exc:
         logger.warning("No se pudo guardar la respuesta: %s", exc)
 
@@ -658,6 +658,32 @@ async def _proxy_motor(motor_key: str, accion: str, nombre_servicio: str):
 async def api_status():
     """Ping — el frontend lo usa para verificar conexión cada 30s."""
     return {"ok": True, "version": "3.0", "estado": "online"}
+
+
+@app.post("/api/session")
+@app.get("/api/session")
+async def api_session(request: Request):
+    """Crea o verifica sesión."""
+    session_id = str(uuid.uuid4())
+    return {"session_id": session_id, "ok": True}
+
+
+@app.get("/api/user")
+async def api_user():
+    """Info del usuario/owner del sistema."""
+    return {"nombre": "Anuar", "rol": "admin", "ok": True}
+
+
+@app.get("/api/stats")
+async def api_stats():
+    """Estadísticas rápidas del sistema."""
+    motores_activos = sum(1 for v in motor_estado.values() if v.get("activo", False))
+    return {
+        "motores_activos": motores_activos,
+        "motores_total": len(MOTORES),
+        "proveedor_ia": ai_cliente.proveedor_actual() if ai_cliente else "ninguno",
+        "ok": True
+    }
 
 
 @app.get("/api/clients")
