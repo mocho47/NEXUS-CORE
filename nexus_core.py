@@ -319,6 +319,25 @@ async def endpoint_chat(request: Request):
     if not mensaje:
         return JSONResponse(status_code=400, content={"error": "El campo 'message' es obligatorio"})
 
+    # INTERCEPCION TEMPRANA — comandos del sistema antes de cualquier IA
+    _m = mensaje.lower().strip()
+    if _m.startswith(("lee ", "leer ", "abre ")):
+        _ruta = mensaje.split(" ", 1)[1].strip().strip('"').strip("'")
+        try:
+            from pathlib import Path as _Path
+            _contenido = _Path(_ruta).read_text(encoding="utf-8", errors="ignore")
+            return JSONResponse(content={
+                "response": f"Archivo leído: `{_ruta}`\n\n{_contenido[:10000]}",
+                "personality": body.get("personality", "asistente"),
+                "session_id": body.get("session_id", "cmd")
+            })
+        except Exception as _e:
+            return JSONResponse(content={
+                "response": f"No pude leer `{_ruta}`: {_e}",
+                "personality": body.get("personality", "asistente"),
+                "session_id": body.get("session_id", "cmd")
+            })
+
     personalidad_key = body.get("personality", "asistente")
     if personalidad_key not in PERSONALIDADES:
         personalidad_key = "asistente"
