@@ -167,10 +167,21 @@ async def delegar_a_motor(motor_key: str, accion: str, datos: dict, tiempo_maxim
 
 
 def determinar_motor(mensaje: str) -> Optional[str]:
-    """Determina a qué motor delegar según palabras clave del mensaje."""
+    """Determina a qué motor delegar según palabras clave del mensaje.
+    Requiere al menos 2 palabras clave O una palabra clave al inicio del mensaje
+    para evitar falsos positivos en mensajes largos."""
     msg = mensaje.lower()
+    palabras_msg = set(msg.split())
     for regla in REGLAS_ENRUTAMIENTO:
-        if any(p in msg for p in regla["palabras"]):
+        coincidencias = [p for p in regla["palabras"] if p in msg]
+        if not coincidencias:
+            continue
+        # Routear solo si: el mensaje empieza con la palabra clave
+        # O hay 2+ coincidencias, o el mensaje es corto (menos de 8 palabras)
+        es_corto = len(palabras_msg) < 8
+        empieza = any(msg.strip().startswith(p) for p in coincidencias)
+        multiple = len(coincidencias) >= 2
+        if empieza or multiple or es_corto:
             return regla["motor"]
     return None
 
