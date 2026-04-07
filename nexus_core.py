@@ -352,7 +352,35 @@ async def endpoint_chat(request: Request):
         except Exception as exc:
             logger.warning("No se pudo acceder a la memoria: %s", exc)
 
-    # d+e) Determinar y delegar a motor si aplica
+    # d) Comandos directos del sistema (antes de pasar a IA)
+    msg_lower = mensaje.lower().strip()
+
+    # Comando: leer archivo
+    if msg_lower.startswith("lee ") or msg_lower.startswith("leer ") or msg_lower.startswith("abre "):
+        ruta = mensaje.split(" ", 1)[1].strip().strip('"').strip("'")
+        try:
+            from pathlib import Path
+            contenido = Path(ruta).read_text(encoding="utf-8", errors="ignore")
+            respuesta = f"Archivo leído: `{ruta}`\n\n```\n{contenido[:8000]}\n```"
+            return JSONResponse(content={"response": respuesta, "personality": personalidad_key,
+                                         "session_id": session_id, "motor": "sistema"})
+        except Exception as e:
+            return JSONResponse(content={"response": f"No pude leer `{ruta}`: {e}",
+                                         "personality": personalidad_key, "session_id": session_id})
+
+    # Comando: estado del sistema
+    if any(x in msg_lower for x in ["estado del sistema", "estado motores", "cuántos motores", "cuantos motores"]):
+        import httpx as _httpx
+        try:
+            async with _httpx.AsyncClient(timeout=5) as _c:
+                estado = (await _c.get("http://localhost:8009/sistema/estado")).json()
+            ram = estado.get("ram", {})
+            resp = f"RAM libre: {ram.get('libre_gb')} GB / {ram.get('total_gb')} GB ({ram.get('pct')}% usada)\nCPU: {estado.get('cpu_pct')}%"
+            return JSONResponse(content={"response": resp, "personality": personalidad_key, "session_id": session_id})
+        except Exception:
+            pass
+
+    # e) Determinar y delegar a motor si aplica
     motor_key = determinar_motor(mensaje)
     if motor_key:
         info_motor = MOTORES[motor_key]
