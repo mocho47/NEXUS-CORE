@@ -43,26 +43,29 @@ PERSONALIDADES = {
                   "corte y software. Das soluciones prácticas paso a paso. Respondes en español."},
 }
 
-# ── Motores especializados (puertos 8001-8006) ──────────────
+# ── Motores especializados ───────────────────────────────────
 MOTORES = {
-    "motor_archivos": {"puerto": 8001, "nombre": "Archivos y Conversión",
-        "descripcion": "Conversión de archivos (PDF, DXF, imágenes, etc.)",
-        "alternativas": "otras tareas como responder preguntas, analizar datos o gestionar tu negocio"},
-    "motor_diseno": {"puerto": 8002, "nombre": "Diseño y Corte",
-        "descripcion": "Diseño para plotter, Silhouette Cameo, RDWorks",
-        "alternativas": "consejos de diseño generales, formatos de archivo o inspiración creativa"},
-    "motor_negocios": {"puerto": 8003, "nombre": "Negocios y Ventas",
-        "descripcion": "Gestión de clientes, pedidos, inventario y ventas",
-        "alternativas": "consejos de negocio, estrategias de ventas o planificación financiera"},
-    "motor_coaching": {"puerto": 8004, "nombre": "Coaching y Metas",
-        "descripcion": "Misiones, puntos, recompensas y coaching empresarial",
-        "alternativas": "motivación general, consejos de productividad o planificación de metas"},
-    "motor_social": {"puerto": 8005, "nombre": "Redes Sociales",
-        "descripcion": "Publicación y gestión de contenido en redes sociales",
-        "alternativas": "ideas de contenido, calendarios de publicación o consejos de marketing"},
-    "motor_forja": {"puerto": 8006, "nombre": "Forja Emprendedora",
-        "descripcion": "Diagnóstico empresarial, comisiones y crecimiento",
-        "alternativas": "análisis de tu negocio actual, estrategias de crecimiento o mentoría"},
+    "motor_atf":      {"puerto": 8004, "nombre": "ATF Faros",
+        "descripcion": "Cotizaciones Aozoom, agenda instalaciones, pipeline ATF",
+        "alternativas": "consultas generales de negocio o precios"},
+    "motor_teens":    {"puerto": 8005, "nombre": "Teens Familiar",
+        "descripcion": "Misiones familiares, puntos, aprobaciones padre/hijo",
+        "alternativas": "consejos de organización familiar"},
+    "motor_auth":     {"puerto": 8006, "nombre": "Auth Seguridad",
+        "descripcion": "Login PIN, tokens de sesión, roles de usuario",
+        "alternativas": "configuración de accesos"},
+    "motor_pagos":    {"puerto": 8007, "nombre": "Pagos Finanzas",
+        "descripcion": "Cotizaciones, registro de pagos, resumen financiero",
+        "alternativas": "consejos financieros generales"},
+    "motor_reportes": {"puerto": 8008, "nombre": "Reportes IA",
+        "descripcion": "Resumen diario, semanal, análisis con IA",
+        "alternativas": "análisis manual de datos"},
+    "motor_sistema":  {"puerto": 8009, "nombre": "Sistema PC",
+        "descripcion": "Control del sistema, archivos, procesos, Git",
+        "alternativas": "operaciones manuales del sistema"},
+    "motor_redes":    {"puerto": 8010, "nombre": "Redes Sociales",
+        "descripcion": "Instagram, Facebook, TikTok, WhatsApp",
+        "alternativas": "publicación manual en redes"},
 }
 
 # ── Palabras clave para enrutamiento ────────────────────────
@@ -585,6 +588,12 @@ async def _proxy_motor(motor_key: str, accion: str, nombre_servicio: str):
         return JSONResponse(content=resultado.get("datos", {}))
     return JSONResponse(status_code=503,
         content={"error": resultado.get("mensaje_friendly", f"Servicio de {nombre_servicio} no disponible")})
+
+
+@app.get("/api/status")
+async def api_status():
+    """Ping — el frontend lo usa para verificar conexión cada 30s."""
+    return {"ok": True, "version": "3.0", "estado": "online"}
 
 
 @app.get("/api/clients")
