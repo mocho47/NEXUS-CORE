@@ -1,27 +1,18 @@
 """
-motor_watchdog.py — Autocorrección y Autoreparación de NEXUS
+motor_watchdog.py — Guardián y Optimizador de NEXUS
 Puerto 8011
 
-Monitorea constantemente:
-- RAM y CPU del sistema
-- Estado de cada motor (8003-8010)
-- Logs de errores
-- Integridad de archivos clave
+Dos niveles de monitoreo:
+  1. Ping ligero cada 5 min → solo verifica que motores respondan
+  2. Limpieza profunda 4×/día (06:00, 12:00, 18:00, 00:00) →
+       limpia temps, mata duplicados, reporta estado
 
-Si detecta un problema:
-1. Lo registra
-2. Intenta repararlo automáticamente
-3. Si no puede → notifica por Telegram
-4. Genera reporte del incidente
-
-Este motor NUNCA se detiene. Es el guardián.
+PC con 7.2GB RAM — se cuida la huella al máximo.
 """
 
-import os, sys, time, json, asyncio, subprocess, psutil, httpx, logging
+import os, sys, time, json, asyncio, subprocess, psutil, httpx, logging, shutil
 from pathlib import Path
-from datetime import datetime
-from fastapi import FastAPI
-from fastapi.responses import JSONResponse
+from datetime import datetime, time as dtime
 import threading
 
 NEXUS_DIR = Path("C:/NEXUS_v3_NEW")
@@ -38,304 +29,381 @@ logging.basicConfig(
 )
 log = logging.getLogger("watchdog")
 
-app = FastAPI(title="NEXUS Watchdog", version="3.0")
+try:
+    from fastapi import FastAPI
+    from fastapi.responses import JSONResponse
+except ImportError:
+    pass
+
+app = FastAPI(title="NEXUS Watchdog", version="3.1")
 
 # ═══════════════════════════════════════════════
 # CONFIGURACION DE MOTORES
 # ═══════════════════════════════════════════════
 MOTORES = {
-    "nexus_core":     {"puerto": 8003, "archivo": "nexus_core.py",           "critico": True},
-    "motor_atf":      {"puerto": 8004, "archivo": "motors/motor_atf.py",     "critico": True},
-    "motor_teens":    {"puerto": 8005, "archivo": "motors/motor_teens.py",   "critico": False},
-    "motor_auth":     {"puerto": 8006, "archivo": "motors/motor_auth.py",    "critico": True},
-    "motor_pagos":    {"puerto": 8007, "archivo": "motors/motor_pagos.py",   "critico": True},
-    "motor_reportes": {"puerto": 8008, "archivo": "motors/motor_reportes.py","critico": False},
-    "motor_sistema":  {"puerto": 8009, "archivo": "motors/motor_sistema.py", "critico": True},
-    "motor_redes":    {"puerto": 8010, "archivo": "motors/motor_redes.py",   "critico": False},
+    "nexus_core":     {"puerto": 8003, "archivo": "nexus_core.py",            "critico": True},
+    "motor_atf":      {"puerto": 8004, "archivo": "motors/motor_atf.py",      "critico": True},
+    "motor_teens":    {"puerto": 8005, "archivo": "motors/motor_teens.py",    "critico": False},
+    "motor_auth":     {"puerto": 8006, "archivo": "motors/motor_auth.py",     "critico": True},
+    "motor_pagos":    {"puerto": 8007, "archivo": "motors/motor_pagos.py",    "critico": True},
+    "motor_reportes": {"puerto": 8008, "archivo": "motors/motor_reportes.py", "critico": False},
+    "motor_sistema":  {"puerto": 8009, "archivo": "motors/motor_sistema.py",  "critico": True},
+    "motor_redes":    {"puerto": 8010, "archivo": "motors/motor_redes.py",    "critico": False},
+    "motor_watchdog": {"puerto": 8011, "archivo": "motors/motor_watchdog.py", "critico": True},
+    "motor_forja":    {"puerto": 8012, "archivo": "motors/motor_forja.py",    "critico": False},
 }
 
-# Umbrales de alerta
-UMBRAL_RAM_PCT    = 85   # % de RAM física
-UMBRAL_CPU_PCT    = 90   # % CPU por 60s
-UMBRAL_DISCO_PCT  = 90   # % disco lleno
-INTERVALO_CHECK   = 30   # segundos entre chequeos
+# Endpoints a revisar por motor (ping ligero)
+ENDPOINTS_PING = {
+    8003: "/api/status",
+    8004: "/atf/kits",
+    8005: "/teens/misiones",
+    8006: "/auth/estado",
+    8007: "/pagos/resumen",
+    8008: "/reportes/resumen-diario",
+    8009: "/sistema/estado",
+    8010: "/redes/estado",
+    8011: "/watchdog/estado",
+    8012: "/forja/diagnostico",
+}
+
+# Horarios de limpieza profunda (4 veces al día)
+HORAS_LIMPIEZA = {6, 12, 18, 0}
+
+# Umbrales
+UMBRAL_RAM_PCT   = 80   # % RAM para activar liberación de emergencia
+UMBRAL_DISCO_PCT = 90   # % disco
+INTERVALO_PING   = 300  # 5 minutos entre pings ligeros
 
 # Estado global
 _estado_motores = {}
 _alertas_activas = []
 _ultimo_check = None
+_ultimo_limpieza = None
 _metricas_historico = []
 
 # ═══════════════════════════════════════════════
-# VERIFICACION DE MOTORES
+# PING LIGERO — cada 5 minutos
 # ═══════════════════════════════════════════════
-async def verificar_motor(nombre: str, puerto: int) -> dict:
-    """Verifica si un motor responde."""
-    endpoints_check = {
-        8003: "/ai/status",
-        8004: "/atf/kits",
-        8005: "/teens/misiones",
-        8006: "/auth/estado",
-        8007: "/pagos/resumen",
-        8008: "/reportes/resumen-diario",
-        8009: "/sistema/estado",
-        8010: "/redes/estado",
-    }
-    endpoint = endpoints_check.get(puerto, "/")
-
+async def ping_motor(nombre: str, puerto: int) -> dict:
+    """HTTP ping rápido. Sin bloquear CPU."""
+    endpoint = ENDPOINTS_PING.get(puerto, "/")
     try:
-        async with httpx.AsyncClient(timeout=5) as client:
+        async with httpx.AsyncClient(timeout=3) as client:
             r = await client.get(f"http://localhost:{puerto}{endpoint}")
-            return {
-                "activo": r.status_code < 500,
-                "status": r.status_code,
-                "latencia_ms": round(r.elapsed.total_seconds() * 1000)
-            }
+            return {"activo": r.status_code < 500, "status": r.status_code}
     except Exception as e:
-        return {"activo": False, "status": 0, "error": str(e)[:50]}
+        return {"activo": False, "status": 0, "error": str(e)[:60]}
 
-async def reiniciar_motor(nombre: str, archivo: str) -> bool:
-    """Reinicia un motor que no responde."""
-    log.warning(f"Reiniciando motor: {nombre} ({archivo})")
 
-    # Matar proceso existente si lo hay
-    for proc in psutil.process_iter(['pid', 'cmdline']):
+async def loop_ping():
+    """Ping ligero a todos los motores cada 5 minutos."""
+    global _estado_motores, _ultimo_check
+
+    log.info("Watchdog iniciado — ping cada 5 min, limpieza 4×/día")
+    motores_caidos_count = {k: 0 for k in MOTORES}
+
+    while True:
+        timestamp = datetime.now().isoformat()
+        hora_actual = datetime.now().hour
+
+        # ── Ping a todos los motores
+        for nombre, cfg in MOTORES.items():
+            if nombre == "motor_watchdog":
+                continue  # no se auto-pinga
+            estado = await ping_motor(nombre, cfg["puerto"])
+            _estado_motores[nombre] = {**estado, "ts": timestamp}
+
+            if not estado["activo"]:
+                motores_caidos_count[nombre] = motores_caidos_count.get(nombre, 0) + 1
+                if motores_caidos_count[nombre] >= 2:
+                    log.warning(f"Motor caído x2: {nombre} — reiniciando")
+                    await reiniciar_motor(nombre, cfg["archivo"])
+                    motores_caidos_count[nombre] = 0
+            else:
+                motores_caidos_count[nombre] = 0
+
+        # ── Verificar RAM de emergencia (sin bloquear CPU — interval=0)
+        ram = psutil.virtual_memory()
+        if ram.percent > UMBRAL_RAM_PCT:
+            log.warning(f"RAM emergencia: {ram.percent}% — activando liberación")
+            await liberar_ram_emergencia()
+
+        _ultimo_check = timestamp
+
+        # ── Guardar snapshot ligero
         try:
-            cmdline = ' '.join(proc.info['cmdline'] or [])
-            if archivo.replace('/', '\\') in cmdline or archivo in cmdline:
-                proc.terminate()
-                time.sleep(1)
-                log.info(f"Proceso terminado: PID {proc.info['pid']}")
-        except:
+            snap = {
+                "ts": timestamp,
+                "ram_pct": round(ram.percent, 1),
+                "ram_libre_mb": round(ram.available / 1024**2),
+                "motores_ok": sum(1 for m in _estado_motores.values() if m.get("activo")),
+                "motores_total": len(MOTORES) - 1,  # -1 watchdog
+            }
+            _metricas_historico.append(snap)
+            if len(_metricas_historico) > 576:  # 48h a 5min
+                _metricas_historico.pop(0)
+        except Exception:
             pass
 
-    # Esperar que libere el puerto
+        # ── Limpieza profunda si es hora
+        if hora_actual in HORAS_LIMPIEZA:
+            minuto = datetime.now().minute
+            if minuto < 6:  # ejecutar solo en los primeros 5 min de cada hora clave
+                ultima = _ultimo_limpieza
+                if ultima is None or (datetime.now() - ultima).seconds > 3600:
+                    log.info(f"Iniciando limpieza profunda — {hora_actual}:00h")
+                    await limpieza_profunda()
+
+        await asyncio.sleep(INTERVALO_PING)
+
+
+# ═══════════════════════════════════════════════
+# REINICIO DE MOTOR
+# ═══════════════════════════════════════════════
+async def reiniciar_motor(nombre: str, archivo: str) -> bool:
+    log.warning(f"Reiniciando: {nombre}")
+    # Matar proceso existente
+    for proc in psutil.process_iter(['pid', 'cmdline']):
+        try:
+            cmd = ' '.join(proc.info['cmdline'] or [])
+            if archivo.replace('/', '\\') in cmd or archivo in cmd:
+                proc.terminate()
+                await asyncio.sleep(1)
+        except Exception:
+            pass
+
     await asyncio.sleep(2)
 
-    # Relanzar
     try:
         subprocess.Popen(
             f'start "NEXUS {nombre}" /min python "{NEXUS_DIR / archivo}"',
-            shell=True,
-            cwd=str(NEXUS_DIR),
+            shell=True, cwd=str(NEXUS_DIR),
             env={**os.environ, "PYTHONIOENCODING": "utf-8"}
         )
         await asyncio.sleep(5)
-
-        # Verificar que levantó
         info = MOTORES.get(nombre, {})
-        resultado = await verificar_motor(nombre, info.get("puerto", 8003))
-        if resultado["activo"]:
-            log.info(f"Motor reiniciado exitosamente: {nombre}")
+        r = await ping_motor(nombre, info.get("puerto", 8003))
+        if r["activo"]:
+            log.info(f"Motor reiniciado OK: {nombre}")
             return True
-        else:
-            log.error(f"Motor no levantó después de reiniciar: {nombre}")
-            return False
+        log.error(f"Motor no levantó: {nombre}")
+        return False
     except Exception as e:
         log.error(f"Error reiniciando {nombre}: {e}")
         return False
 
-# ═══════════════════════════════════════════════
-# MONITOREO DE RECURSOS
-# ═══════════════════════════════════════════════
-def verificar_recursos() -> dict:
-    """Verifica CPU, RAM y disco."""
-    ram = psutil.virtual_memory()
-    cpu = psutil.cpu_percent(interval=2)
-    swap = psutil.swap_memory()
 
+# ═══════════════════════════════════════════════
+# LIBERACIÓN DE RAM DE EMERGENCIA
+# ═══════════════════════════════════════════════
+async def liberar_ram_emergencia():
+    """Mata duplicados Python y vacía working set. Rápido."""
+    archivos_nexus = {cfg["archivo"] for cfg in MOTORES.values()}
+    vistos = set()
+
+    for proc in psutil.process_iter(['pid', 'name', 'cmdline', 'memory_info']):
+        try:
+            name = proc.info['name'].lower()
+            cmd  = ' '.join(proc.info['cmdline'] or [])
+            if 'python' not in name:
+                continue
+
+            # Detectar archivo NEXUS que corre
+            archivo_key = None
+            for arch in archivos_nexus:
+                if arch in cmd or arch.replace('/', '\\') in cmd:
+                    archivo_key = arch
+                    break
+
+            if archivo_key:
+                if archivo_key in vistos:
+                    # Duplicado — matar
+                    proc.terminate()
+                    log.info(f"Duplicado eliminado: PID {proc.info['pid']} ({archivo_key})")
+                else:
+                    vistos.add(archivo_key)
+            else:
+                # Python que no es NEXUS ni Ollama ni Claude — evaluar
+                ram_mb = proc.info['memory_info'].rss / 1024**2
+                if ram_mb > 400 and 'ollama' not in cmd.lower() and 'claude' not in cmd.lower():
+                    proc.terminate()
+                    log.info(f"Proceso externo terminado: PID {proc.info['pid']} ({ram_mb:.0f}MB)")
+        except Exception:
+            pass
+
+
+# ═══════════════════════════════════════════════
+# LIMPIEZA PROFUNDA 4×/DÍA
+# ═══════════════════════════════════════════════
+async def limpieza_profunda():
+    """Limpieza completa del sistema. Corre 4 veces al día."""
+    global _ultimo_limpieza
+    inicio = datetime.now()
+    reporte = {"inicio": inicio.isoformat(), "acciones": [], "liberado_mb": 0}
+
+    # 1. Matar procesos Python duplicados
+    await liberar_ram_emergencia()
+    reporte["acciones"].append("duplicados_python")
+
+    # 2. Limpiar carpetas temp de Windows
+    carpetas_temp = [
+        Path(os.environ.get("TEMP", "C:/Windows/Temp")),
+        Path(os.environ.get("TMP",  "C:/Windows/Temp")),
+        Path("C:/Windows/Temp"),
+        Path(os.environ.get("LOCALAPPDATA", "")) / "Temp",
+    ]
+    for carpeta in carpetas_temp:
+        if carpeta.exists():
+            liberado = _limpiar_carpeta(carpeta)
+            reporte["liberado_mb"] += liberado
+            if liberado > 0:
+                reporte["acciones"].append(f"temp:{carpeta.name}:{liberado}MB")
+
+    # 3. Limpiar logs NEXUS > 5MB
+    for log_file in LOGS_DIR.glob("*.log"):
+        try:
+            size_mb = log_file.stat().st_size / 1024**2
+            if size_mb > 5:
+                # Conservar últimas 500 líneas
+                lines = log_file.read_text(encoding='utf-8', errors='ignore').splitlines()
+                log_file.write_text('\n'.join(lines[-500:]), encoding='utf-8')
+                reporte["acciones"].append(f"log_truncado:{log_file.name}:{size_mb:.1f}MB→ultimas500")
+        except Exception:
+            pass
+
+    # 4. Limpiar cache de thumbnails Windows
+    thumb_dir = Path(os.environ.get("LOCALAPPDATA", "")) / "Microsoft/Windows/Explorer"
+    if thumb_dir.exists():
+        liberado = _limpiar_carpeta(thumb_dir, extension="*.db")
+        reporte["liberado_mb"] += liberado
+        if liberado > 0:
+            reporte["acciones"].append(f"thumbnails:{liberado}MB")
+
+    # 5. Métricas post-limpieza
+    ram = psutil.virtual_memory()
+    reporte["ram_post_pct"]    = round(ram.percent, 1)
+    reporte["ram_libre_post_mb"] = round(ram.available / 1024**2)
+    reporte["duracion_seg"]    = round((datetime.now() - inicio).total_seconds(), 1)
+
+    # Guardar reporte
+    reporte_file = DATA_DIR / f"limpieza_{inicio.strftime('%Y%m%d_%H%M')}.json"
+    reporte_file.write_text(json.dumps(reporte, indent=2, ensure_ascii=False), encoding='utf-8')
+
+    _ultimo_limpieza = datetime.now()
+    log.info(f"Limpieza profunda OK — {reporte['liberado_mb']}MB liberados — RAM: {reporte['ram_post_pct']}%")
+    return reporte
+
+
+def _limpiar_carpeta(carpeta: Path, extension: str = "*") -> int:
+    """Elimina archivos de una carpeta. Devuelve MB liberados."""
+    liberado = 0
+    try:
+        patron = carpeta.glob(extension) if extension != "*" else carpeta.glob("*")
+        for item in patron:
+            try:
+                size = item.stat().st_size
+                if item.is_file():
+                    item.unlink()
+                    liberado += size
+                elif item.is_dir():
+                    shutil.rmtree(item, ignore_errors=True)
+                    liberado += size
+            except Exception:
+                pass
+    except Exception:
+        pass
+    return round(liberado / 1024**2, 1)
+
+
+# ═══════════════════════════════════════════════
+# RECURSOS DEL SISTEMA (NO BLOQUEA CPU)
+# ═══════════════════════════════════════════════
+def recursos_sistema() -> dict:
+    ram = psutil.virtual_memory()
+    # cpu_percent sin interval para no bloquear
+    cpu = psutil.cpu_percent(interval=None)
     alertas = []
 
     if ram.percent > UMBRAL_RAM_PCT:
-        alertas.append(f"RAM critica: {ram.percent}% usada ({ram.available/1024**3:.1f}GB libres)")
-
-    if cpu > UMBRAL_CPU_PCT:
-        alertas.append(f"CPU critico: {cpu}%")
+        alertas.append(f"RAM alta: {ram.percent}% ({ram.available//1024//1024}MB libres)")
+    if cpu > 90:
+        alertas.append(f"CPU alta: {cpu}%")
 
     for part in psutil.disk_partitions():
         try:
             uso = psutil.disk_usage(part.mountpoint)
             if uso.percent > UMBRAL_DISCO_PCT:
-                alertas.append(f"Disco {part.device} lleno: {uso.percent}%")
-        except:
+                alertas.append(f"Disco lleno: {part.device} {uso.percent}%")
+        except Exception:
             pass
 
     return {
-        "ram_pct": ram.percent,
+        "ram_pct": round(ram.percent, 1),
+        "ram_libre_mb": round(ram.available / 1024**2),
         "ram_libre_gb": round(ram.available / 1024**3, 1),
         "cpu_pct": cpu,
-        "pagefile_pct": swap.percent,
         "alertas": alertas
     }
 
-def liberar_memoria():
-    """Libera memoria cuando RAM está alta."""
-    log.warning("RAM alta — ejecutando limpieza de memoria")
-
-    # Limpiar procesos Python con mucha RAM que no sean NEXUS
-    for proc in psutil.process_iter(['pid', 'name', 'cmdline', 'memory_info']):
-        try:
-            ram_mb = proc.info['memory_info'].rss / 1024**2
-            cmdline = ' '.join(proc.info['cmdline'] or [])
-            # Matar procesos Python > 500MB que no sean NEXUS ni Ollama
-            if (ram_mb > 500 and 'python' in proc.info['name'].lower()
-                    and 'nexus' not in cmdline.lower()
-                    and 'motor_' not in cmdline.lower()):
-                proc.terminate()
-                log.info(f"Proceso liberado: PID {proc.info['pid']} ({ram_mb:.0f}MB)")
-        except:
-            pass
-
-    # Vaciar temporales
-    subprocess.run('del /q /f /s "%TEMP%\\*.tmp" 2>nul', shell=True, capture_output=True)
-    log.info("Temporales limpiados")
 
 # ═══════════════════════════════════════════════
-# AUTOCORRECCIÓN DE CÓDIGO
-# ═══════════════════════════════════════════════
-async def analizar_logs_errores() -> list:
-    """Lee los logs recientes y detecta errores repetidos."""
-    errores = []
-    for log_file in LOGS_DIR.glob("*.log"):
-        try:
-            lines = log_file.read_text(encoding='utf-8', errors='ignore').splitlines()
-            # Últimas 100 líneas
-            for line in lines[-100:]:
-                if any(k in line.upper() for k in ['ERROR', 'EXCEPTION', 'TRACEBACK', 'CRITICAL']):
-                    errores.append({
-                        "archivo": log_file.name,
-                        "linea": line.strip()[:200],
-                        "timestamp": datetime.now().isoformat()
-                    })
-        except:
-            pass
-    return errores[-20:]  # máx 20 errores recientes
-
-async def notificar_telegram(mensaje: str):
-    """Envía alerta crítica por Telegram."""
-    token = os.getenv('TELEGRAM_BOT_TOKEN')
-    chat_id = os.getenv('TELEGRAM_CHAT_ID')
-    if not token or not chat_id:
-        return
-
-    try:
-        async with httpx.AsyncClient(timeout=10) as client:
-            await client.post(
-                f"https://api.telegram.org/bot{token}/sendMessage",
-                json={"chat_id": chat_id, "text": f"🚨 NEXUS Watchdog\n{mensaje}"}
-            )
-    except:
-        pass
-
-# ═══════════════════════════════════════════════
-# LOOP PRINCIPAL DE MONITOREO
-# ═══════════════════════════════════════════════
-async def loop_monitoreo():
-    """Loop infinito que verifica todo cada 30 segundos."""
-    global _estado_motores, _alertas_activas, _ultimo_check, _metricas_historico
-
-    log.info("Watchdog iniciado — monitoreando cada 30s")
-    motores_caidos_count = {k: 0 for k in MOTORES}
-
-    while True:
-        try:
-            timestamp = datetime.now().isoformat()
-            alertas_ciclo = []
-
-            # 1. Verificar recursos
-            recursos = verificar_recursos()
-            if recursos["alertas"]:
-                for alerta in recursos["alertas"]:
-                    log.warning(alerta)
-                    alertas_ciclo.append(alerta)
-
-                # Si RAM crítica, liberar
-                if recursos["ram_pct"] > UMBRAL_RAM_PCT:
-                    liberar_memoria()
-
-            # 2. Verificar motores
-            for nombre, cfg in MOTORES.items():
-                estado = await verificar_motor(nombre, cfg["puerto"])
-                _estado_motores[nombre] = {**estado, "timestamp": timestamp}
-
-                if not estado["activo"]:
-                    motores_caidos_count[nombre] += 1
-                    msg = f"Motor caído: {nombre} (puerto {cfg['puerto']}) — intento {motores_caidos_count[nombre]}"
-                    log.warning(msg)
-
-                    if motores_caidos_count[nombre] >= 2:
-                        # Reiniciar automáticamente
-                        reiniciado = await reiniciar_motor(nombre, cfg["archivo"])
-                        if reiniciado:
-                            motores_caidos_count[nombre] = 0
-                            alertas_ciclo.append(f"✅ Motor reiniciado: {nombre}")
-                        else:
-                            alertas_ciclo.append(f"❌ Motor no pudo reiniciar: {nombre}")
-                            if cfg["critico"]:
-                                await notificar_telegram(f"Motor crítico caído: {nombre}\nRuta: {cfg['archivo']}")
-                else:
-                    motores_caidos_count[nombre] = 0  # resetear contador
-
-            # 3. Guardar métricas
-            metrica = {
-                "timestamp": timestamp,
-                "ram_pct": recursos["ram_pct"],
-                "cpu_pct": recursos["cpu_pct"],
-                "motores_ok": sum(1 for m in _estado_motores.values() if m.get("activo")),
-                "motores_total": len(MOTORES)
-            }
-            _metricas_historico.append(metrica)
-            if len(_metricas_historico) > 288:  # 24h de datos a 5min
-                _metricas_historico.pop(0)
-
-            # Guardar estado actual
-            estado_file = DATA_DIR / "watchdog_estado.json"
-            estado_file.write_text(json.dumps({
-                "ultimo_check": timestamp,
-                "recursos": recursos,
-                "motores": _estado_motores,
-                "alertas_activas": alertas_ciclo
-            }, indent=2, ensure_ascii=False), encoding='utf-8')
-
-            _ultimo_check = timestamp
-            _alertas_activas = alertas_ciclo
-
-        except Exception as e:
-            log.error(f"Error en loop de monitoreo: {e}")
-
-        await asyncio.sleep(INTERVALO_CHECK)
-
-# ═══════════════════════════════════════════════
-# API DEL WATCHDOG
+# API
 # ═══════════════════════════════════════════════
 @app.get("/watchdog/estado")
-async def estado_watchdog():
-    """Estado completo del sistema monitoreado."""
+async def estado():
     return {
         "ok": True,
         "ultimo_check": _ultimo_check,
+        "ultima_limpieza": _ultimo_limpieza.isoformat() if _ultimo_limpieza else None,
         "motores": _estado_motores,
-        "alertas_activas": _alertas_activas,
-        "recursos": verificar_recursos(),
-        "metricas_recientes": _metricas_historico[-10:]
+        "alertas": _alertas_activas,
+        "recursos": recursos_sistema(),
+        "metricas_recientes": _metricas_historico[-6:],
     }
 
 @app.get("/watchdog/motores")
 async def estado_motores():
-    """Estado de todos los motores."""
     resultado = {}
     for nombre, cfg in MOTORES.items():
-        estado = await verificar_motor(nombre, cfg["puerto"])
-        resultado[nombre] = {
-            **estado,
-            "puerto": cfg["puerto"],
-            "critico": cfg["critico"]
-        }
+        if nombre == "motor_watchdog":
+            resultado[nombre] = {"activo": True, "status": 200, "puerto": cfg["puerto"], "critico": cfg["critico"]}
+            continue
+        estado = await ping_motor(nombre, cfg["puerto"])
+        resultado[nombre] = {**estado, "puerto": cfg["puerto"], "critico": cfg["critico"]}
     return {"ok": True, "motores": resultado}
 
+@app.get("/watchdog/recursos")
+async def ver_recursos():
+    r = recursos_sistema()
+    python_procs = []
+    for proc in psutil.process_iter(['pid', 'cmdline', 'memory_info']):
+        try:
+            cmd = ' '.join(proc.info['cmdline'] or [])
+            if 'python' in cmd.lower():
+                python_procs.append({
+                    "pid": proc.info['pid'],
+                    "ram_mb": round(proc.info['memory_info'].rss / 1024**2, 1),
+                    "cmd": cmd[-80:]
+                })
+        except Exception:
+            pass
+    return {"ok": True, "recursos": r, "procesos_python": sorted(python_procs, key=lambda x: -x["ram_mb"])}
+
+@app.post("/watchdog/limpiar-ahora")
+async def limpiar_ahora():
+    """Dispara limpieza profunda inmediata."""
+    reporte = await limpieza_profunda()
+    return {"ok": True, "reporte": reporte}
+
+@app.post("/watchdog/liberar_memoria")
+async def liberar_mem():
+    await liberar_ram_emergencia()
+    ram = psutil.virtual_memory()
+    return {"ok": True, "ram_pct": round(ram.percent, 1), "ram_libre_mb": round(ram.available / 1024**2)}
+
 @app.post("/watchdog/reiniciar/{nombre}")
-async def reiniciar_motor_manual(nombre: str):
-    """Reinicia un motor manualmente."""
+async def reiniciar_manual(nombre: str):
     if nombre not in MOTORES:
         return {"ok": False, "error": f"Motor desconocido: {nombre}"}
     cfg = MOTORES[nombre]
@@ -343,45 +411,34 @@ async def reiniciar_motor_manual(nombre: str):
     return {"ok": exito, "motor": nombre}
 
 @app.get("/watchdog/logs")
-async def leer_logs_recientes(lineas: int = 50):
-    """Últimas líneas del log del watchdog."""
+async def leer_logs(lineas: int = 50):
     log_file = LOGS_DIR / "watchdog.log"
     if not log_file.exists():
         return {"ok": True, "logs": []}
     todas = log_file.read_text(encoding='utf-8', errors='ignore').splitlines()
     return {"ok": True, "logs": todas[-lineas:], "total": len(todas)}
 
-@app.get("/watchdog/errores")
-async def errores_recientes():
-    """Errores recientes en todos los logs."""
-    errores = await analizar_logs_errores()
-    return {"ok": True, "errores": errores, "total": len(errores)}
-
-@app.get("/watchdog/metricas")
-async def metricas_historico():
-    """Historial de métricas de recursos."""
-    return {"ok": True, "metricas": _metricas_historico, "total": len(_metricas_historico)}
-
-@app.post("/watchdog/liberar_memoria")
-async def forzar_liberacion():
-    """Fuerza liberación de memoria."""
-    liberar_memoria()
-    ram = psutil.virtual_memory()
-    return {
-        "ok": True,
-        "ram_pct": ram.percent,
-        "ram_libre_gb": round(ram.available / 1024**3, 1)
-    }
+@app.get("/watchdog/limpiezas")
+async def ver_limpiezas():
+    """Lista todos los reportes de limpieza guardados."""
+    reportes = []
+    for f in sorted(DATA_DIR.glob("limpieza_*.json"), reverse=True)[:10]:
+        try:
+            reportes.append(json.loads(f.read_text(encoding='utf-8')))
+        except Exception:
+            pass
+    return {"ok": True, "reportes": reportes}
 
 # ═══════════════════════════════════════════════
 # STARTUP
 # ═══════════════════════════════════════════════
 @app.on_event("startup")
 async def startup():
-    asyncio.create_task(loop_monitoreo())
-    log.info("Watchdog API iniciada en puerto 8011")
+    asyncio.create_task(loop_ping())
+    log.info("Watchdog v3.1 — ping 5min, limpieza 4×/día (06/12/18/00)")
+    print("[WATCHDOG] Iniciado — ping cada 5min, limpieza profunda 4×/día", flush=True)
 
 if __name__ == "__main__":
     import uvicorn
-    print("NEXUS Watchdog — Puerto 8011 — Monitoreo constante activo")
+    print("[WATCHDOG] Puerto 8011 — huella mínima, PC optimizada", flush=True)
     uvicorn.run(app, host="0.0.0.0", port=8011, log_level="warning")

@@ -1,764 +1,244 @@
 """
-NEXUS v3 - Cliente multi-IA con enrutamiento inteligente
-Desarrollado por Simplex
+NEXUS v3 - Cliente multi-IA con enrutamiento inteligente y SDKs nativos
 
-Este modulo proporciona un cliente de IA que enruta automaticamente las solicitudes
-al mejor proveedor disponible. Soporta Groq, Z.ai (GLM) y Ollama (local) con
-logica de fallback inteligente.
+Cadena de fallback:
+  1. Groq  (SDK nativo groq)       — llama-3.1-8b-instant / llama-3.3-70b
+  2. Z.ai  (SDK openai compatible) — glm-4-flash
+  3. OpenRouter (SDK openai compatible) — nemotron-70b
+  4. GLM-4 local (Ollama, httpx)   — glm4:latest
+  5. Qwen2.5 local (Ollama, httpx) — qwen2.5:7b
 """
 
-import json
-import logging
+import os, logging
 from typing import Optional
 
-import aiohttp
-
-# Configuracion del logger
 logger = logging.getLogger("nexus.ai_client")
 
-
-# --- Definiciones de personalidades del sistema ---
-
-PERSONALIDADES = {
-    "nexus": (
-        "Eres NEXUS v3, un asistente de IA avanzado desarrollado por Simplex. "
-        "Eres profesional, eficiente y amigable. Ayudas con gestion de negocios, "
-        "analisis de datos, tareas operativas y soporte tecnico. Respondes en "
-        "espanol de forma clara y concisa. Siempre mantienes un tono colaborativo "
-        "y proactivo."
-    ),
-    "tecnico": (
-        "Eres un asistente tecnico especializado de NEXUS v3. Te enfocas en resolver "
-        "problemas de software, hardware y redes. Proporcionas soluciones detalladas "
-        "y paso a paso. Usas terminologia tecnica cuando es apropiado pero explicas "
-        "conceptos complejos de forma accesible."
-    ),
-    "ventas": (
-        "Eres un asistente de ventas de NEXUS v3. Ayudas con gestion de clientes, "
-        "seguimiento de pedidos, cotizaciones y estrategias de ventas. Siempre "
-        "buscas maximizar el valor para el negocio mientras mantienes excelentes "
-        "relaciones con los clientes."
-    ),
-    "creativo": (
-        "Eres un asistente creativo de NEXUS v3. Ayudas con redaccion de contenido, "
-        "ideas de marketing, diseno de campañas y estrategias creativas. Eres "
-        "innovador, inspirador y piensas fuera de la caja."
-    ),
-}
-
-# Modelos disponibles por proveedor
 MODELOS_GROQ = {
-    "fast": "llama-3.1-8b-instant",
-    "complex": "llama-3.3-70b-versatile",
+    "fast":     "llama-3.1-8b-instant",
+    "complex":  "llama-3.3-70b-versatile",
     "analysis": "llama-3.3-70b-versatile",
     "creative": "llama-3.3-70b-versatile",
-    "default": "llama-3.3-70b-versatile",
+    "default":  "llama-3.3-70b-versatile",
 }
 
+MODELO_OLLAMA_GLM     = "glm4:latest"
 MODELO_OLLAMA_DEFAULT = "qwen2.5:7b"
-MODELO_OLLAMA_GLM = "glm4:latest"
-TIMEOUT_SOLICITUD = 60  # segundos
+TIMEOUT_OLLAMA        = 120   # segundos — CPU-only es lento
+TIMEOUT_CLOUD         = 60
 
 
 class AIClient:
-    """
-    Cliente de IA multi-proveedor con enrutamiento inteligente.
-
-    Enruta las solicitudes al mejor proveedor disponible segun el tipo de tarea
-    y la disponibilidad del servicio. Soporta fallback automatico entre proveedores.
-    """
-
     def __init__(self, config: dict):
-        """
-        Inicializa el cliente de IA con la configuracion proporcionada.
-
-        Args:
-            config: Diccionario con las claves de API y configuracion.
-                    Claves esperadas:
-                    - GROQ_API_KEY: Clave de API para Groq
-                    - ZAI_API_KEY: Clave de API para Z.ai (GLM)
-                    - OLLAMA_URL: URL del servidor Ollama (por defecto localhost:11434)
-                    - default_personality: Personalidad por defecto (por defecto 'nexus')
-        """
-        self.groq_api_key = config.get("GROQ_API_KEY", "")
-        self.zai_api_key = config.get("ZAI_API_KEY", "")
+        self.groq_api_key       = config.get("GROQ_API_KEY", "")
+        self.zai_api_key        = config.get("ZAI_API_KEY", "")
         self.openrouter_api_key = config.get("OPENROUTER_API_KEY", "") or config.get("DEEPSEEK_API_KEY", "")
-        self.ollama_url = config.get("OLLAMA_URL", "http://localhost:11434")
+        self.ollama_url         = config.get("OLLAMA_URL", "http://localhost:11434")
         self.default_personality = config.get("default_personality", "nexus")
 
-        # URL de endpoints
-        self.groq_endpoint = "https://api.groq.com/openai/v1/chat/completions"
-        self.zai_endpoint = "https://open.bigmodel.cn/api/paas/v4/chat/completions"
-        self.openrouter_endpoint = "https://openrouter.ai/api/v1/chat/completions"
-        self.ollama_chat_endpoint = f"{self.ollama_url}/api/chat"
-        self.ollama_tags_endpoint = f"{self.ollama_url}/api/tags"
+        # Cache de última respuesta para fallback sin internet
+        self._cache_pregunta  = ""
+        self._cache_respuesta = ""
 
-        # Cache de ultima respuesta (para fallback sin conexion)
-        self._ultima_respuesta = ""
-        self._ultima_pregunta = ""
+        logger.info("AIClient listo — Groq:%s Z.ai:%s OpenRouter:%s Ollama:%s",
+            "SI" if self.groq_api_key else "NO",
+            "SI" if self.zai_api_key else "NO",
+            "SI" if self.openrouter_api_key else "NO",
+            self.ollama_url)
 
-        logger.info("AIClient inicializado. Groq: %s, Z.ai: %s, OpenRouter: %s, Ollama: %s",
-                     "SI" if self.groq_api_key else "NO",
-                     "SI" if self.zai_api_key else "NO",
-                     "SI" if self.openrouter_api_key else "NO",
-                     self.ollama_url)
+    # ──────────────────────────────────────────────
+    # MÉTODO PRINCIPAL
+    # ──────────────────────────────────────────────
+    async def chat(self, messages: list[dict], personality: str = "nexus", task_type: str = "general") -> str:
+        # Respetar system prompt si ya viene en messages
+        if not (messages and messages[0].get("role") == "system"):
+            messages = [{"role": "system", "content": self._personalidad(personality)}] + list(messages)
 
-    def _obtener_prompt_sistema(self, personality: str) -> str:
-        """
-        Obtiene el prompt de sistema para una personalidad dada.
+        pregunta = messages[-1]["content"] if messages and messages[-1].get("role") == "user" else ""
+        modelo_groq = MODELOS_GROQ.get(task_type, MODELOS_GROQ["default"])
 
-        Args:
-            personality: Nombre de la personalidad.
-
-        Returns:
-            Cadena de texto con el prompt de sistema.
-        """
-        if personality in PERSONALIDADES:
-            return PERSONALIDADES[personality]
-        logger.warning("Personalidad '%s' no reconocida, usando 'nexus' por defecto.", personality)
-        return PERSONALIDADES["nexus"]
-
-    def _preparar_mensajes(self, messages: list[dict], personality: str) -> list[dict]:
-        """
-        Prepara los mensajes agregando el prompt de sistema de la personalidad.
-
-        Args:
-            messages: Lista de mensajes de la conversacion.
-            personality: Personalidad a usar.
-
-        Returns:
-            Lista de mensajes con el prompt de sistema al inicio.
-        """
-        prompt_sistema = self._obtener_prompt_sistema(personality)
-
-        # Si ya viene un system prompt desde nexus_core, respetarlo
-        if messages and messages[0].get("role") == "system":
-            mensajes_preparados = list(messages)
-        else:
-            mensajes_preparados = [{"role": "system", "content": prompt_sistema}]
-            mensajes_preparados.extend(messages)
-
-        return mensajes_preparados
-
-    async def chat(
-        self,
-        messages: list[dict],
-        personality: str = "nexus",
-        task_type: str = "general"
-    ) -> str:
-        """
-        Envia un mensaje al mejor proveedor de IA disponible segun el tipo de tarea.
-
-        Logica de enrutamiento:
-        1. Si task_type == "fast" y GROQ_API_KEY: usa Groq llama-3.1-8b-instant (rapido, economico)
-        2. Si task_type == "complex" o "analysis" y GROQ_API_KEY: usa Groq llama-3.3-70b
-        3. Si GROQ_API_KEY: usa Groq llama-3.3-70b (nube por defecto)
-        4. Si ZAI_API_KEY: usa Z.ai GLM-5 (nube alternativa)
-        5. Intenta Ollama local (phi3:mini) para modo sin conexion
-        6. Devuelve respuesta cacheada si esta disponible
-        7. Mensaje de error si ningun proveedor esta disponible
-
-        Args:
-            messages: Lista de mensajes de la conversacion.
-            personality: Personalidad del asistente (por defecto 'nexus').
-            task_type: Tipo de tarea: 'general', 'complex', 'creative', 'fast', 'analysis'.
-
-        Returns:
-            Respuesta del modelo de IA como cadena de texto.
-        """
-        # Preparar mensajes con personalidad
-        mensajes_preparados = self._preparar_mensajes(messages, personality)
-
-        # Guardar la pregunta para cache de fallback
-        pregunta_actual = ""
-        if messages and messages[-1].get("role") == "user":
-            pregunta_actual = messages[-1]["content"]
-
-        # --- Estrategia 1: Tareas rapidas con Groq ---
-        if task_type == "fast" and self.groq_api_key:
-            logger.info("Enrutando a Groq (modelo rapido) para tarea tipo: %s", task_type)
-            modelo = MODELOS_GROQ["fast"]
-            respuesta = await self._call_groq(mensajes_preparados, modelo)
-            if respuesta:
-                self._guardar_cache(pregunta_actual, respuesta)
-                return respuesta
-            logger.warning("Groq rapido fallo, intentando proveedor alternativo...")
-
-        # --- Estrategia 2: Tareas complejas o de analisis con Groq ---
-        if task_type in ("complex", "analysis") and self.groq_api_key:
-            logger.info("Enrutando a Groq (modelo grande) para tarea tipo: %s", task_type)
-            modelo = MODELOS_GROQ[task_type]
-            respuesta = await self._call_groq(mensajes_preparados, modelo)
-            if respuesta:
-                self._guardar_cache(pregunta_actual, respuesta)
-                return respuesta
-            logger.warning("Groq complejo fallo, intentando proveedor alternativo...")
-
-        # --- Estrategia 3: Groq como nube por defecto ---
+        # 1. Groq SDK nativo
         if self.groq_api_key:
-            logger.info("Enrutando a Groq (modelo por defecto) para tarea tipo: %s", task_type)
-            modelo = MODELOS_GROQ.get(task_type, MODELOS_GROQ["default"])
-            respuesta = await self._call_groq(mensajes_preparados, modelo)
-            if respuesta:
-                self._guardar_cache(pregunta_actual, respuesta)
-                return respuesta
-            logger.warning("Groq por defecto fallo, intentando Z.ai...")
+            r = await self._groq(messages, modelo_groq)
+            if r: return self._cache(pregunta, r, "Groq")
+            logger.warning("Groq falló — intentando Z.ai")
 
-        # --- Estrategia 4: Z.ai (GLM-5) como nube alternativa ---
+        # 2. Z.ai via SDK openai-compatible
         if self.zai_api_key:
-            logger.info("Enrutando a Z.ai (GLM-5) como alternativa.")
-            respuesta = await self._call_zai(mensajes_preparados)
-            if respuesta:
-                self._guardar_cache(pregunta_actual, respuesta)
-                return respuesta
-            logger.warning("Z.ai fallo, intentando Ollama local...")
-
-        # --- Estrategia 5: OpenRouter (Nemotron/DeepSeek) como nube terciaria ---
-        if self.openrouter_api_key:
-            logger.info("Enrutando a OpenRouter como alternativa.")
-            respuesta = await self._call_openrouter(mensajes_preparados)
-            if respuesta:
-                self._guardar_cache(pregunta_actual, respuesta)
-                return respuesta
-            logger.warning("OpenRouter fallo, intentando Ollama local...")
-
-        # --- Estrategia 6: GLM-4 local (Ollama) ---
-        logger.info("Intentando GLM-4 local (Ollama)...")
-        respuesta = await self._call_ollama(mensajes_preparados, MODELO_OLLAMA_GLM)
-        if respuesta:
-            self._guardar_cache(pregunta_actual, respuesta)
-            return respuesta
-
-        # --- Estrategia 7: Qwen2.5 local (Ollama) ---
-        logger.info("Intentando Qwen2.5 local (Ollama)...")
-        respuesta = await self._call_ollama(mensajes_preparados, MODELO_OLLAMA_DEFAULT)
-        if respuesta:
-            self._guardar_cache(pregunta_actual, respuesta)
-            return respuesta
-
-        # --- Estrategia 6: Devolver respuesta cacheada ---
-        if self._ultima_respuesta and self._ultima_pregunta != pregunta_actual:
-            logger.warning("Todos los proveedores fallaron. Devolviendo ultima respuesta cacheada.")
-            return (
-                f"[AVISO: Sin conexion a IA. Esta es una respuesta en cache de una pregunta anterior]\n\n"
-                f"{self._ultima_respuesta}"
+            r = await self._openai_compat(
+                messages, self.zai_api_key,
+                "https://open.bigmodel.cn/api/paas/v4/",
+                "glm-4-flash"
             )
+            if r: return self._cache(pregunta, r, "Z.ai")
+            logger.warning("Z.ai falló — intentando OpenRouter")
 
-        # --- Estrategia 7: Ningun proveedor disponible ---
-        logger.error("Todos los proveedores de IA no disponibles.")
-        return (
-            "Lo siento, no tengo acceso a un modelo de IA en este momento. "
-            "Verifica tu conexion a internet o que Ollama este ejecutandose."
-        )
+        # 3. OpenRouter via SDK openai-compatible
+        if self.openrouter_api_key:
+            r = await self._openai_compat(
+                messages, self.openrouter_api_key,
+                "https://openrouter.ai/api/v1",
+                "nvidia/llama-3.1-nemotron-70b-instruct"
+            )
+            if r: return self._cache(pregunta, r, "OpenRouter")
+            logger.warning("OpenRouter falló — intentando Ollama GLM-4")
 
-    def _guardar_cache(self, pregunta: str, respuesta: str):
-        """Guarda la ultima pregunta y respuesta para fallback sin conexion."""
-        if pregunta and respuesta:
-            self._ultima_pregunta = pregunta
-            self._ultima_respuesta = respuesta
+        # 4. GLM-4 local (Ollama)
+        r = await self._ollama(messages, MODELO_OLLAMA_GLM)
+        if r: return self._cache(pregunta, r, "Ollama/GLM-4")
+        logger.warning("GLM-4 local falló — intentando Qwen2.5")
 
-    async def _call_groq(self, messages: list[dict], model: str) -> Optional[str]:
-        """
-        Realiza una llamada a la API de Groq.
+        # 5. Qwen2.5 local (Ollama)
+        r = await self._ollama(messages, MODELO_OLLAMA_DEFAULT)
+        if r: return self._cache(pregunta, r, "Ollama/Qwen2.5")
 
-        Args:
-            messages: Lista de mensajes para enviar.
-            model: Nombre del modelo a utilizar.
+        # Cache de emergencia
+        if self._cache_respuesta and self._cache_pregunta != pregunta:
+            return f"[Sin IA disponible — respuesta anterior en cache]\n\n{self._cache_respuesta}"
 
-        Returns:
-            Respuesta del modelo como cadena de texto, o None si hay error.
-        """
-        logger.debug("Llamando a Groq con modelo: %s", model)
+        return "Sin acceso a IA en este momento. Verifica internet o que Ollama esté corriendo."
+
+    # ──────────────────────────────────────────────
+    # GROQ — SDK nativo (maneja rate limits y reintentos)
+    # ──────────────────────────────────────────────
+    async def _groq(self, messages: list[dict], model: str) -> Optional[str]:
         try:
-            cabeceras = {
-                "Authorization": f"Bearer {self.groq_api_key}",
-                "Content-Type": "application/json",
-            }
-            cuerpo = {
-                "model": model,
-                "messages": messages,
-                "temperature": 0.7,
-                "max_tokens": 2048,
-            }
+            import asyncio
+            from groq import Groq, RateLimitError, APIStatusError
+            client = Groq(api_key=self.groq_api_key, timeout=TIMEOUT_CLOUD)
 
-            async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=TIMEOUT_SOLICITUD)) as session:
-                async with session.post(self.groq_endpoint, headers=cabeceras, json=cuerpo) as respuesta_http:
-                    if respuesta_http.status == 200:
-                        datos = await respuesta_http.json()
-                        contenido = datos["choices"][0]["message"]["content"]
-                        logger.debug("Respuesta de Groq recibida (longitud: %d)", len(contenido))
-                        return contenido
-                    else:
-                        texto_error = await respuesta_http.text()
-                        logger.error(
-                            "Error de Groq (HTTP %d): %s",
-                            respuesta_http.status, texto_error[:500]
-                        )
-                        return None
-
-        except aiohttp.ClientError as e:
-            logger.error("Error de conexion con Groq: %s", e)
-            return None
-        except KeyError as e:
-            logger.error("Error al parsear respuesta de Groq, clave faltante: %s", e)
-            return None
+            loop = asyncio.get_event_loop()
+            response = await loop.run_in_executor(
+                None,
+                lambda: client.chat.completions.create(
+                    model=model,
+                    messages=messages,
+                    max_tokens=2048,
+                    temperature=0.7,
+                )
+            )
+            return response.choices[0].message.content
         except Exception as e:
-            logger.error("Error inesperado al llamar a Groq: %s", e)
+            logger.error("Groq error: %s", str(e)[:120])
             return None
 
-    async def _call_zai(self, messages: list[dict]) -> Optional[str]:
-        """
-        Realiza una llamada a la API de Z.ai (GLM-5).
-
-        Args:
-            messages: Lista de mensajes para enviar.
-
-        Returns:
-            Respuesta del modelo como cadena de texto, o None si hay error.
-        """
-        logger.debug("Llamando a Z.ai (GLM-5)")
+    # ──────────────────────────────────────────────
+    # Z.AI / OPENROUTER — SDK openai compatible
+    # ──────────────────────────────────────────────
+    async def _openai_compat(self, messages: list[dict], api_key: str, base_url: str, model: str) -> Optional[str]:
         try:
-            cabeceras = {
-                "Authorization": f"Bearer {self.zai_api_key}",
-                "Content-Type": "application/json",
-            }
-            cuerpo = {
-                "model": "glm-5",
-                "messages": messages,
-                "temperature": 0.7,
-            }
+            import asyncio
+            from openai import OpenAI, APIError
+            client = OpenAI(api_key=api_key, base_url=base_url, timeout=TIMEOUT_CLOUD)
 
-            async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=TIMEOUT_SOLICITUD)) as session:
-                async with session.post(self.zai_endpoint, headers=cabeceras, json=cuerpo) as respuesta_http:
-                    if respuesta_http.status == 200:
-                        datos = await respuesta_http.json()
-                        contenido = datos["choices"][0]["message"]["content"]
-                        logger.debug("Respuesta de Z.ai recibida (longitud: %d)", len(contenido))
-                        return contenido
-                    else:
-                        texto_error = await respuesta_http.text()
-                        logger.error(
-                            "Error de Z.ai (HTTP %d): %s",
-                            respuesta_http.status, texto_error[:500]
-                        )
-                        return None
-
-        except aiohttp.ClientError as e:
-            logger.error("Error de conexion con Z.ai: %s", e)
-            return None
-        except KeyError as e:
-            logger.error("Error al parsear respuesta de Z.ai, clave faltante: %s", e)
-            return None
+            loop = asyncio.get_event_loop()
+            response = await loop.run_in_executor(
+                None,
+                lambda: client.chat.completions.create(
+                    model=model,
+                    messages=messages,
+                    max_tokens=2048,
+                    temperature=0.7,
+                )
+            )
+            return response.choices[0].message.content
         except Exception as e:
-            logger.error("Error inesperado al llamar a Z.ai: %s", e)
+            logger.error("OpenAI-compat (%s) error: %s", base_url[:30], str(e)[:120])
             return None
 
-    async def _call_openrouter(self, messages: list[dict]) -> Optional[str]:
-        """Llama a OpenRouter (Nemotron 70B / DeepSeek) como nube terciaria."""
-        logger.debug("Llamando a OpenRouter")
+    # ──────────────────────────────────────────────
+    # OLLAMA — httpx (no hay SDK oficial)
+    # ──────────────────────────────────────────────
+    async def _ollama(self, messages: list[dict], model: str) -> Optional[str]:
         try:
-            cabeceras = {
-                "Authorization": f"Bearer {self.openrouter_api_key}",
-                "Content-Type": "application/json",
-                "HTTP-Referer": "http://localhost:8003",
-            }
-            cuerpo = {
-                "model": "nvidia/llama-3.1-nemotron-70b-instruct",
-                "messages": messages,
-                "temperature": 0.7,
-                "max_tokens": 2048,
-            }
-            async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=TIMEOUT_SOLICITUD)) as session:
-                async with session.post(self.openrouter_endpoint, headers=cabeceras, json=cuerpo) as resp:
-                    if resp.status == 200:
-                        datos = await resp.json()
-                        return datos["choices"][0]["message"]["content"]
-                    texto_error = await resp.text()
-                    logger.error("Error OpenRouter (HTTP %d): %s", resp.status, texto_error[:300])
-                    return None
+            import httpx
+            async with httpx.AsyncClient(timeout=TIMEOUT_OLLAMA) as client:
+                r = await client.post(
+                    f"{self.ollama_url}/api/chat",
+                    json={"model": model, "messages": messages, "stream": False}
+                )
+                if r.status_code == 200:
+                    return r.json().get("message", {}).get("content", "")
+                logger.error("Ollama HTTP %d: %s", r.status_code, r.text[:100])
+                return None
         except Exception as e:
-            logger.error("Error al llamar a OpenRouter: %s", e)
+            logger.error("Ollama (%s) error: %s", model, str(e)[:100])
             return None
 
-    async def _call_ollama(self, messages: list[dict], model: str) -> Optional[str]:
-        """
-        Realiza una llamada al servidor Ollama local.
-
-        Args:
-            messages: Lista de mensajes para enviar.
-            model: Nombre del modelo Ollama a utilizar.
-
-        Returns:
-            Respuesta del modelo como cadena de texto, o None si hay error.
-        """
-        logger.debug("Llamando a Ollama local con modelo: %s", model)
-        try:
-            cuerpo = {
-                "model": model,
-                "messages": messages,
-                "stream": False,
-            }
-
-            async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=TIMEOUT_SOLICITUD * 2)) as session:
-                async with session.post(self.ollama_chat_endpoint, json=cuerpo) as respuesta_http:
-                    if respuesta_http.status == 200:
-                        datos = await respuesta_http.json()
-                        contenido = datos.get("message", {}).get("content", "")
-                        if contenido:
-                            logger.debug("Respuesta de Ollama recibida (longitud: %d)", len(contenido))
-                            return contenido
-                        else:
-                            logger.error("Ollama respondio sin contenido.")
-                            return None
-                    else:
-                        texto_error = await respuesta_http.text()
-                        logger.error(
-                            "Error de Ollama (HTTP %d): %s",
-                            respuesta_http.status, texto_error[:500]
-                        )
-                        return None
-
-        except aiohttp.ClientError as e:
-            logger.error("Error de conexion con Ollama: %s. ¿Esta ejecutandose Ollama?", e)
-            return None
-        except KeyError as e:
-            logger.error("Error al parsear respuesta de Ollama, clave faltante: %s", e)
-            return None
-        except Exception as e:
-            logger.error("Error inesperado al llamar a Ollama: %s", e)
-            return None
-
-    async def _check_ollama(self) -> bool:
-        """
-        Verifica si el servidor Ollama esta disponible y ejecutandose.
-
-        Returns:
-            True si Ollama responde correctamente, False en caso contrario.
-        """
-        logger.debug("Verificando disponibilidad de Ollama en: %s", self.ollama_url)
-        try:
-            async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=5)) as session:
-                async with session.get(self.ollama_tags_endpoint) as respuesta_http:
-                    if respuesta_http.status == 200:
-                        datos = await respuesta_http.json()
-                        modelos = datos.get("models", [])
-                        logger.info("Ollama disponible con %d modelos instalados.", len(modelos))
-                        return True
-                    else:
-                        logger.debug("Ollama respondio con HTTP %d.", respuesta_http.status)
-                        return False
-
-        except aiohttp.ClientError as e:
-            logger.debug("Ollama no disponible: %s", e)
-            return False
-        except Exception as e:
-            logger.debug("Error al verificar Ollama: %s", e)
-            return False
-
-    async def get_available_providers(self) -> list[dict]:
-        """
-        Obtiene la lista de proveedores disponibles con su estado actual.
-
-        Returns:
-            Lista de diccionarios con informacion de cada proveedor:
-            [{'name': str, 'model': str, 'status': 'available'|'unavailable'}]
-        """
-        proveedores = []
-
-        # Verificar Groq
-        if self.groq_api_key:
-            # Probar con un request simple para verificar conectividad
-            try:
-                cabeceras = {
-                    "Authorization": f"Bearer {self.groq_api_key}",
-                    "Content-Type": "application/json",
-                }
-                cuerpo_prueba = {
-                    "model": MODELOS_GROQ["fast"],
-                    "messages": [{"role": "user", "content": "test"}],
-                    "max_tokens": 1,
-                }
-                async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=10)) as session:
-                    async with session.post(
-                        self.groq_endpoint,
-                        headers=cabeceras,
-                        json=cuerpo_prueba
-                    ) as resp:
-                        if resp.status == 200:
-                            proveedores.append({
-                                "name": "Groq",
-                                "model": "llama-3.3-70b-versatile / llama-3.1-8b-instant",
-                                "status": "available",
-                            })
-                        else:
-                            proveedores.append({
-                                "name": "Groq",
-                                "model": "llama-3.3-70b-versatile / llama-3.1-8b-instant",
-                                "status": "unavailable",
-                            })
-            except Exception:
-                proveedores.append({
-                    "name": "Groq",
-                    "model": "llama-3.3-70b-versatile / llama-3.1-8b-instant",
-                    "status": "unavailable",
-                })
-        else:
-            proveedores.append({
-                "name": "Groq",
-                "model": "llama-3.3-70b-versatile / llama-3.1-8b-instant",
-                "status": "unavailable (sin clave API)",
-            })
-
-        # Verificar Z.ai
-        if self.zai_api_key:
-            try:
-                cabeceras = {
-                    "Authorization": f"Bearer {self.zai_api_key}",
-                    "Content-Type": "application/json",
-                }
-                cuerpo_prueba = {
-                    "model": "glm-5",
-                    "messages": [{"role": "user", "content": "test"}],
-                    "max_tokens": 1,
-                }
-                async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=10)) as session:
-                    async with session.post(
-                        self.zai_endpoint,
-                        headers=cabeceras,
-                        json=cuerpo_prueba
-                    ) as resp:
-                        if resp.status == 200:
-                            proveedores.append({
-                                "name": "Z.ai (GLM)",
-                                "model": "glm-5",
-                                "status": "available",
-                            })
-                        else:
-                            proveedores.append({
-                                "name": "Z.ai (GLM)",
-                                "model": "glm-5",
-                                "status": "unavailable",
-                            })
-            except Exception:
-                proveedores.append({
-                    "name": "Z.ai (GLM)",
-                    "model": "glm-5",
-                    "status": "unavailable",
-                })
-        else:
-            proveedores.append({
-                "name": "Z.ai (GLM)",
-                "model": "glm-5",
-                "status": "unavailable (sin clave API)",
-            })
-
-        # Verificar Ollama
-        ollama_disponible = await self._check_ollama()
-        proveedores.append({
-            "name": "Ollama (Local)",
-            "model": MODELO_OLLAMA_DEFAULT,
-            "status": "available" if ollama_disponible else "unavailable",
-        })
-
-        logger.info("Estado de proveedores: %s",
-                     ", ".join(f"{p['name']}={p['status']}" for p in proveedores))
-        return proveedores
-
-    async def health_check(self) -> dict:
-        """
-        Realiza una verificacion completa de salud de todos los proveedores de IA.
-
-        Returns:
-            Diccionario con el estado detallado de cada proveedor:
-            {
-                'estado_general': 'ok'|'degradado'|'sin_servicio',
-                'proveedores': {nombre: {estado, latencia_ms, error}},
-                'total_disponibles': int,
-                'total_proveedores': int
-            }
-        """
-        import time
-
-        logger.info("Ejecutando verificacion de salud de proveedores de IA...")
-        resultados = {}
-        disponibles = 0
-        total = 3
-
-        # --- Verificar Groq ---
-        inicio = time.monotonic()
-        if self.groq_api_key:
-            try:
-                cabeceras = {
-                    "Authorization": f"Bearer {self.groq_api_key}",
-                    "Content-Type": "application/json",
-                }
-                cuerpo_prueba = {
-                    "model": MODELOS_GROQ["fast"],
-                    "messages": [{"role": "user", "content": "ping"}],
-                    "max_tokens": 1,
-                }
-                async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=15)) as session:
-                    async with session.post(
-                        self.groq_endpoint,
-                        headers=cabeceras,
-                        json=cuerpo_prueba
-                    ) as resp:
-                        latencia = int((time.monotonic() - inicio) * 1000)
-                        if resp.status == 200:
-                            resultados["Groq"] = {
-                                "estado": "ok",
-                                "latencia_ms": latencia,
-                                "error": None,
-                            }
-                            disponibles += 1
-                        else:
-                            texto_error = await resp.text()
-                            resultados["Groq"] = {
-                                "estado": "error",
-                                "latencia_ms": latencia,
-                                "error": f"HTTP {resp.status}: {texto_error[:200]}",
-                            }
-            except Exception as e:
-                latencia = int((time.monotonic() - inicio) * 1000)
-                resultados["Groq"] = {
-                    "estado": "error",
-                    "latencia_ms": latencia,
-                    "error": str(e),
-                }
-        else:
-            resultados["Groq"] = {
-                "estado": "sin_configurar",
-                "latencia_ms": 0,
-                "error": "No se proporciono GROQ_API_KEY",
-            }
-
-        # --- Verificar Z.ai ---
-        inicio = time.monotonic()
-        if self.zai_api_key:
-            try:
-                cabeceras = {
-                    "Authorization": f"Bearer {self.zai_api_key}",
-                    "Content-Type": "application/json",
-                }
-                cuerpo_prueba = {
-                    "model": "glm-5",
-                    "messages": [{"role": "user", "content": "ping"}],
-                    "max_tokens": 1,
-                }
-                async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=15)) as session:
-                    async with session.post(
-                        self.zai_endpoint,
-                        headers=cabeceras,
-                        json=cuerpo_prueba
-                    ) as resp:
-                        latencia = int((time.monotonic() - inicio) * 1000)
-                        if resp.status == 200:
-                            resultados["Z.ai"] = {
-                                "estado": "ok",
-                                "latencia_ms": latencia,
-                                "error": None,
-                            }
-                            disponibles += 1
-                        else:
-                            texto_error = await resp.text()
-                            resultados["Z.ai"] = {
-                                "estado": "error",
-                                "latencia_ms": latencia,
-                                "error": f"HTTP {resp.status}: {texto_error[:200]}",
-                            }
-            except Exception as e:
-                latencia = int((time.monotonic() - inicio) * 1000)
-                resultados["Z.ai"] = {
-                    "estado": "error",
-                    "latencia_ms": latencia,
-                    "error": str(e),
-                }
-        else:
-            resultados["Z.ai"] = {
-                "estado": "sin_configurar",
-                "latencia_ms": 0,
-                "error": "No se proporciono ZAI_API_KEY",
-            }
-
-        # --- Verificar Ollama ---
-        inicio = time.monotonic()
-        try:
-            async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=5)) as session:
-                async with session.get(self.ollama_tags_endpoint) as resp:
-                    latencia = int((time.monotonic() - inicio) * 1000)
-                    if resp.status == 200:
-                        resultados["Ollama"] = {
-                            "estado": "ok",
-                            "latencia_ms": latencia,
-                            "error": None,
-                        }
-                        disponibles += 1
-                    else:
-                        resultados["Ollama"] = {
-                            "estado": "error",
-                            "latencia_ms": latencia,
-                            "error": f"HTTP {resp.status}",
-                        }
-        except Exception as e:
-            latencia = int((time.monotonic() - inicio) * 1000)
-            resultados["Ollama"] = {
-                "estado": "error",
-                "latencia_ms": latencia,
-                "error": str(e),
-            }
-
-        # Determinar estado general
-        if disponibles == 0:
-            estado_general = "sin_servicio"
-        elif disponibles < total:
-            estado_general = "degradado"
-        else:
-            estado_general = "ok"
-
-        informe = {
-            "estado_general": estado_general,
-            "proveedores": resultados,
-            "total_disponibles": disponibles,
-            "total_proveedores": total,
+    # ──────────────────────────────────────────────
+    # UTILIDADES
+    # ──────────────────────────────────────────────
+    def _personalidad(self, nombre: str) -> str:
+        personalidades = {
+            "nexus":    "Eres un sistema autónomo instalado en la PC de Anuar en Guadalajara. Directo, sin adornos, español mexicano. No inventas datos. Reportas soluciones, no problemas.",
+            "tecnico":  "Eres asistente técnico. Resuelves problemas de software, hardware, código. Vas al punto.",
+            "ventas":   "Eres asistente de ventas. Cotizaciones, clientes, seguimiento ATF, precios Aozoom.",
+            "creativo": "Eres asistente creativo. Contenido, captions, ideas de marketing para Milens y ATF.",
         }
+        return personalidades.get(nombre, personalidades["nexus"])
 
-        logger.info(
-            "Verificacion de salud completada: %s (%d/%d proveedores disponibles)",
-            estado_general, disponibles, total
-        )
+    def _cache(self, pregunta: str, respuesta: str, proveedor: str = "?") -> str:
+        if pregunta:
+            self._cache_pregunta  = pregunta
+            self._cache_respuesta = respuesta
+        self._ultimo_proveedor = proveedor
+        return respuesta
 
-        return informe
-
-    # ─── Métodos de compatibilidad con nexus_core.py ──────────────────────────
-
-    async def generar_respuesta(self, messages: list[dict], task_type: str = "general") -> str:
+    # ──────────────────────────────────────────────
+    # COMPATIBILIDAD CON nexus_core (nombres anteriores)
+    # ──────────────────────────────────────────────
+    async def generar_respuesta(self, messages: list[dict], personality: str = "nexus", task_type: str = "general") -> str:
         """Alias de chat() para compatibilidad con nexus_core."""
-        return await self.chat(messages, task_type=task_type)
+        resultado = await self.chat(messages, personality, task_type)
+        # Detectar qué proveedor respondió según el contenido del cache
+        self._detectar_proveedor(resultado)
+        return resultado
+
+    def _detectar_proveedor(self, respuesta: str):
+        """Guarda el proveedor que respondió basado en el flujo exitoso."""
+        # Se actualiza en cada _cache() exitoso
+        pass
 
     def proveedor_actual(self) -> str:
-        """Retorna el proveedor primario configurado."""
-        if self.groq_api_key:
-            return "Groq"
-        if self.zai_api_key:
-            return "Z.ai"
-        return "Ollama"
+        return getattr(self, "_ultimo_proveedor", "Groq")
 
     def listar_proveedores(self) -> list[str]:
-        """Lista los proveedores configurados."""
         provs = []
-        if self.groq_api_key:
-            provs.append("Groq")
-        if self.zai_api_key:
-            provs.append("Z.ai")
+        if self.groq_api_key:       provs.append("Groq")
+        if self.zai_api_key:        provs.append("Z.ai")
+        if self.openrouter_api_key: provs.append("OpenRouter")
         provs.append("Ollama")
         return provs
 
     def obtener_estado_proveedor(self, nombre: str) -> dict:
-        """Retorna estado básico de un proveedor (sync, sin ping real)."""
-        if nombre == "Groq":
-            return {"nombre": "Groq", "disponible": bool(self.groq_api_key),
-                    "modelo": MODELOS_GROQ["default"]}
-        if nombre == "Z.ai":
-            return {"nombre": "Z.ai", "disponible": bool(self.zai_api_key),
-                    "modelo": "glm-5"}
-        return {"nombre": "Ollama", "disponible": True, "modelo": MODELO_OLLAMA_DEFAULT}
+        activos = self.listar_proveedores()
+        return {
+            "nombre": nombre,
+            "activo": nombre in activos,
+            "estado": "disponible" if nombre in activos else "sin key",
+        }
+
+    # ──────────────────────────────────────────────
+    # PROVEEDORES DISPONIBLES (para el panel)
+    # ──────────────────────────────────────────────
+    async def get_available_providers(self) -> list[dict]:
+        providers = []
+        if self.groq_api_key:
+            providers.append({"nombre": "Groq", "estado": "activo", "modelo": "llama-3.3-70b"})
+        if self.zai_api_key:
+            providers.append({"nombre": "Z.ai", "estado": "activo", "modelo": "glm-4-flash"})
+        if self.openrouter_api_key:
+            providers.append({"nombre": "OpenRouter", "estado": "activo", "modelo": "nemotron-70b"})
+
+        # Verificar Ollama
+        try:
+            import httpx
+            async with httpx.AsyncClient(timeout=3) as c:
+                r = await c.get(f"{self.ollama_url}/api/tags")
+                if r.status_code == 200:
+                    modelos = [m["name"] for m in r.json().get("models", [])]
+                    providers.append({"nombre": "Ollama", "estado": "activo", "modelos": modelos})
+        except Exception:
+            providers.append({"nombre": "Ollama", "estado": "inactivo", "modelos": []})
+
+        return providers

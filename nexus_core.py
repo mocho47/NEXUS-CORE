@@ -737,6 +737,346 @@ async def obtener_misiones():
 
 
 # ══════════════════════════════════════════════════════════════
+#  CONVERTIDOR DE ARCHIVOS
+# ══════════════════════════════════════════════════════════════
+
+@app.post("/api/convert")
+async def convertir_archivo(
+    file: UploadFile = File(...),
+    format: str = Form("pdf"),
+    dpi: int = Form(150),
+):
+    """
+    Convierte cualquier archivo a PDF, PNG, JPG, DXF o SVG.
+    Entradas soportadas: imágenes (png/jpg/bmp/gif/tiff/webp),
+    PDF (todas las páginas o solo la primera), SVG.
+    DPI recomendado: 150 pantalla, 300 impresión, 72 web.
+    """
+    from pathlib import Path as _P
+    import tempfile, shutil
+
+    OUTPUT_DIR = _P("C:/nexus/MERCH_OUTPUT")
+    OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
+
+    sufijo = _P(file.filename).suffix.lower() if file.filename else ".bin"
+    with tempfile.NamedTemporaryFile(delete=False, suffix=sufijo) as tmp:
+        shutil.copyfileobj(file.file, tmp)
+        ruta_origen = _P(tmp.name)
+
+    try:
+        nombre_base = _P(file.filename).stem if file.filename else "archivo"
+        formato     = format.lower().strip(".")
+        ext_origen  = sufijo.lstrip(".")
+
+        # Normalizar jpg/jpeg
+        if formato == "jpeg": formato = "jpg"
+        if ext_origen == "jpeg": ext_origen = "jpg"
+
+        ruta_salida = OUTPUT_DIR / f"{nombre_base}.{formato}"
+
+        IMAGENES = {"png", "jpg", "bmp", "gif", "tiff", "webp"}
+
+        # ══════════════════════════════════════════
+        # IMAGEN → PDF  (Pillow, DPI correcto)
+        # ══════════════════════════════════════════
+        if ext_origen in IMAGENES and formato == "pdf":
+            from PIL import Image
+            img = Image.open(ruta_origen)
+            if img.mode in ("RGBA", "P", "LA"):
+                img = img.convert("RGB")
+            img.save(str(ruta_salida), "PDF", resolution=dpi)
+
+        # ══════════════════════════════════════════
+        # IMAGEN → PNG / JPG  (Pillow)
+        # ══════════════════════════════════════════
+        elif ext_origen in IMAGENES and formato in ("png", "jpg"):
+            from PIL import Image
+            img = Image.open(ruta_origen)
+            if formato == "jpg" and img.mode in ("RGBA", "P", "LA"):
+                img = img.convert("RGB")
+            fmt_pil = "JPEG" if formato == "jpg" else "PNG"
+            img.save(str(ruta_salida), fmt_pil, dpi=(dpi, dpi),
+                     **({"quality": 92} if formato == "jpg" else {}))
+
+        # ══════════════════════════════════════════
+        # PDF → PDF  (optimizar: recomprimir con DPI dado)
+        # ══════════════════════════════════════════
+        elif ext_origen == "pdf" and formato == "pdf":
+            import fitz
+            doc = fitz.open(str(ruta_origen))
+            # Reescribir con compresión máxima
+            doc.save(str(ruta_salida), garbage=4, deflate=True, clean=True)
+            doc.close()
+
+        # ══════════════════════════════════════════
+        # PDF → PNG / JPG  (PyMuPDF — todas las páginas si >1)
+        # ══════════════════════════════════════════
+        elif ext_origen == "pdf" and formato in ("png", "jpg"):
+            import fitz
+            doc  = fitz.open(str(ruta_origen))
+            mat  = fitz.Matrix(dpi / 72, dpi / 72)
+            if doc.page_count == 1:
+                pix = doc[0].get_pixmap(matrix=mat)
+                pix.save(str(ruta_salida))
+            else:
+                # Múltiples páginas → guardar página 1 y avisar
+                pix = doc[0].get_pixmap(matrix=mat)
+                pix.save(str(ruta_salida))
+                ruta_salida = OUTPUT_DIR / f"{nombre_base}_p1.{formato}"
+                pix.save(str(ruta_salida))
+            doc.close()
+
+        # ══════════════════════════════════════════
+        # PDF → SVG  (PyMuPDF — vectorial real)
+        # ══════════════════════════════════════════
+        elif ext_origen == "pdf" and formato == "svg":
+            import fitz
+            doc = fitz.open(str(ruta_origen))
+            svg_txt = doc[0].get_svg_image()
+            ruta_salida.write_text(svg_txt, encoding="utf-8")
+            doc.close()
+
+        # ══════════════════════════════════════════
+        # PDF → DXF  (PyMuPDF extrae vectores → ezdxf)
+        # ══════════════════════════════════════════
+        elif ext_origen == "pdf" and formato == "dxf":
+            import fitz, ezdxf
+            doc = fitz.open(str(ruta_origen))
+            pag = doc[0]
+            mat = fitz.Matrix(dpi / 72, dpi / 72)
+            # Renderizar a imagen y luego vectorizar contornos
+            import cv2, numpy as np
+            pix     = pag.get_pixmap(matrix=mat)
+            img_arr = np.frombuffer(pix.samples, dtype=np.uint8).reshape(pix.h, pix.w, pix.n)
+            gris    = cv2.cvtColor(img_arr, cv2.COLOR_RGB2GRAY) if pix.n >= 3 else img_arr
+            _, bin_ = cv2.threshold(gris, 127, 255, cv2.THRESH_BINARY_INV)
+            conts, _ = cv2.findContours(bin_, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+            doc.close()
+
+            d = ezdxf.new("R2010")
+            msp = d.modelspace()
+            esc = 25.4 / dpi
+            for c in conts:
+                pts = [(p[0][0] * esc, -p[0][1] * esc) for p in c]
+                if len(pts) >= 2:
+                    msp.add_lwpolyline(pts, close=True)
+            d.saveas(str(ruta_salida))
+
+        # ══════════════════════════════════════════
+        # IMAGEN → DXF  (opencv contornos → ezdxf)
+        # ══════════════════════════════════════════
+        elif ext_origen in IMAGENES and formato == "dxf":
+            import cv2, ezdxf, numpy as np
+            img_cv = cv2.imread(str(ruta_origen), cv2.IMREAD_GRAYSCALE)
+            if img_cv is None:
+                raise HTTPException(status_code=400, detail="No se pudo leer la imagen")
+            _, bin_ = cv2.threshold(img_cv, 127, 255, cv2.THRESH_BINARY_INV)
+            conts, _ = cv2.findContours(bin_, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+            d   = ezdxf.new("R2010")
+            msp = d.modelspace()
+            esc = 25.4 / dpi
+            for c in conts:
+                pts = [(p[0][0] * esc, -p[0][1] * esc) for p in c]
+                if len(pts) >= 2:
+                    msp.add_lwpolyline(pts, close=True)
+            d.saveas(str(ruta_salida))
+
+        # ══════════════════════════════════════════
+        # IMAGEN → SVG  (vectorial real vía fitz render)
+        # ══════════════════════════════════════════
+        elif ext_origen in IMAGENES and formato == "svg":
+            from PIL import Image
+            img = Image.open(ruta_origen)
+            w, h = img.size
+            # Guardar PNG temporal embebido en SVG (compatible con cortadoras)
+            png_tmp = OUTPUT_DIR / f"{nombre_base}_embed.png"
+            img.save(str(png_tmp), "PNG", dpi=(dpi, dpi))
+            w_mm = round(w * 25.4 / dpi, 2)
+            h_mm = round(h * 25.4 / dpi, 2)
+            import base64
+            b64 = base64.b64encode(png_tmp.read_bytes()).decode()
+            svg = f'''<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
+     width="{w_mm}mm" height="{h_mm}mm" viewBox="0 0 {w} {h}">
+  <image xlink:href="data:image/png;base64,{b64}" x="0" y="0" width="{w}" height="{h}"/>
+</svg>'''
+            ruta_salida.write_text(svg, encoding="utf-8")
+            png_tmp.unlink(missing_ok=True)
+
+        # ══════════════════════════════════════════
+        # SVG → SVG  (ajustar espesor de línea para láser,
+        #             sin cambiar dimensiones ni estructura)
+        # ══════════════════════════════════════════
+        elif ext_origen == "svg" and formato == "svg":
+            from lxml import etree
+            NS = "http://www.w3.org/2000/svg"
+            tree = etree.parse(str(ruta_origen))
+            root = tree.getroot()
+
+            # DPI→ espesor hairline en px para láser (0.1px ≈ 0.035mm a 72dpi)
+            # dpi slider aquí = "agresividad" del trazo: 72=hairline, 300=grueso
+            grosor_px = round(0.1 + (dpi - 72) * (2.0 / 228), 3)
+
+            # Recorrer todos los elementos con stroke y ajustar solo el ancho
+            for el in root.iter():
+                style = el.get("style", "")
+                if style:
+                    partes = [p.strip() for p in style.split(";") if p.strip()]
+                    nuevas = []
+                    tiene_stroke = False
+                    for p in partes:
+                        if p.startswith("stroke-width"):
+                            nuevas.append(f"stroke-width:{grosor_px}px")
+                            tiene_stroke = True
+                        elif p.startswith("stroke:") and p != "stroke:none":
+                            nuevas.append(p)
+                            tiene_stroke = True
+                        else:
+                            nuevas.append(p)
+                    el.set("style", ";".join(nuevas))
+                # También atributo stroke-width directo
+                if el.get("stroke-width"):
+                    el.set("stroke-width", str(grosor_px))
+
+            tree.write(str(ruta_salida), xml_declaration=True,
+                       encoding="utf-8", pretty_print=True)
+
+        # ══════════════════════════════════════════
+        # SVG → PNG  (Inkscape CLI — renderizado exacto a DPI)
+        # ══════════════════════════════════════════
+        elif ext_origen == "svg" and formato in ("png", "jpg"):
+            import subprocess
+            inkscape = r"C:\Program Files\Inkscape\bin\inkscape.exe"
+            png_out  = ruta_salida if formato == "png" else OUTPUT_DIR / f"{nombre_base}_tmp.png"
+            resultado = subprocess.run([
+                inkscape,
+                f"--export-type=png",
+                f"--export-dpi={dpi}",
+                f"--export-filename={png_out}",
+                str(ruta_origen)
+            ], capture_output=True, timeout=30)
+            if resultado.returncode != 0:
+                raise HTTPException(status_code=500,
+                    detail=f"Inkscape error: {resultado.stderr.decode(errors='ignore')[:200]}")
+            if formato == "jpg":
+                from PIL import Image
+                Image.open(str(png_out)).convert("RGB").save(
+                    str(ruta_salida), "JPEG", dpi=(dpi, dpi), quality=92)
+                png_out.unlink(missing_ok=True)
+
+        # ══════════════════════════════════════════
+        # SVG → PDF  (Inkscape CLI — vectorial real)
+        # ══════════════════════════════════════════
+        elif ext_origen == "svg" and formato == "pdf":
+            import subprocess
+            inkscape = r"C:\Program Files\Inkscape\bin\inkscape.exe"
+            resultado = subprocess.run([
+                inkscape,
+                "--export-type=pdf",
+                f"--export-filename={ruta_salida}",
+                str(ruta_origen)
+            ], capture_output=True, timeout=30)
+            if resultado.returncode != 0:
+                raise HTTPException(status_code=500,
+                    detail=f"Inkscape error: {resultado.stderr.decode(errors='ignore')[:200]}")
+
+        # ══════════════════════════════════════════
+        # SVG → DXF  (Inkscape exporta a DXF plano)
+        # ══════════════════════════════════════════
+        elif ext_origen == "svg" and formato == "dxf":
+            import subprocess
+            inkscape = r"C:\Program Files\Inkscape\bin\inkscape.exe"
+            resultado = subprocess.run([
+                inkscape,
+                "--export-type=dxf",
+                f"--export-filename={ruta_salida}",
+                str(ruta_origen)
+            ], capture_output=True, timeout=30)
+            if resultado.returncode != 0:
+                raise HTTPException(status_code=500,
+                    detail=f"Inkscape error: {resultado.stderr.decode(errors='ignore')[:200]}")
+
+        # ══════════════════════════════════════════
+        # DXF → PNG  (ezdxf + matplotlib — renderizado)
+        # ══════════════════════════════════════════
+        elif ext_origen == "dxf" and formato in ("png", "jpg"):
+            import ezdxf
+            from ezdxf.addons.drawing import RenderContext, Frontend
+            from ezdxf.addons.drawing.matplotlib import MatplotlibBackend
+            import matplotlib.pyplot as plt
+
+            doc = ezdxf.readfile(str(ruta_origen))
+            msp = doc.modelspace()
+            fig = plt.figure(figsize=(12, 12), dpi=dpi)
+            ax  = fig.add_axes([0, 0, 1, 1])
+            ctx = RenderContext(doc)
+            out = MatplotlibBackend(ax)
+            Frontend(ctx, out).draw_layout(msp, finalize=True)
+            fig.savefig(str(ruta_salida), dpi=dpi,
+                        format="png" if formato == "png" else "jpg",
+                        bbox_inches="tight", pad_inches=0)
+            plt.close(fig)
+
+        # ══════════════════════════════════════════
+        # DXF → DXF  (ajustar pesos de línea por capa)
+        # ══════════════════════════════════════════
+        elif ext_origen == "dxf" and formato == "dxf":
+            import ezdxf
+            doc = ezdxf.readfile(str(ruta_origen))
+            # Estandarizar: capa CORTE=hairline(0), capa GRABADO=0.25mm
+            for capa in doc.layers:
+                nombre = capa.dxf.name.upper()
+                if any(k in nombre for k in ["CUT","CORTE","CUT_LINE","C1"]):
+                    capa.dxf.lineweight = 0      # hairline
+                elif any(k in nombre for k in ["ENGRAVE","GRAB","RASTER","E1"]):
+                    capa.dxf.lineweight = 25     # 0.25mm
+            doc.saveas(str(ruta_salida))
+
+        # ══════════════════════════════════════════
+        # DXF → PDF  (Inkscape vía SVG intermedio)
+        # ══════════════════════════════════════════
+        elif ext_origen == "dxf" and formato == "pdf":
+            import subprocess, ezdxf
+            # ezdxf → SVG → PDF via Inkscape
+            svg_tmp = OUTPUT_DIR / f"{nombre_base}_tmp.svg"
+            doc = ezdxf.readfile(str(ruta_origen))
+            from ezdxf.addons.drawing import RenderContext, Frontend
+            from ezdxf.addons.drawing.svg import SVGBackend
+            ctx = RenderContext(doc)
+            backend = SVGBackend()
+            Frontend(ctx, backend).draw_layout(doc.modelspace(), finalize=True)
+            svg_tmp.write_text(backend.get_xml_root_element_as_string(), encoding="utf-8")
+            inkscape = r"C:\Program Files\Inkscape\bin\inkscape.exe"
+            subprocess.run([inkscape,"--export-type=pdf",
+                f"--export-filename={ruta_salida}", str(svg_tmp)],
+                capture_output=True, timeout=30)
+            svg_tmp.unlink(missing_ok=True)
+
+        else:
+            raise HTTPException(
+                status_code=400,
+                detail=f"Combinación .{ext_origen} → .{formato} no soportada. "
+                       f"Soportado: imágenes, pdf, svg, dxf como entrada."
+            )
+
+        return {
+            "success": True,
+            "path": str(ruta_salida),
+            "url": f"/static/output/{ruta_salida.name}",
+            "formato": formato,
+            "dpi": dpi,
+            "nombre": ruta_salida.name,
+        }
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+    finally:
+        ruta_origen.unlink(missing_ok=True)
+
+
+# ══════════════════════════════════════════════════════════════
 #  MANUAL
 # ══════════════════════════════════════════════════════════════
 
@@ -814,6 +1154,12 @@ async def manejador_errores(request: Request, exc: Exception):
 dir_static = os.path.join(os.path.dirname(__file__), "static")
 if os.path.isdir(dir_static):
     app.mount("/static", StaticFiles(directory=dir_static), name="static")
+
+# ── Montar carpeta de salida (archivos convertidos) ───────────
+from pathlib import Path as _PathStatic
+_output_dir = _PathStatic("C:/nexus/MERCH_OUTPUT")
+_output_dir.mkdir(parents=True, exist_ok=True)
+app.mount("/static/output", StaticFiles(directory=str(_output_dir)), name="output")
 
 
 # ══════════════════════════════════════════════════════════════

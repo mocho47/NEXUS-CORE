@@ -362,6 +362,189 @@ Tel: {os.getenv('ATF_PHONE', '3326148674')}"""
     ))
 
 # ═══════════════════════════════════════════════
+# GENERADOR DE CAPTIONS CON IA (Groq SDK nativo)
+# ═══════════════════════════════════════════════
+class CaptionRequest(BaseModel):
+    plataforma: str = "instagram"   # instagram | tiktok | facebook | youtube
+    tema: str = "faros LED ATF"
+    tono: str = "profesional"       # profesional | divertido | urgente | técnico
+    incluir_cta: bool = True
+    idioma: str = "es"
+
+@app.post("/redes/generar_caption")
+async def generar_caption(req: CaptionRequest):
+    """Genera caption optimizado para cada plataforma usando Groq."""
+    especificaciones = {
+        "instagram": "máximo 2200 caracteres, 5-10 hashtags relevantes, emoji moderado, CTA al final",
+        "tiktok":    "máximo 150 caracteres, 3-5 hashtags trending, gancho en primera línea",
+        "facebook":  "máximo 500 caracteres, tono conversacional, sin exceso de hashtags, incluir emoji",
+        "youtube":   "título máximo 70 caracteres + descripción 200 palabras con palabras clave SEO",
+    }
+    specs = especificaciones.get(req.plataforma, especificaciones["instagram"])
+
+    prompt = f"""Genera un caption de marketing para {req.plataforma} sobre: {req.tema}
+Tono: {req.tono}
+Especificaciones: {specs}
+Incluir llamada a la acción: {'Sí' if req.incluir_cta else 'No'}
+Negocio: ATF - Instalación de faros LED Aozoom en Guadalajara
+Teléfono: {os.getenv('ATF_PHONE', '3323530146')}
+Responde SOLO con el caption listo para copiar y pegar. Sin explicaciones."""
+
+    try:
+        from groq import Groq
+        client = Groq(api_key=os.getenv("GROQ_API_KEY"), timeout=30)
+        response = client.chat.completions.create(
+            model="llama-3.1-8b-instant",
+            messages=[{"role": "user", "content": prompt}],
+            max_tokens=600,
+            temperature=0.8,
+        )
+        caption = response.choices[0].message.content.strip()
+        return {"ok": True, "caption": caption, "plataforma": req.plataforma, "via": "Groq"}
+    except Exception as e:
+        return {"ok": False, "error": str(e)}
+
+
+# ═══════════════════════════════════════════════
+# OPTIMIZADOR DE IMÁGENES POR PLATAFORMA (Pillow)
+# ═══════════════════════════════════════════════
+SPECS_PLATAFORMA = {
+    "instagram_post":    (1080, 1080),
+    "instagram_reel":    (1080, 1920),
+    "instagram_historia":(1080, 1920),
+    "facebook_post":     (1200, 630),
+    "facebook_portada":  (820, 312),
+    "tiktok":            (1080, 1920),
+    "youtube_thumbnail": (1280, 720),
+    "whatsapp":          (1024, 1024),
+}
+
+class OptimizarRequest(BaseModel):
+    imagen_path: str
+    plataforma: str = "instagram_post"  # ver SPECS_PLATAFORMA
+    dpi: int = 72           # pantalla=72, impresión=300
+    calidad: int = 90
+
+@app.post("/redes/optimizar_imagen")
+async def optimizar_imagen(req: OptimizarRequest):
+    """Redimensiona y optimiza imagen para las especificaciones exactas de la plataforma."""
+    from PIL import Image, ImageOps
+    from pathlib import Path as _P
+
+    ruta = _P(req.imagen_path)
+    if not ruta.exists():
+        return {"ok": False, "error": f"Archivo no encontrado: {req.imagen_path}"}
+
+    specs = SPECS_PLATAFORMA.get(req.plataforma)
+    if not specs:
+        return {"ok": False, "error": f"Plataforma desconocida. Opciones: {list(SPECS_PLATAFORMA.keys())}"}
+
+    w_target, h_target = specs
+    OUTPUT = _P("C:/NEXUS_v3_NEW/output")
+    OUTPUT.mkdir(exist_ok=True)
+    salida = OUTPUT / f"{ruta.stem}_{req.plataforma}.jpg"
+
+    try:
+        img = Image.open(str(ruta)).convert("RGB")
+        # Redimensionar manteniendo aspecto y rellenando con negro si es necesario
+        img = ImageOps.fit(img, (w_target, h_target), method=Image.LANCZOS, centering=(0.5, 0.5))
+        img.save(str(salida), "JPEG", dpi=(req.dpi, req.dpi), quality=req.calidad, optimize=True)
+        return {
+            "ok": True,
+            "salida": str(salida),
+            "dimensiones": f"{w_target}x{h_target}px",
+            "plataforma": req.plataforma,
+            "dpi": req.dpi,
+            "tamaño_kb": round(salida.stat().st_size / 1024, 1)
+        }
+    except Exception as e:
+        return {"ok": False, "error": str(e)}
+
+
+# ═══════════════════════════════════════════════
+# YOUTUBE (google-api-python-client)
+# ═══════════════════════════════════════════════
+class YouTubeRequest(BaseModel):
+    video_path: str
+    titulo: str
+    descripcion: Optional[str] = None
+    tags: Optional[List[str]] = None
+    privacidad: str = "public"   # public | unlisted | private
+
+@app.post("/redes/youtube/subir")
+async def subir_youtube(req: YouTubeRequest):
+    """Sube video a YouTube usando Google API."""
+    token_file = Path("C:/NEXUS_v3_NEW/data/youtube_token.json")
+    if not token_file.exists():
+        return {
+            "ok": False,
+            "error": "No autenticado con YouTube.",
+            "instruccion": "Obtén credenciales OAuth2 en console.cloud.google.com y guárdalas en data/youtube_token.json"
+        }
+    try:
+        from googleapiclient.discovery import build
+        from googleapiclient.http import MediaFileUpload
+        from google.oauth2.credentials import Credentials
+
+        creds = Credentials.from_authorized_user_file(str(token_file))
+        yt = build("youtube", "v3", credentials=creds)
+
+        body = {
+            "snippet": {
+                "title": req.titulo,
+                "description": req.descripcion or req.titulo,
+                "tags": req.tags or ["ATF", "faros", "LED", "Guadalajara", "Aozoom"],
+                "categoryId": "2"  # Autos y vehículos
+            },
+            "status": {"privacyStatus": req.privacidad}
+        }
+        media = MediaFileUpload(req.video_path, chunksize=-1, resumable=True)
+        request = yt.videos().insert(part=",".join(body.keys()), body=body, media_body=media)
+        response = request.execute()
+        return {
+            "ok": True,
+            "video_id": response["id"],
+            "url": f"https://youtu.be/{response['id']}",
+            "titulo": req.titulo
+        }
+    except Exception as e:
+        return {"ok": False, "error": str(e)}
+
+
+# ═══════════════════════════════════════════════
+# TELEGRAM (httpx — sin SDK extra necesario)
+# ═══════════════════════════════════════════════
+class TelegramRequest(BaseModel):
+    mensaje: str
+    imagen_path: Optional[str] = None
+
+@app.post("/redes/telegram/enviar")
+async def enviar_telegram(req: TelegramRequest):
+    """Envía mensaje o imagen por Telegram."""
+    import httpx
+    token   = os.getenv("TELEGRAM_BOT_TOKEN")
+    chat_id = os.getenv("TELEGRAM_CHAT_ID")
+    if not token or not chat_id:
+        return {"ok": False, "error": "TELEGRAM_BOT_TOKEN / TELEGRAM_CHAT_ID no configurados"}
+
+    base = f"https://api.telegram.org/bot{token}"
+    try:
+        async with httpx.AsyncClient(timeout=20) as client:
+            if req.imagen_path and Path(req.imagen_path).exists():
+                with open(req.imagen_path, "rb") as f:
+                    r = await client.post(f"{base}/sendPhoto",
+                        data={"chat_id": chat_id, "caption": req.mensaje},
+                        files={"photo": f})
+            else:
+                r = await client.post(f"{base}/sendMessage",
+                    json={"chat_id": chat_id, "text": req.mensaje, "parse_mode": "Markdown"})
+        d = r.json()
+        return {"ok": d.get("ok", False), "message_id": d.get("result", {}).get("message_id")}
+    except Exception as e:
+        return {"ok": False, "error": str(e)}
+
+
+# ═══════════════════════════════════════════════
 # ESTADO GENERAL DE TODAS LAS REDES
 # ═══════════════════════════════════════════════
 @app.get("/redes/estado")

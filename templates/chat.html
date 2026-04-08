@@ -1753,6 +1753,15 @@
             if (data.success || data.url || data.path) {
                 showToast(`Archivo convertido a ${format.toUpperCase()} exitosamente`, 'success');
                 closeUploadModal();
+                // Descargar automáticamente si viene URL
+                if (data.url) {
+                    const a = document.createElement('a');
+                    a.href = `${NEXUS_CONFIG.API_BASE}${data.url}`;
+                    a.download = data.nombre || `archivo.${format}`;
+                    document.body.appendChild(a);
+                    a.click();
+                    document.body.removeChild(a);
+                }
             } else {
                 throw new Error(data.detail || data.error || 'Error en la conversión');
             }
