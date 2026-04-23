@@ -1,0 +1,880 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="theme-color" content="#0a0a0a">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<title>NEXUS Teens</title>
+<link rel="manifest" href="/teens/manifest.json">
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+:root{
+  --bg:#0a0a0a;--surface:#141414;--border:#222;
+  --accent:#7c3aed;--accent2:#5b21b6;
+  --text:#e5e5e5;--muted:#555;
+  --danger:#ef4444;--success:#22c55e;--warn:#f59e0b;
+  --user:#1e1040;
+}
+html,body{height:100%;background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;}
+.screen{display:none;position:fixed;inset:0;flex-direction:column;}
+.screen.active{display:flex;}
+
+/* ── LOGIN ─────────────────────────────────────── */
+#s-login{align-items:center;justify-content:center;padding:2rem;gap:1.5rem;overflow-y:auto;}
+.logo{font-size:2.2rem;font-weight:800;letter-spacing:-1px;}
+.logo b{color:var(--accent);}
+.sub{color:var(--muted);font-size:.85rem;margin-top:-.5rem;}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:1.5rem;width:100%;max-width:360px;display:flex;flex-direction:column;gap:1.1rem;}
+.card h2{font-size:1rem;font-weight:600;}
+.field{display:flex;flex-direction:column;gap:.4rem;}
+.field label{font-size:.72rem;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;}
+.field input,.field select{background:var(--bg);border:1px solid var(--border);color:var(--text);padding:.7rem 1rem;border-radius:10px;font-size:.95rem;outline:none;transition:border .2s;font-family:inherit;}
+.field input:focus,.field select:focus{border-color:var(--accent);}
+.btn{background:var(--accent);color:#fff;border:none;padding:.8rem;border-radius:10px;font-size:.95rem;font-weight:600;cursor:pointer;transition:background .15s;}
+.btn:hover{background:var(--accent2);}
+.btn.secondary{background:transparent;border:1px solid var(--border);color:var(--muted);}
+.btn.secondary:hover{border-color:var(--accent);color:var(--text);}
+.btn.danger{background:#7f1d1d;color:#fca5a5;}
+.btn.danger:hover{background:#991b1b;}
+.btn.sm{padding:.45rem .8rem;font-size:.82rem;}
+.btn.success{background:#14532d;color:#86efac;}
+.btn.success:hover{background:#166534;}
+.err{color:var(--danger);font-size:.82rem;min-height:1.1rem;text-align:center;}
+.divider{display:flex;align-items:center;gap:.75rem;color:var(--muted);font-size:.8rem;}
+.divider::before,.divider::after{content:'';flex:1;height:1px;background:var(--border);}
+.codigo-box{background:var(--bg);border:2px solid var(--accent);border-radius:12px;padding:1rem;text-align:center;}
+.codigo-box .code{font-size:2rem;font-weight:800;letter-spacing:.3em;color:var(--accent);}
+.codigo-box small{color:var(--muted);font-size:.78rem;display:block;margin-top:.4rem;}
+.copy-btn{background:none;border:none;color:var(--muted);cursor:pointer;font-size:.8rem;margin-top:.3rem;text-decoration:underline;}
+
+/* ── CHAT ─────────────────────────────────────── */
+#s-chat{flex-direction:column;}
+#chat-header{background:var(--surface);border-bottom:1px solid var(--border);padding:.7rem 1rem;display:flex;align-items:center;gap:.75rem;flex-shrink:0;}
+.av{width:38px;height:38px;border-radius:50%;background:var(--accent);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:.95rem;flex-shrink:0;}
+.hinfo{flex:1;min-width:0;}
+.hname{font-weight:600;font-size:.95rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.hstatus{font-size:.72rem;color:var(--success);}
+.hmenu{background:none;border:none;color:var(--muted);font-size:1.4rem;cursor:pointer;padding:.2rem .4rem;}
+#messages{flex:1;overflow-y:auto;padding:.75rem;display:flex;flex-direction:column;gap:.6rem;}
+#messages::-webkit-scrollbar{width:3px;}
+#messages::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px;}
+.msg{max-width:85%;display:flex;flex-direction:column;gap:.18rem;}
+.msg.user{align-self:flex-end;align-items:flex-end;}
+.msg.bot{align-self:flex-start;align-items:flex-start;}
+.bubble{padding:.6rem .85rem;border-radius:16px;font-size:.92rem;line-height:1.5;white-space:pre-wrap;word-break:break-word;}
+.msg.user .bubble{background:var(--accent);color:#fff;border-bottom-right-radius:3px;}
+.msg.bot .bubble{background:var(--surface);border:1px solid var(--border);border-bottom-left-radius:3px;}
+.msg.alerta .bubble{border-color:var(--danger)!important;background:#180808!important;}
+.mtime{font-size:.62rem;color:var(--muted);}
+.typing{display:flex;gap:4px;padding:.6rem .85rem;background:var(--surface);border:1px solid var(--border);border-radius:16px;border-bottom-left-radius:3px;width:fit-content;}
+.typing span{width:6px;height:6px;background:var(--muted);border-radius:50%;animation:blink .9s infinite;}
+.typing span:nth-child(2){animation-delay:.15s;}
+.typing span:nth-child(3){animation-delay:.3s;}
+@keyframes blink{0%,60%,100%{transform:translateY(0);}30%{transform:translateY(-5px);}}
+#input-wrap{background:var(--surface);border-top:1px solid var(--border);padding:.6rem .75rem;display:flex;align-items:flex-end;gap:.5rem;flex-shrink:0;}
+#txt{flex:1;background:var(--bg);border:1px solid var(--border);color:var(--text);padding:.6rem .85rem;border-radius:20px;font-size:.92rem;outline:none;resize:none;max-height:110px;line-height:1.45;transition:border .2s;font-family:inherit;}
+#txt:focus{border-color:var(--accent);}
+#sbtn{background:var(--accent);border:none;color:#fff;width:40px;height:40px;border-radius:50%;cursor:pointer;font-size:1.1rem;flex-shrink:0;transition:background .15s;display:flex;align-items:center;justify-content:center;}
+#sbtn:hover{background:var(--accent2);}
+#sbtn:disabled{background:var(--border);cursor:not-allowed;}
+#mood{background:var(--bg);border-top:1px solid var(--border);padding:.45rem .75rem;display:none;align-items:center;gap:.5rem;flex-shrink:0;}
+#mood span{font-size:.72rem;color:var(--muted);}
+.mb{background:none;border:none;font-size:1.1rem;cursor:pointer;padding:.2rem;border-radius:50%;transition:transform .15s;}
+.mb:hover{transform:scale(1.2);}
+#overlay{position:fixed;inset:0;background:rgba(0,0,0,.65);z-index:200;display:none;}
+#drawer{position:fixed;right:0;top:0;bottom:0;width:250px;background:var(--surface);border-left:1px solid var(--border);padding:1.25rem 1rem;display:flex;flex-direction:column;gap:.6rem;z-index:201;}
+.duser{font-weight:600;padding-bottom:.75rem;border-bottom:1px solid var(--border);}
+.dpts{color:var(--accent);font-size:.82rem;margin-top:-.2rem;}
+.dsec{font-size:.68rem;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-top:.4rem;}
+.ditem{background:var(--bg);border:1px solid var(--border);color:var(--text);padding:.65rem .9rem;border-radius:8px;cursor:pointer;font-size:.88rem;text-align:left;transition:border .15s;width:100%;}
+.ditem:hover{border-color:var(--accent);}
+
+/* ── PANEL PADRE ──────────────────────────────── */
+#s-padre{flex-direction:column;overflow:hidden;}
+#padre-header{background:var(--surface);border-bottom:1px solid var(--border);padding:.75rem 1rem;display:flex;align-items:center;gap:.75rem;flex-shrink:0;}
+#padre-header .title{flex:1;font-weight:700;font-size:1rem;}
+#badge-alertas{background:var(--danger);color:#fff;border-radius:99px;padding:.1rem .45rem;font-size:.7rem;font-weight:700;display:none;}
+.tab-bar{display:flex;border-bottom:1px solid var(--border);flex-shrink:0;background:var(--surface);}
+.tab{flex:1;padding:.6rem;border:none;background:none;color:var(--muted);font-size:.8rem;cursor:pointer;border-bottom:2px solid transparent;transition:all .15s;position:relative;}
+.tab.active{color:var(--accent);border-bottom-color:var(--accent);}
+.tab .tbadge{position:absolute;top:4px;right:8px;background:var(--danger);color:#fff;border-radius:99px;padding:.05rem .35rem;font-size:.65rem;font-weight:700;display:none;}
+.tab .tbadge.on{display:inline;}
+#padre-content{flex:1;overflow-y:auto;padding:1rem;}
+#padre-content::-webkit-scrollbar{width:3px;}
+#padre-content::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px;}
+
+/* member cards */
+.member-card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:1rem;display:flex;align-items:center;gap:.85rem;margin-bottom:.75rem;}
+.member-card .av{width:44px;height:44px;font-size:1.1rem;flex-shrink:0;}
+.member-card .info{flex:1;min-width:0;}
+.member-card .mname{font-weight:600;font-size:.95rem;}
+.member-card .mrole{font-size:.72rem;color:var(--muted);text-transform:capitalize;}
+.member-card .mpts{font-size:.82rem;color:var(--accent);}
+.member-card .mmood{font-size:1.3rem;}
+
+/* mission cards */
+.mission-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:.9rem 1rem;margin-bottom:.75rem;}
+.mission-card .mtop{display:flex;justify-content:space-between;align-items:flex-start;gap:.5rem;margin-bottom:.4rem;}
+.mission-card .mtitulo{font-weight:600;font-size:.9rem;}
+.mission-card .mpts-badge{background:var(--accent2);color:#fff;border-radius:99px;padding:.15rem .55rem;font-size:.75rem;font-weight:600;white-space:nowrap;}
+.mission-card .mdesc{font-size:.82rem;color:var(--muted);margin-bottom:.7rem;}
+.mission-card .mfooter{display:flex;gap:.5rem;justify-content:flex-end;}
+.mission-card .masignado{font-size:.75rem;color:var(--muted);flex:1;}
+.status-badge{border-radius:99px;padding:.15rem .55rem;font-size:.72rem;font-weight:600;}
+.status-pendiente{background:#1c1a00;color:var(--warn);}
+.status-completada{background:#0c2218;color:var(--success);}
+.status-aprobada{background:#1a0c40;color:#a78bfa;}
+
+/* alert cards */
+.alert-card{border-radius:12px;padding:.9rem 1rem;margin-bottom:.75rem;border:1px solid;}
+.alert-card.bajo{background:#0a0d0a;border-color:#22c55e33;color:var(--success);}
+.alert-card.medio{background:#0d0900;border-color:#f59e0b44;color:var(--warn);}
+.alert-card.alto{background:#0d0000;border-color:#ef444455;color:var(--danger);}
+.alert-card .atype{font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.5px;margin-bottom:.3rem;}
+.alert-card .asugg{font-size:.83rem;color:var(--muted);margin-top:.3rem;}
+
+/* acuerdo cards */
+.acuerdo-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:.9rem 1rem;margin-bottom:.75rem;}
+.acuerdo-card .adesc{font-weight:600;font-size:.88rem;margin-bottom:.3rem;}
+.acuerdo-card .acond{font-size:.8rem;color:var(--muted);}
+.acuerdo-card .arecomp{font-size:.8rem;color:var(--accent);margin-top:.25rem;}
+
+/* empty state */
+.empty{text-align:center;color:var(--muted);padding:2.5rem 1rem;font-size:.9rem;}
+
+/* FAB */
+.fab{position:fixed;bottom:1.2rem;right:1.2rem;width:52px;height:52px;background:var(--accent);border:none;color:#fff;border-radius:50%;font-size:1.5rem;cursor:pointer;box-shadow:0 4px 16px rgba(124,58,237,.4);z-index:50;display:none;align-items:center;justify-content:center;transition:background .15s;}
+.fab:hover{background:var(--accent2);}
+
+/* modals */
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.8);z-index:400;align-items:center;justify-content:center;padding:1.25rem;}
+.modal-overlay.on{display:flex;}
+.modal-box{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:1.5rem;width:100%;max-width:360px;display:flex;flex-direction:column;gap:1rem;max-height:85vh;overflow-y:auto;}
+.modal-box h3{font-size:1rem;font-weight:700;}
+
+/* pin modal */
+#pin-modal .pin-info{font-size:.88rem;color:var(--muted);}
+
+/* toast */
+#toast{position:fixed;bottom:80px;left:50%;transform:translateX(-50%);background:#1c1c1c;border:1px solid var(--border);color:var(--text);padding:.5rem 1.1rem;border-radius:20px;font-size:.82rem;opacity:0;transition:opacity .25s;pointer-events:none;z-index:500;white-space:nowrap;}
+#toast.on{opacity:1;}
+</style>
+</head>
+<body>
+
+<!-- ══ LOGIN ══════════════════════════════════════════════════════ -->
+<div id="s-login" class="screen active">
+  <div class="logo">NEX<b>US</b></div>
+  <div class="sub">Tu espacio. Sin rollos.</div>
+
+  <div class="card" id="c-quien">
+    <h2>¿Cómo entras?</h2>
+    <button class="btn" onclick="mostrar('c-nuevo-padre')">Soy papá o mamá — crear familia</button>
+    <button class="btn secondary" onclick="mostrar('c-nuevo-teen')">Soy teen — tengo un código</button>
+    <div class="divider">o</div>
+    <button class="btn secondary" onclick="mostrar('c-regresar')">Ya tengo cuenta</button>
+  </div>
+
+  <!-- padre: crear familia -->
+  <div class="card" id="c-nuevo-padre" style="display:none">
+    <h2>Crear familia</h2>
+    <div class="field"><label>Tu nombre</label><input id="p-nombre" placeholder="Nombre del papá/mamá" autocomplete="off"></div>
+    <div class="field"><label>Eres</label>
+      <select id="p-rol"><option value="padre">Papá</option><option value="madre">Mamá</option></select>
+    </div>
+    <div class="field"><label>Nombre de la familia</label><input id="p-familia" placeholder="Ej: Familia García" autocomplete="off"></div>
+    <div class="field"><label>PIN de seguridad (4 dígitos)</label><input id="p-pin" type="password" inputmode="numeric" maxlength="4" placeholder="Para aprobar misiones" autocomplete="off"></div>
+    <div class="err" id="p-err"></div>
+    <button class="btn" onclick="crearFamilia()">Crear familia</button>
+    <button class="btn secondary" onclick="mostrar('c-quien')">← Atrás</button>
+  </div>
+
+  <!-- código de acceso -->
+  <div class="card" id="c-codigo" style="display:none">
+    <h2>Familia creada ✓</h2>
+    <div class="codigo-box">
+      <div class="code" id="codigo-val">——</div>
+      <small>Comparte este código con tus hijos</small>
+      <button class="copy-btn" onclick="copiarCodigo()">Copiar código</button>
+    </div>
+    <button class="btn" onclick="entrar()">Ver panel familiar</button>
+  </div>
+
+  <!-- teen: unirse -->
+  <div class="card" id="c-nuevo-teen" style="display:none">
+    <h2>Unirme a mi familia</h2>
+    <div class="field"><label>Código de acceso</label><input id="t-codigo" placeholder="Ej: AB12CD" autocomplete="off" style="text-transform:uppercase" oninput="this.value=this.value.toUpperCase()"></div>
+    <div class="field"><label>Tu nombre</label><input id="t-nombre" placeholder="Como te llamas" autocomplete="off"></div>
+    <div class="field"><label>Eres</label>
+      <select id="t-rol"><option value="teen">Teen</option><option value="hermano">Hermano/a menor</option></select>
+    </div>
+    <div class="field"><label>Edad</label><input id="t-edad" type="number" value="15" min="10" max="22"></div>
+    <div class="err" id="t-err"></div>
+    <button class="btn" onclick="unirseConCodigo()">Entrar</button>
+    <button class="btn secondary" onclick="mostrar('c-quien')">← Atrás</button>
+  </div>
+
+  <!-- regresar -->
+  <div class="card" id="c-regresar" style="display:none">
+    <h2>Iniciar sesión</h2>
+    <div class="field"><label>Tu ID de miembro</label><input id="r-mid" placeholder="ID guardado anteriormente" autocomplete="off"></div>
+    <div class="field" id="r-pin-wrap" style="display:none"><label>PIN (si eres papá/mamá)</label><input id="r-pin" type="password" inputmode="numeric" maxlength="4" placeholder="opcional" autocomplete="off"></div>
+    <div class="err" id="r-err"></div>
+    <button class="btn" onclick="mostrar('r-pin-wrap');regresarConId()">Entrar</button>
+    <button class="btn secondary" onclick="mostrar('c-quien')">← Atrás</button>
+  </div>
+</div>
+
+<!-- ══ CHAT (teens) ════════════════════════════════════════════════ -->
+<div id="s-chat" class="screen">
+  <div id="chat-header">
+    <div class="av" id="hav">N</div>
+    <div class="hinfo">
+      <div class="hname" id="hname">NEXUS</div>
+      <div class="hstatus">● activo</div>
+    </div>
+    <button class="hmenu" onclick="abrirMenu()">⋮</button>
+  </div>
+  <div id="messages"></div>
+  <div id="mood">
+    <span>¿Cómo estás?</span>
+    <button class="mb" onclick="mood(1)">😶</button>
+    <button class="mb" onclick="mood(2)">😐</button>
+    <button class="mb" onclick="mood(3)">🙂</button>
+    <button class="mb" onclick="mood(4)">😊</button>
+    <button class="mb" onclick="mood(5)">🔥</button>
+  </div>
+  <div id="input-wrap">
+    <textarea id="txt" rows="1" placeholder="Escribe..." oninput="resize(this)" onkeydown="tecla(event)"></textarea>
+    <button id="sbtn" onclick="enviar()">↑</button>
+  </div>
+</div>
+
+<!-- menú lateral teen -->
+<div id="overlay" onclick="cerrarMenu()"></div>
+<div id="drawer" style="display:none">
+  <div class="duser" id="d-nombre">—</div>
+  <div class="dpts" id="d-pts"></div>
+  <div class="dsec">Mi espacio</div>
+  <button class="ditem" onclick="cerrarMenu();verMisMisiones()">📋 Mis misiones</button>
+  <button class="ditem" onclick="cerrarMenu();verDeseos()">🎯 Lista de deseos</button>
+  <button class="ditem" onclick="cerrarMenu();verLogros()">⭐ Logros</button>
+  <button class="ditem" onclick="cerrarMenu();addBot('¿En qué materia necesitas ayuda?')">📚 Tutor escolar</button>
+  <div style="flex:1"></div>
+  <button class="ditem" onclick="salir()">← Salir</button>
+</div>
+
+<!-- ══ PANEL PADRE ═════════════════════════════════════════════════ -->
+<div id="s-padre" class="screen">
+  <div id="padre-header">
+    <div class="av" id="ph-av">P</div>
+    <div class="title" id="ph-nombre">Familia</div>
+    <span id="badge-alertas">!</span>
+    <button class="hmenu" onclick="salir()" title="Cerrar sesión">✕</button>
+  </div>
+
+  <div class="tab-bar">
+    <button class="tab active" id="tab-familia"   onclick="switchTab('familia')">Familia<span class="tbadge" id="b-familia"></span></button>
+    <button class="tab"        id="tab-misiones"  onclick="switchTab('misiones')">Misiones<span class="tbadge" id="b-misiones"></span></button>
+    <button class="tab"        id="tab-alertas"   onclick="switchTab('alertas')">Alertas<span class="tbadge" id="b-alertas"></span></button>
+    <button class="tab"        id="tab-acuerdos"  onclick="switchTab('acuerdos')">Acuerdos</button>
+  </div>
+
+  <div id="padre-content">
+    <!-- se llena con JS -->
+  </div>
+</div>
+
+<!-- FAB crear misión -->
+<button class="fab" id="fab-mision" onclick="abrirModalMision()">＋</button>
+
+<!-- ══ MODALES ═════════════════════════════════════════════════════ -->
+
+<!-- Modal agregar familiar -->
+<div class="modal-overlay" id="modal-familiar">
+  <div class="modal-box">
+    <h3>Agregar familiar</h3>
+    <div class="field"><label>Nombre</label><input id="af-nombre" placeholder="Nombre" autocomplete="off"></div>
+    <div class="field"><label>Es</label>
+      <select id="af-rol"><option value="teen">Teen</option><option value="hermano">Hermano/a menor</option><option value="madre">Mamá</option><option value="padre">Papá adicional</option></select>
+    </div>
+    <div class="field"><label>Edad</label><input id="af-edad" type="number" value="14" min="8" max="25"></div>
+    <div class="err" id="af-err"></div>
+    <button class="btn" onclick="agregarFamiliar()">Agregar</button>
+    <button class="btn secondary" onclick="cerrarModal('modal-familiar')">Cancelar</button>
+  </div>
+</div>
+
+<!-- Modal crear misión -->
+<div class="modal-overlay" id="modal-mision">
+  <div class="modal-box">
+    <h3>Nueva misión</h3>
+    <div class="field"><label>Título</label><input id="nm-titulo" placeholder="Ej: Lavar los trastes" autocomplete="off"></div>
+    <div class="field"><label>Descripción (opcional)</label><input id="nm-desc" placeholder="Detalles de la misión" autocomplete="off"></div>
+    <div class="field"><label>Puntos</label><input id="nm-puntos" type="number" value="10" min="1" max="500"></div>
+    <div class="field"><label>Asignar a</label>
+      <select id="nm-asignado"></select>
+    </div>
+    <div class="err" id="nm-err"></div>
+    <button class="btn" onclick="crearMision()">Crear misión</button>
+    <button class="btn secondary" onclick="cerrarModal('modal-mision')">Cancelar</button>
+  </div>
+</div>
+
+<!-- Modal crear acuerdo -->
+<div class="modal-overlay" id="modal-acuerdo">
+  <div class="modal-box">
+    <h3>Nuevo acuerdo</h3>
+    <div class="field"><label>Acuerdo</label><input id="na-desc" placeholder="Ej: Llego antes de las 10pm" autocomplete="off"></div>
+    <div class="field"><label>Condición</label><input id="na-cond" placeholder="Ej: De lunes a viernes" autocomplete="off"></div>
+    <div class="field"><label>Recompensa</label><input id="na-recomp" placeholder="Ej: Salida el fin de semana" autocomplete="off"></div>
+    <div class="field"><label>Teen involucrado</label>
+      <select id="na-teen"></select>
+    </div>
+    <div class="err" id="na-err"></div>
+    <button class="btn" onclick="crearAcuerdo()">Guardar acuerdo</button>
+    <button class="btn secondary" onclick="cerrarModal('modal-acuerdo')">Cancelar</button>
+  </div>
+</div>
+
+<!-- Modal PIN para aprobar -->
+<div class="modal-overlay" id="pin-modal">
+  <div class="modal-box" style="max-width:300px">
+    <h3>Confirmar aprobación</h3>
+    <p class="pin-info" id="pin-info">Ingresa tu PIN para aprobar esta misión.</p>
+    <div class="field"><label>Tu PIN</label><input id="pin-input" type="password" inputmode="numeric" maxlength="4" placeholder="4 dígitos" autocomplete="off"></div>
+    <div class="err" id="pin-err"></div>
+    <button class="btn success" onclick="confirmarAprobacion()">Aprobar</button>
+    <button class="btn secondary" onclick="cerrarModal('pin-modal')">Cancelar</button>
+  </div>
+</div>
+
+<div id="toast"></div>
+
+<script>
+const BASE = '';
+let S = {mid:'', fid:'', nombre:'', rol:'', pts:0, codigo:'', pin:''};
+let _misionAprobar = null;
+let _miembros = [];
+let _tabActual = 'familia';
+let _refreshTimer = null;
+const MOODS = ['','😶','😐','🙂','😊','🔥'];
+
+function save(){ localStorage.setItem('nx3t', JSON.stringify({...S, pin:''})); }
+function load(){
+  try{
+    const d = JSON.parse(localStorage.getItem('nx3t')||'{}');
+    if(d.mid) S = {...S, ...d};
+  }catch(e){}
+}
+
+async function api(path, method='GET', body=null){
+  const o = {method, headers:{'Content-Type':'application/json','ngrok-skip-browser-warning':'true'}};
+  if(body) o.body = JSON.stringify(body);
+  const r = await fetch(BASE+'/teens/api'+path, o);
+  return r.json();
+}
+
+// ── navegación login ───────────────────────────────────────────────
+function mostrar(id){
+  document.querySelectorAll('#s-login .card').forEach(c=>c.style.display='none');
+  const el = document.getElementById(id);
+  if(el) el.style.display='flex';
+}
+
+// ── crear familia ──────────────────────────────────────────────────
+async function crearFamilia(){
+  const nombre = document.getElementById('p-nombre').value.trim();
+  const rol    = document.getElementById('p-rol').value;
+  const fam    = document.getElementById('p-familia').value.trim();
+  const pin    = document.getElementById('p-pin').value.trim();
+  if(!nombre||!fam){document.getElementById('p-err').textContent='Completa nombre y familia.';return;}
+  if(pin && pin.length !== 4){document.getElementById('p-err').textContent='El PIN debe ser de 4 dígitos.';return;}
+  document.getElementById('p-err').textContent='';
+  try{
+    const rf = await api('/familias','POST',{nombre:fam});
+    if(!rf.ok){document.getElementById('p-err').textContent='Error al crear familia.';return;}
+    const rm = await api('/miembros','POST',{familia_id:rf.familia_id, nombre, rol, edad:35, pin:pin||'0000'});
+    if(!rm.ok){document.getElementById('p-err').textContent='Error al registrar.';return;}
+    S = {mid:rm.miembro_id, fid:rf.familia_id, nombre, rol, pts:0, codigo:rf.codigo_acceso, pin};
+    save();
+    document.getElementById('codigo-val').textContent = rf.codigo_acceso;
+    mostrar('c-codigo');
+  }catch(e){document.getElementById('p-err').textContent='Sin conexión.';}
+}
+
+function copiarCodigo(){
+  navigator.clipboard?.writeText(S.codigo).then(()=>toast('Código copiado'));
+}
+
+// ── unirse (teen) ──────────────────────────────────────────────────
+async function unirseConCodigo(){
+  const codigo = document.getElementById('t-codigo').value.trim().toUpperCase();
+  const nombre = document.getElementById('t-nombre').value.trim();
+  const rol    = document.getElementById('t-rol').value;
+  const edad   = parseInt(document.getElementById('t-edad').value)||15;
+  if(!codigo||!nombre){document.getElementById('t-err').textContent='Completa todos los campos.';return;}
+  document.getElementById('t-err').textContent='Buscando familia...';
+  try{
+    const rf = await api(`/familias/codigo/${codigo}`);
+    if(!rf.ok){document.getElementById('t-err').textContent='Código no válido.';return;}
+    const rm = await api('/miembros','POST',{familia_id:rf.familia_id, nombre, rol, edad});
+    if(!rm.ok){document.getElementById('t-err').textContent='Error al registrar.';return;}
+    S = {mid:rm.miembro_id, fid:rf.familia_id, nombre, rol, pts:0, codigo, pin:''};
+    save();
+    entrar();
+  }catch(e){document.getElementById('t-err').textContent='Sin conexión.';}
+}
+
+// ── regresar ───────────────────────────────────────────────────────
+async function regresarConId(){
+  const mid = document.getElementById('r-mid').value.trim();
+  const pin = document.getElementById('r-pin').value.trim();
+  if(!mid){document.getElementById('r-err').textContent='Ingresa tu ID.';return;}
+  document.getElementById('r-err').textContent='Verificando...';
+  try{
+    const r = await api(`/miembros/${mid}`);
+    if(!r.ok){document.getElementById('r-err').textContent='ID no encontrado.';return;}
+    S = {mid: r.id, fid: r.familia_id, nombre: r.nombre, rol: r.rol, pts: r.puntos_total||0, codigo: S.codigo||'', pin: pin||S.pin||''};
+    save();
+    entrar();
+  }catch(e){document.getElementById('r-err').textContent='Sin conexión.';}
+}
+
+// ── enrutador de entrada ───────────────────────────────────────────
+function entrar(){
+  document.getElementById('s-login').classList.remove('active');
+  if(['padre','madre'].includes(S.rol)){
+    entrarPanel();
+  } else {
+    entrarChat();
+  }
+}
+
+// ══ PANEL PADRE ════════════════════════════════════════════════════
+function entrarPanel(){
+  document.getElementById('s-padre').classList.add('active');
+  document.getElementById('ph-av').textContent = (S.nombre||'P')[0].toUpperCase();
+  document.getElementById('ph-nombre').textContent = S.nombre || 'Panel familiar';
+  document.getElementById('fab-mision').style.display = 'flex';
+  cargarTab('familia');
+  _refreshTimer = setInterval(()=>cargarTab(_tabActual, true), 30000);
+}
+
+function switchTab(tab){
+  _tabActual = tab;
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  document.getElementById('tab-'+tab).classList.add('active');
+  document.getElementById('fab-mision').style.display = tab==='misiones' ? 'flex' : 'none';
+  cargarTab(tab);
+}
+
+async function cargarTab(tab, silencioso=false){
+  if(!silencioso) document.getElementById('padre-content').innerHTML = '<div class="empty">Cargando...</div>';
+  switch(tab){
+    case 'familia':   await renderFamilia(); break;
+    case 'misiones':  await renderMisiones(); break;
+    case 'alertas':   await renderAlertas(); break;
+    case 'acuerdos':  await renderAcuerdos(); break;
+  }
+}
+
+// ── tab familia ────────────────────────────────────────────────────
+async function renderFamilia(){
+  try{
+    const r = await api(`/familia/${S.fid}`);
+    if(!r.ok){document.getElementById('padre-content').innerHTML='<div class="empty">Sin datos de familia.</div>';return;}
+    _miembros = r.miembros||[];
+    const alertas = r.alertas_nuevas||0;
+    const pending = r.misiones_pendientes||0;
+
+    // badges en tabs
+    setBadge('b-misiones', pending);
+    setBadge('b-alertas', alertas);
+    document.getElementById('badge-alertas').style.display = alertas>0?'inline':'none';
+    document.getElementById('badge-alertas').textContent = alertas;
+
+    let html = '';
+    if(!_miembros.length){
+      html = '<div class="empty">Aún no hay miembros. Comparte el código con tu familia.</div>';
+    } else {
+      _miembros.forEach(m=>{
+        const initials = (m.nombre||'?')[0].toUpperCase();
+        const moodEmoji = m.ultimo_mood ? MOODS[m.ultimo_mood]||'' : '';
+        const esPadre = ['padre','madre'].includes(m.rol);
+        html += `<div class="member-card">
+          <div class="av" style="background:${esPadre?'#1d4ed8':'#7c3aed'}">${initials}</div>
+          <div class="info">
+            <div class="mname">${esc(m.nombre)}</div>
+            <div class="mrole">${m.rol}${m.edad?' · '+m.edad+' años':''}</div>
+            <div class="mpts">${m.puntos_total||0} puntos</div>
+          </div>
+          ${moodEmoji?`<div class="mmood">${moodEmoji}</div>`:''}
+        </div>`;
+      });
+    }
+    html += `<div style="margin-top:1rem">
+      <button class="btn secondary" style="width:100%" onclick="abrirModal('modal-familiar')">➕ Agregar familiar</button>
+    </div>`;
+    if(S.codigo){
+      html += `<div style="margin-top:.75rem;text-align:center">
+        <div class="codigo-box" style="padding:.75rem">
+          <div class="code" style="font-size:1.5rem">${S.codigo}</div>
+          <small>Código de la familia</small>
+          <button class="copy-btn" onclick="navigator.clipboard?.writeText('${S.codigo}').then(()=>toast('Código copiado'))">Copiar</button>
+        </div>
+      </div>`;
+    }
+    document.getElementById('padre-content').innerHTML = html;
+  }catch(e){document.getElementById('padre-content').innerHTML='<div class="empty">Error al cargar familia.</div>';}
+}
+
+// ── tab misiones ───────────────────────────────────────────────────
+async function renderMisiones(){
+  try{
+    const r = await api(`/misiones/${S.fid}`);
+    if(!r.ok){document.getElementById('padre-content').innerHTML='<div class="empty">Error al cargar misiones.</div>';return;}
+    const misiones = r.misiones||[];
+    setBadge('b-misiones', misiones.filter(m=>m.estado==='completada').length);
+    if(!misiones.length){
+      document.getElementById('padre-content').innerHTML='<div class="empty">Sin misiones aún.<br>Toca ＋ para crear la primera.</div>';
+      return;
+    }
+    const orden = {completada:0, pendiente:1, aprobada:2};
+    misiones.sort((a,b)=>(orden[a.estado]??9)-(orden[b.estado]??9));
+    let html = '';
+    misiones.forEach(m=>{
+      const asignNombre = _miembros.find(x=>x.id===m.asignado_a)?.nombre || m.asignado_a || '—';
+      const estadoBadge = `<span class="status-badge status-${m.estado}">${m.estado}</span>`;
+      const btnAprobar = m.estado==='completada'
+        ? `<button class="btn sm success" onclick="pedirPin('${m.id}','${esc(m.titulo)}')">Aprobar</button>` : '';
+      html += `<div class="mission-card">
+        <div class="mtop">
+          <div class="mtitulo">${esc(m.titulo)}</div>
+          <div class="mpts-badge">+${m.puntos} pts</div>
+        </div>
+        ${m.descripcion?`<div class="mdesc">${esc(m.descripcion)}</div>`:''}
+        <div class="mfooter">
+          <div class="masignado">Para: ${esc(asignNombre)} · ${estadoBadge}</div>
+          ${btnAprobar}
+        </div>
+      </div>`;
+    });
+    document.getElementById('padre-content').innerHTML = html;
+  }catch(e){document.getElementById('padre-content').innerHTML='<div class="empty">Error al cargar misiones.</div>';}
+}
+
+// ── tab alertas ────────────────────────────────────────────────────
+async function renderAlertas(){
+  try{
+    const r = await api(`/alertas/${S.fid}`);
+    if(!r.ok||!r.alertas?.length){
+      document.getElementById('padre-content').innerHTML='<div class="empty">Sin señales recientes.<br>Todo tranquilo.</div>';
+      setBadge('b-alertas',0);
+      return;
+    }
+    setBadge('b-alertas', r.alertas.filter(a=>a.nivel!=='bajo').length);
+    let html = '';
+    r.alertas.forEach(a=>{
+      const nivel = a.tipo?.includes('vital')||a.tipo?.includes('alto') ? 'alto' : a.tipo?.includes('medio') ? 'medio' : 'bajo';
+      html += `<div class="alert-card ${nivel}">
+        <div class="atype">${esc(a.tipo||'señal')}</div>
+        <div>${esc(a.resumen||a.sugerencia||'')}</div>
+        ${a.sugerencia&&a.resumen?`<div class="asugg">${esc(a.sugerencia)}</div>`:''}
+      </div>`;
+    });
+    document.getElementById('padre-content').innerHTML = html;
+  }catch(e){document.getElementById('padre-content').innerHTML='<div class="empty">Error al cargar alertas.</div>';}
+}
+
+// ── tab acuerdos ───────────────────────────────────────────────────
+async function renderAcuerdos(){
+  try{
+    const r = await api(`/acuerdos/${S.fid}`);
+    if(!r.ok||!r.acuerdos?.length){
+      document.getElementById('padre-content').innerHTML=`<div class="empty">Sin acuerdos registrados.</div>
+        <div style="margin-top:1rem"><button class="btn secondary" style="width:100%" onclick="abrirModalAcuerdo()">➕ Nuevo acuerdo</button></div>`;
+      return;
+    }
+    let html = '';
+    r.acuerdos.forEach(a=>{
+      const teenNombre = _miembros.find(x=>x.id===a.teen_id)?.nombre||'—';
+      const estado = a.estado==='activo'?'<span style="color:var(--success)">● activo</span>':
+                    a.estado==='cumplido'?'<span style="color:var(--muted)">✓ cumplido</span>':
+                    '<span style="color:var(--warn)">● propuesto</span>';
+      html += `<div class="acuerdo-card">
+        <div class="adesc">${esc(a.descripcion)}</div>
+        ${a.condicion?`<div class="acond">Cuando: ${esc(a.condicion)}</div>`:''}
+        ${a.recompensa?`<div class="arecomp">Recompensa: ${esc(a.recompensa)}</div>`:''}
+        <div style="margin-top:.5rem;display:flex;justify-content:space-between;align-items:center">
+          <span style="font-size:.75rem;color:var(--muted)">${esc(teenNombre)}</span>
+          <span style="font-size:.75rem">${estado}</span>
+        </div>
+        ${a.estado==='propuesto'?`<div style="margin-top:.6rem"><button class="btn sm success" onclick="activarAcuerdo('${a.id}')">Activar</button></div>`:''}
+      </div>`;
+    });
+    html += `<div style="margin-top:.5rem"><button class="btn secondary" style="width:100%" onclick="abrirModalAcuerdo()">➕ Nuevo acuerdo</button></div>`;
+    document.getElementById('padre-content').innerHTML = html;
+  }catch(e){document.getElementById('padre-content').innerHTML='<div class="empty">Error al cargar acuerdos.</div>';}
+}
+
+// ── aprobar misión ─────────────────────────────────────────────────
+function pedirPin(misionId, titulo){
+  _misionAprobar = misionId;
+  document.getElementById('pin-info').textContent = `Aprobar: "${titulo}"`;
+  document.getElementById('pin-input').value = '';
+  document.getElementById('pin-err').textContent = '';
+  abrirModal('pin-modal');
+  setTimeout(()=>document.getElementById('pin-input').focus(), 200);
+}
+
+async function confirmarAprobacion(){
+  const pin = document.getElementById('pin-input').value.trim() || S.pin;
+  if(!pin){document.getElementById('pin-err').textContent='Ingresa tu PIN.';return;}
+  try{
+    const r = await api(`/misiones/${_misionAprobar}/aprobar`,'PUT',{
+      familia_id: S.fid,
+      aprobado_por: S.mid,
+      pin_padre: pin
+    });
+    if(!r.ok){document.getElementById('pin-err').textContent='PIN incorrecto.';return;}
+    cerrarModal('pin-modal');
+    toast(`+${r.puntos_asignados||0} puntos asignados`);
+    cargarTab('misiones');
+  }catch(e){document.getElementById('pin-err').textContent='Error al aprobar.';}
+}
+
+// ── crear misión ───────────────────────────────────────────────────
+function abrirModalMision(){
+  // Llenar select de teens
+  const sel = document.getElementById('nm-asignado');
+  sel.innerHTML = _miembros.filter(m=>!['padre','madre'].includes(m.rol))
+    .map(m=>`<option value="${m.id}">${esc(m.nombre)}</option>`).join('');
+  if(!sel.options.length) sel.innerHTML = '<option value="">Sin teens registrados</option>';
+  document.getElementById('nm-err').textContent='';
+  abrirModal('modal-mision');
+}
+
+async function crearMision(){
+  const titulo   = document.getElementById('nm-titulo').value.trim();
+  const desc     = document.getElementById('nm-desc').value.trim();
+  const puntos   = parseInt(document.getElementById('nm-puntos').value)||10;
+  const asignado = document.getElementById('nm-asignado').value;
+  if(!titulo){document.getElementById('nm-err').textContent='Escribe el título.';return;}
+  try{
+    const r = await api('/misiones','POST',{
+      familia_id: S.fid,
+      titulo, descripcion: desc,
+      puntos, asignado_a: asignado
+    });
+    if(!r.ok){document.getElementById('nm-err').textContent='Error al crear.';return;}
+    cerrarModal('modal-mision');
+    toast('Misión creada');
+    document.getElementById('nm-titulo').value='';
+    document.getElementById('nm-desc').value='';
+    cargarTab('misiones');
+  }catch(e){document.getElementById('nm-err').textContent='Sin conexión.';}
+}
+
+// ── crear acuerdo ──────────────────────────────────────────────────
+function abrirModalAcuerdo(){
+  const sel = document.getElementById('na-teen');
+  sel.innerHTML = _miembros.filter(m=>!['padre','madre'].includes(m.rol))
+    .map(m=>`<option value="${m.id}">${esc(m.nombre)}</option>`).join('');
+  document.getElementById('na-err').textContent='';
+  abrirModal('modal-acuerdo');
+}
+
+async function crearAcuerdo(){
+  const desc   = document.getElementById('na-desc').value.trim();
+  const cond   = document.getElementById('na-cond').value.trim();
+  const recomp = document.getElementById('na-recomp').value.trim();
+  const teen   = document.getElementById('na-teen').value;
+  if(!desc){document.getElementById('na-err').textContent='Escribe el acuerdo.';return;}
+  try{
+    const r = await api('/acuerdos','POST',{
+      familia_id: S.fid, teen_id: teen,
+      descripcion: desc, condicion: cond,
+      recompensa: recomp, propuesto_por:'padre'
+    });
+    if(!r.ok){document.getElementById('na-err').textContent='Error.';return;}
+    cerrarModal('modal-acuerdo');
+    toast('Acuerdo guardado');
+    cargarTab('acuerdos');
+  }catch(e){document.getElementById('na-err').textContent='Sin conexión.';}
+}
+
+async function activarAcuerdo(id){
+  await api(`/acuerdos/${id}/activar`,'PUT');
+  toast('Acuerdo activado');
+  cargarTab('acuerdos');
+}
+
+// ── agregar familiar ───────────────────────────────────────────────
+async function agregarFamiliar(){
+  const nombre = document.getElementById('af-nombre').value.trim();
+  const rol    = document.getElementById('af-rol').value;
+  const edad   = parseInt(document.getElementById('af-edad').value)||14;
+  if(!nombre){document.getElementById('af-err').textContent='Escribe el nombre.';return;}
+  document.getElementById('af-err').textContent='Registrando...';
+  try{
+    const r = await api('/miembros','POST',{familia_id:S.fid, nombre, rol, edad});
+    if(!r.ok){document.getElementById('af-err').textContent='Error al registrar.';return;}
+    cerrarModal('modal-familiar');
+    toast(`${nombre} registrado/a — ID: ${r.miembro_id}`);
+    cargarTab('familia');
+  }catch(e){document.getElementById('af-err').textContent='Sin conexión.';}
+}
+
+// ══ CHAT TEEN ══════════════════════════════════════════════════════
+function entrarChat(){
+  document.getElementById('s-chat').classList.add('active');
+  document.getElementById('hname').textContent = S.nombre||'NEXUS';
+  document.getElementById('hav').textContent = (S.nombre||'N')[0].toUpperCase();
+  document.getElementById('d-nombre').textContent = S.nombre||'—';
+  if(S.pts) document.getElementById('d-pts').textContent = S.pts+' puntos';
+  if(['teen','hermano'].includes(S.rol)){
+    document.getElementById('mood').style.display='flex';
+  }
+  setTimeout(()=>addBot('Aquí estoy. Qué hay.'), 400);
+}
+
+function addUser(txt){
+  const box=document.getElementById('messages');
+  const d=document.createElement('div');
+  d.className='msg user';
+  d.innerHTML=`<div class="bubble">${esc(txt)}</div><div class="mtime">${hora()}</div>`;
+  box.appendChild(d); scroll();
+}
+function addBot(txt,alerta=false){
+  const box=document.getElementById('messages');
+  const d=document.createElement('div');
+  d.className='msg bot'+(alerta?' alerta':'');
+  d.innerHTML=`<div class="bubble">${esc(txt)}</div><div class="mtime">${hora()}</div>`;
+  box.appendChild(d); scroll();
+}
+function showTyping(){
+  const box=document.getElementById('messages');
+  const d=document.createElement('div');
+  d.id='ty';d.className='msg bot';
+  d.innerHTML='<div class="typing"><span></span><span></span><span></span></div>';
+  box.appendChild(d); scroll();
+}
+function hideTyping(){ const t=document.getElementById('ty'); if(t) t.remove(); }
+function scroll(){ const b=document.getElementById('messages'); b.scrollTop=b.scrollHeight; }
+function hora(){ return new Date().toLocaleTimeString('es-MX',{hour:'2-digit',minute:'2-digit'}); }
+function esc(s){ return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\n/g,'<br>'); }
+
+async function enviar(){
+  const el=document.getElementById('txt');
+  const txt=el.value.trim();
+  if(!txt) return;
+  el.value='';el.style.height='auto';
+  document.getElementById('sbtn').disabled=true;
+  addUser(txt);showTyping();
+  try{
+    const r=await api('/execute','POST',{action:'process_query',data:{miembro_id:S.mid,familia_id:S.fid,message:txt}});
+    hideTyping();
+    if(r.respuesta) addBot(r.respuesta, r.alerta==='riesgo_alto');
+    else addBot('Sin respuesta.');
+  }catch(e){hideTyping();addBot('Sin conexión ahora mismo.');}
+  document.getElementById('sbtn').disabled=false;
+  document.getElementById('txt').focus();
+}
+function tecla(e){ if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();enviar();} }
+function resize(el){ el.style.height='auto'; el.style.height=Math.min(el.scrollHeight,110)+'px'; }
+
+async function mood(score){
+  try{ await api('/mood','POST',{miembro_id:S.mid,score}); toast(['Notado.','Ok.','Copy.','Bien.','Qué bueno.'][score-1]); }catch(e){}
+}
+
+async function verMisMisiones(){
+  try{
+    const r = await api(`/misiones/${S.fid}`);
+    const mias = (r.misiones||[]).filter(m=>m.asignado_a===S.mid && m.estado!=='aprobada');
+    if(!mias.length){addBot('No tienes misiones asignadas ahora mismo.');return;}
+    mias.forEach(m=>{
+      const box=document.getElementById('messages');
+      const d=document.createElement('div');
+      d.className='msg bot';
+      const btnHtml = m.estado==='pendiente'
+        ? `<button style="margin-top:.5rem;background:var(--accent);color:#fff;border:none;border-radius:8px;padding:.4rem .9rem;font-size:.85rem;cursor:pointer" onclick="completarMision('${m.id}',this)">✓ Completar</button>`
+        : `<span style="color:var(--success);font-size:.8rem">✓ Completada — esperando aprobación</span>`;
+      d.innerHTML=`<div class="bubble"><b>${esc(m.titulo)}</b><br><span style="font-size:.8rem;color:var(--muted)">${m.puntos} pts · ${m.estado}</span><br>${btnHtml}</div>`;
+      box.appendChild(d);
+    });
+    scroll();
+  }catch(e){addBot('Sin conexión.');}
+}
+
+async function completarMision(mid, btn){
+  btn.disabled=true; btn.textContent='Enviando...';
+  try{
+    const r = await api(`/misiones/${mid}/completar`,'PUT',{miembro_id:S.mid});
+    if(r.ok){ btn.parentElement.parentElement.innerHTML += '<br><span style="color:var(--success);font-size:.8rem">✓ Marcada — tu papá/mamá la aprobará</span>'; btn.remove(); toast('¡Misión completada!'); }
+    else{ btn.disabled=false; btn.textContent='✓ Completar'; toast('Error al completar.');}
+  }catch(e){ btn.disabled=false; btn.textContent='✓ Completar'; }
+}
+
+async function verDeseos(){
+  try{
+    const r=await api(`/deseos/${S.mid}`);
+    if(!r.deseos?.length){addBot('Tu lista de deseos está vacía.');return;}
+    addBot('Tu lista:\n'+r.deseos.map(d=>`• ${d.descripcion} — ${d.puntos_necesarios} pts`).join('\n'));
+  }catch(e){addBot('Sin conexión.');}
+}
+async function verLogros(){
+  try{
+    const r=await api(`/logros/${S.mid}`);
+    if(!r.logros?.length){addBot('Sin logros aún. Completa misiones.');return;}
+    addBot('Logros:\n'+r.logros.map(l=>`${l.icono||'⭐'} ${l.titulo}`).join('\n'));
+  }catch(e){addBot('Sin conexión.');}
+}
+
+// ── menú teen ──────────────────────────────────────────────────────
+function abrirMenu(){
+  document.getElementById('overlay').style.display='block';
+  document.getElementById('drawer').style.display='flex';
+}
+function cerrarMenu(){
+  document.getElementById('overlay').style.display='none';
+  document.getElementById('drawer').style.display='none';
+}
+
+// ── modales ────────────────────────────────────────────────────────
+function abrirModal(id){ document.getElementById(id).classList.add('on'); }
+function cerrarModal(id){ document.getElementById(id).classList.remove('on'); }
+
+// ── helpers ────────────────────────────────────────────────────────
+function setBadge(id, n){
+  const el = document.getElementById(id);
+  if(!el) return;
+  el.textContent = n;
+  el.classList.toggle('on', n>0);
+}
+
+function toast(msg){
+  const t=document.getElementById('toast');
+  t.textContent=msg; t.classList.add('on');
+  setTimeout(()=>t.classList.remove('on'),2500);
+}
+
+function salir(){
+  if(_refreshTimer) clearInterval(_refreshTimer);
+  localStorage.removeItem('nx3t');
+  location.reload();
+}
+
+// ── init ───────────────────────────────────────────────────────────
+load();
+if(S.mid) entrar();
+
+// ── service worker PWA ────────────────────────────────────────────
+if('serviceWorker' in navigator){
+  navigator.serviceWorker.register('/teens/sw.js').catch(()=>{});
+}
+</script>
+</body>
+</html>

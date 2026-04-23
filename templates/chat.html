@@ -911,6 +911,26 @@
         text-align: right;
     }
 
+    .efecto-btn {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        padding: 6px 14px;
+        border-radius: 20px;
+        border: 1.5px solid var(--border);
+        cursor: pointer;
+        font-size: 13px;
+        transition: all .2s;
+        user-select: none;
+    }
+    .efecto-btn input[type="radio"] { display:none; }
+    .efecto-btn:has(input:checked) {
+        border-color: var(--accent);
+        background: rgba(46,134,193,.15);
+        color: var(--accent);
+        font-weight: 600;
+    }
+
     /* ═══════════════════════════════════════════════
        RESPONSIVE
        ═══════════════════════════════════════════════ */
@@ -1012,6 +1032,33 @@
                 <div class="user-details">
                     <div class="user-name" id="userName">Usuario</div>
                     <div class="user-status"><span class="dot"></span> En línea</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Apps Públicas -->
+        <div class="sidebar-section">
+            <div class="sidebar-section-title">Apps Públicas</div>
+            <div style="display:flex;flex-direction:column;gap:6px;">
+                <div style="background:rgba(124,58,237,.1);border:1px solid rgba(124,58,237,.3);border-radius:10px;padding:10px 12px;">
+                    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;">
+                        <span style="font-size:.82rem;font-weight:700;color:#a78bfa;">📱 NEXUS Teens</span>
+                        <span id="teens-dot" style="width:8px;height:8px;border-radius:50%;background:#22c55e;display:inline-block;" title="ngrok activo"></span>
+                    </div>
+                    <div style="font-size:.72rem;color:rgba(255,255,255,.5);margin-bottom:8px;word-break:break-all;" id="teens-url">enrique-slaty-afton.ngrok-free.dev/teens-launch</div>
+                    <div style="display:flex;gap:5px;">
+                        <button onclick="copiarTeens()" style="flex:1;padding:5px 8px;background:rgba(124,58,237,.3);border:none;border-radius:7px;color:#fff;font-size:.75rem;cursor:pointer;">📋 Copiar</button>
+                        <a href="https://enrique-slaty-afton.ngrok-free.dev/teens-launch" target="_blank" style="flex:1;padding:5px 8px;background:rgba(124,58,237,.3);border:none;border-radius:7px;color:#fff;font-size:.75rem;cursor:pointer;text-decoration:none;text-align:center;">🔗 Abrir</a>
+                    </div>
+                </div>
+                <div style="background:rgba(0,194,224,.07);border:1px solid rgba(0,194,224,.2);border-radius:10px;padding:10px 12px;">
+                    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;">
+                        <span style="font-size:.82rem;font-weight:700;color:#00c2e0;">⚙️ Forja — Coach</span>
+                    </div>
+                    <div style="display:flex;gap:5px;">
+                        <a href="/forja" target="_blank" style="flex:1;padding:5px 8px;background:rgba(0,194,224,.15);border:none;border-radius:7px;color:#fff;font-size:.75rem;cursor:pointer;text-decoration:none;text-align:center;">📋 Diagnóstico</a>
+                        <a href="/forja/chat" target="_blank" style="flex:1;padding:5px 8px;background:rgba(0,194,224,.15);border:none;border-radius:7px;color:#fff;font-size:.75rem;cursor:pointer;text-decoration:none;text-align:center;">💬 Chat</a>
+                    </div>
                 </div>
             </div>
         </div>
@@ -1261,11 +1308,54 @@
                     </select>
                 </div>
                 <div class="upload-option-group">
-                    <label>Calidad (DPI):</label>
+                    <label>Resolución de salida:</label>
                     <div class="range-row">
-                        <input type="range" id="dpiSlider" min="72" max="300" step="1" value="150" oninput="updateDpiLabel(this.value)">
-                        <span class="range-value" id="dpiLabel">150</span>
+                        <input type="range" id="dpiSlider" min="72" max="600" step="1" value="300" oninput="updateDpiLabel(this.value)">
+                        <span class="range-value" id="dpiLabel">300</span> <small style="color:#888">DPI</small>
                     </div>
+                </div>
+                <!-- Efecto especial -->
+                <div class="upload-option-group">
+                    <label>Efecto especial:</label>
+                    <div style="display:flex;gap:8px;flex-wrap:wrap">
+                        <label class="efecto-btn" data-val="">
+                            <input type="radio" name="efecto" value="" checked> Ninguno
+                        </label>
+                        <label class="efecto-btn" data-val="cartoon">
+                            <input type="radio" name="efecto" value="cartoon"> Cartoon Disney
+                        </label>
+                        <label class="efecto-btn" data-val="lineal">
+                            <input type="radio" name="efecto" value="lineal"> Dibujo lineal
+                        </label>
+                        <label class="efecto-btn" data-val="engrosar_lineas">
+                            <input type="radio" name="efecto" value="engrosar_lineas"> Engrosar líneas
+                        </label>
+                        <label class="efecto-btn" data-val="tarjeta_presentacion">
+                            <input type="radio" name="efecto" value="tarjeta_presentacion"> 🪪 Tarjeta presentación
+                        </label>
+                    </div>
+                    <small style="color:#888;display:block;margin-top:4px">
+                        Cartoon/Lineal → PNG sin fondo · Tarjeta → SVG + PNG + PDF listos para maquilar
+                    </small>
+                </div>
+                <!-- Opciones extra -->
+                <div class="upload-option-group" style="display:flex;gap:18px;flex-wrap:wrap;margin-top:4px">
+                    <label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:13px">
+                        <input type="checkbox" id="optMejorar" checked>
+                        Mejorar calidad <small style="color:#aaa">(nitidez+contraste)</small>
+                    </label>
+                    <label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:13px">
+                        <input type="checkbox" id="optSubli">
+                        Sublimación <small style="color:#aaa">(+color para calor)</small>
+                    </label>
+                    <label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:13px">
+                        <input type="checkbox" id="optFondo">
+                        Quitar fondo blanco
+                    </label>
+                    <label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:13px">
+                        <input type="checkbox" id="optVector">
+                        Vectorizar (PowerTRACE)
+                    </label>
                 </div>
             </div>
         </div>
@@ -1414,8 +1504,9 @@
                     role: 'assistant',
                     content: response.response || response.message || response.content || 'Sin respuesta.',
                     personality: response.personality || NEXUS_CONFIG.PERSONALITY,
-                    motor: response.motor || null,
-                    provider: response.provider || null,
+                    motor: response.motor || response.motor_used || null,
+                    provider: response.provider || response.ai_provider || null,
+                    imagen_b64: response.imagen_b64 || null,
                     timestamp: new Date(),
                 };
                 appendMessage(aiMsg);
@@ -1495,8 +1586,21 @@
                 </div>
             `;
         } else {
+            const imgHtml = msg.imagen_b64 ? `
+                <div style="margin-top:10px">
+                    <img src="data:image/jpeg;base64,${msg.imagen_b64}"
+                         style="max-width:100%;max-height:400px;border-radius:8px;border:1px solid #2a2a2a;cursor:pointer"
+                         onclick="this.style.maxHeight=this.style.maxHeight==='none'?'400px':'none'"
+                         title="Clic para ver completa">
+                    <div style="margin-top:6px;display:flex;gap:8px">
+                        <a href="data:image/jpeg;base64,${msg.imagen_b64}" download="nexus_imagen.jpg"
+                           style="font-size:.75rem;color:var(--accent);text-decoration:none;background:rgba(0,255,136,.08);padding:3px 10px;border-radius:5px;border:1px solid rgba(0,255,136,.2)">
+                           ↓ Descargar
+                        </a>
+                    </div>
+                </div>` : '';
             div.innerHTML = `
-                <div class="message-bubble">${content}</div>
+                <div class="message-bubble">${content}${imgHtml}</div>
                 <div class="message-meta">
                     <span class="message-time">${time}</span>
                     ${badges}
@@ -1658,6 +1762,18 @@
         .then(data => {
             hideTyping();
             chatState.isTyping = false;
+
+            // Auto-descargar si el backend procesó y devolvió URL
+            if (data.url) {
+                const a = document.createElement('a');
+                a.href = `${NEXUS_CONFIG.API_BASE}${data.url}`;
+                a.download = data.nombre || 'archivo_procesado.png';
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                showToast(`⬇ Descargando ${data.nombre || 'archivo'}…`, 'success');
+            }
+
             const aiMsg = {
                 id: generateId(),
                 role: 'assistant',
@@ -1738,23 +1854,38 @@
         formData.append('file', chatState.selectedFile);
         formData.append('format', format);
         formData.append('dpi', dpi);
-        formData.append('personality', NEXUS_CONFIG.PERSONALITY);
+        formData.append('mejorar',      document.getElementById('optMejorar').checked  ? 'true' : 'false');
+        formData.append('sublimacion',  document.getElementById('optSubli').checked    ? 'true' : 'false');
+        formData.append('quitar_fondo', document.getElementById('optFondo').checked    ? 'true' : 'false');
+        formData.append('vectorizar',   document.getElementById('optVector').checked   ? 'true' : 'false');
+        const efectoSel = document.querySelector('input[name="efecto"]:checked');
+        formData.append('efecto', efectoSel ? efectoSel.value : '');
 
         try {
             const response = await fetch(`${NEXUS_CONFIG.API_BASE}/api/convert`, {
                 method: 'POST',
-                headers: {
-                    'X-Personality': NEXUS_CONFIG.PERSONALITY,
-                },
+                headers: { 'X-Personality': NEXUS_CONFIG.PERSONALITY },
                 body: formData,
             });
             const data = await response.json();
 
-            if (data.success || data.url || data.path) {
-                showToast(`Archivo convertido a ${format.toUpperCase()} exitosamente`, 'success');
+            if (data.success || data.ok || data.url || data.urls || data.path) {
+                const motor = data.motor ? ` [${data.motor}]` : '';
+                const kb    = data.kb    ? ` · ${data.kb} KB` : '';
+                showToast(`✓ ${data.mensaje || format.toUpperCase() + ' listo'}${motor}${kb}`, 'success');
                 closeUploadModal();
-                // Descargar automáticamente si viene URL
-                if (data.url) {
+                // Múltiples archivos (ej. tarjeta: SVG + PNG + PDF)
+                if (data.urls && Array.isArray(data.urls)) {
+                    data.urls.forEach((item, idx) => {
+                        setTimeout(() => {
+                            const a = document.createElement('a');
+                            a.href = `${NEXUS_CONFIG.API_BASE}${item.url}`;
+                            a.download = item.nombre;
+                            document.body.appendChild(a); a.click(); document.body.removeChild(a);
+                        }, idx * 600);
+                    });
+                } else if (data.url) {
+                    // Un solo archivo
                     const a = document.createElement('a');
                     a.href = `${NEXUS_CONFIG.API_BASE}${data.url}`;
                     a.download = data.nombre || `archivo.${format}`;
@@ -1951,6 +2082,16 @@
     // ═══════════════════════════════════════════════
     // UTILIDADES
     // ═══════════════════════════════════════════════
+    function copiarTeens() {
+        const url = 'https://enrique-slaty-afton.ngrok-free.dev/teens-launch';
+        navigator.clipboard?.writeText(url).then(() => {
+            const btn = event.target;
+            const orig = btn.textContent;
+            btn.textContent = '✓ Copiado';
+            setTimeout(() => btn.textContent = orig, 1800);
+        });
+    }
+
     function formatFileSize(bytes) {
         if (bytes === 0) return '0 B';
         const k = 1024;

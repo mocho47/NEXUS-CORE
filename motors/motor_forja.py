@@ -15,8 +15,40 @@ from datetime import datetime, timedelta
 from pathlib import Path
 from typing import Optional, List, Dict, Any
 
+import asyncio
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel, Field
+
+GROQ_API_KEY = os.getenv("GROQ_API_KEY", "")
+
+PROMPT_NATHALYE = """Eres Nathalye, coach de emprendedores de Forja by NEXUS (Guadalajara, México).
+Tu estilo: cálido, directo, práctico. Hablas de tú. Usas emojis con moderación.
+Tu misión: ayudar a emprendedores a crecer su negocio con pasos concretos y reales.
+Cuando el usuario comparte su negocio o reto, das consejos específicos y accionables (no generalidades).
+Máximo 3 párrafos por respuesta. Termina siempre con una pregunta o acción concreta."""
+
+async def _groq_nathalye(mensaje: str, contexto: str = "", historial: list = None) -> str:
+    try:
+        from groq import Groq
+        client = Groq(api_key=GROQ_API_KEY, timeout=15.0)
+        system = PROMPT_NATHALYE
+        if contexto:
+            system += f"\n\nContexto del emprendedor: {contexto}"
+        msgs = [{"role": "system", "content": system}]
+        if historial:
+            msgs.extend(historial[-6:])
+        msgs.append({"role": "user", "content": mensaje})
+        loop = asyncio.get_event_loop()
+        resp = await asyncio.wait_for(
+            loop.run_in_executor(None, lambda: client.chat.completions.create(
+                model="llama-3.1-8b-instant", messages=msgs, max_tokens=400, temperature=0.85
+            )),
+            timeout=18.0
+        )
+        return resp.choices[0].message.content
+    except Exception as e:
+        logger.error("Groq forja: %s", str(e)[:80])
+        return None
 
 # Configurar logging
 logging.basicConfig(
@@ -903,57 +935,34 @@ def get_commissions(data: dict) -> dict:
         return {"exito": False, "mensaje": f"Error: {str(e)}", "resultado": None}
 
 
-def coach_message(data: dict) -> dict:
-    """Obtener mensaje de coaching de Nathalye."""
+async def coach_message(data: dict) -> dict:
+    """Obtener mensaje de coaching de Nathalye (Groq IA)."""
     try:
-        tema = data.get("topic", data.get("tema", "general"))
+        mensaje_usuario = data.get("message", data.get("mensaje", data.get("topic", "Hola")))
         contexto = data.get("context", data.get("contexto", ""))
+        historial = data.get("historial", [])
         usuario_id = data.get("user_id", data.get("usuario_id", ""))
 
-        # Seleccionar saludo, motivación y despedida
-        saludo = random.choice(FRASES_NATHALYE["saludo"])
+        respuesta = None
+        if GROQ_API_KEY:
+            respuesta = await _groq_nathalye(mensaje_usuario, contexto, historial)
 
-        # Buscar consejo específico
-        tema_lower = tema.lower() if tema else ""
-        consejo = None
-        for cat, consejos in CONSEJOS_FORJA_NATHALYE.items():
-            if tema_lower in cat or tema_lower in " ".join(consejos).lower():
-                consejo = random.choice(consejos)
-                break
-
-        if not consejo:
-            # Consejo general aleatorio
+        if not respuesta:
+            # Fallback estático
+            saludo = random.choice(FRASES_NATHALYE["saludo"])
             todas_cats = list(CONSEJOS_FORJA_NATHALYE.values())
             consejo = random.choice(random.choice(todas_cats))
+            motivacion = random.choice(FRASES_NATHALYE["motivacion"])
+            respuesta = f"{saludo}\n\n💡 {consejo}\n\n{motivacion}"
 
-        motivacion = random.choice(FRASES_NATHALYE["motivacion"])
-        despedida = random.choice(FRASES_NATHALYE["despedida"])
-
-        # Personalizar si hay contexto
-        contextual = ""
-        if contexto:
-            contextual = f"\n\nRespecto a lo que compartiste: {contexto}\n"
-
-        # Construir mensaje completo
-        mensaje = f"{saludo}\n\n"
-        mensaje += f"💡 Consejo del día:\n{consejo}\n"
-        mensaje += f"{contextual}"
-        mensaje += f"\n{motivacion}\n\n{despedida}"
-
-        logger.info(f"Mensaje de coaching generado para: {usuario_id or 'anónimo'}")
-
+        logger.info("coach_message para: %s", usuario_id or "anónimo")
         return {
             "exito": True,
-            "mensaje": "Mensaje de coaching generado por Nathalye",
-            "resultado": {
-                "coach": "Nathalye",
-                "tema": tema,
-                "mensaje": mensaje,
-                "fecha": datetime.now().isoformat(),
-            }
+            "mensaje": respuesta,
+            "resultado": {"coach": "Nathalye", "mensaje": respuesta, "fecha": datetime.now().isoformat()}
         }
     except Exception as e:
-        logger.error(f"Error en coach_message: {e}")
+        logger.error("Error en coach_message: %s", e)
         return {"exito": False, "mensaje": f"Error: {str(e)}", "resultado": None}
 
 
@@ -1175,43 +1184,63 @@ async def execute(request: ExecuteRequest):
     try:
         accion = request.action.lower().strip()
         data = request.data or {}
+        msg  = (data.get("message") or data.get("mensaje") or data.get("texto") or "").lower()
 
         logger.info(f"Ejecutando acción: {accion}")
 
+        # process_query — rutear por contenido
+        if accion in ("process_query", ""):
+            if any(w in msg for w in ["diagnostico", "diagnóstico", "evalua", "evalúa", "score", "calificar"]):
+                accion = "diagnose"
+            elif any(w in msg for w in ["plan", "estrategia", "roadmap"]):
+                accion = "generate_plan"
+            elif any(w in msg for w in ["comision", "comisión", "referido", "referral"]):
+                accion = "get_commissions"
+            elif any(w in msg for w in ["perfil", "profile"]):
+                accion = "get_profile"
+            else:
+                accion = "coach_message"
+
         if accion not in ACCIONES:
-            acciones_disp = ", ".join(sorted(ACCIONES.keys()))
             _actualizar_estadisticas(False)
-            return {
-                "success": False,
-                "result": None,
-                "message": f"Acción '{accion}' no reconocida. Acciones disponibles: {acciones_disp}"
-            }
+            return {"ok": False, "motor": "forja",
+                    "respuesta": f"Acción '{accion}' no reconocida. Disponibles: {', '.join(sorted(ACCIONES.keys()))}"}
 
         funcion = ACCIONES[accion]
         resultado = funcion(data)
+        if asyncio.iscoroutine(resultado):
+            resultado = await resultado
         exito = resultado.get("exito", False)
         _actualizar_estadisticas(exito)
 
+        res_obj = resultado.get("resultado") or {}
+        # Intentar extraer texto legible del resultado
+        respuesta = resultado.get("mensaje") or ""
+        if not respuesta and isinstance(res_obj, dict):
+            for campo in ["titulo", "resumen", "mensaje", "contenido", "texto", "accion_inmediata"]:
+                if res_obj.get(campo):
+                    respuesta = str(res_obj[campo])
+                    break
+        if not respuesta:
+            respuesta = "Listo" if exito else resultado.get("error", "Error desconocido")
+
         return {
-            "success": exito,
-            "result": resultado.get("resultado"),
-            "message": resultado.get("mensaje", "Acción ejecutada")
+            "ok": exito,
+            "respuesta": respuesta,
+            "motor": "forja",
+            "datos": res_obj,
         }
 
     except Exception as e:
         logger.error(f"Error en execute: {e}", exc_info=True)
         _actualizar_estadisticas(False)
-        return {
-            "success": False,
-            "result": None,
-            "message": f"Error interno del servidor: {str(e)}"
-        }
+        return {"ok": False, "respuesta": f"Error interno: {str(e)}", "motor": "forja"}
 
 
 # ==================== INICIO ====================
 
 if __name__ == "__main__":
     import uvicorn
-    port = int(os.getenv("FORJA_PORT", 8012))
+    port = int(os.getenv("FORJA_PORT", 8020))
     logger.info("Iniciando Motor FORJA - NEXUS v3 en puerto %d...", port)
     uvicorn.run(app, host="0.0.0.0", port=port)
