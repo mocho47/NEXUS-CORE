@@ -1,3 +1,10 @@
+# ============================================================
+# Secretos necesarios en GitHub Settings → Secrets → Actions:
+#   GROQ_API_KEY        — Clave de la API de Groq (IA central)
+#   TELEGRAM_BOT_TOKEN  — Token del bot de Telegram (@BotFather)
+#   TELEGRAM_CHAT_ID    — ID del chat personal donde llegan las notificaciones
+# ============================================================
+
 name: NEXUS Test Suite
 
 on:
@@ -11,6 +18,7 @@ on:
 jobs:
   test:
     runs-on: windows-latest
+    timeout-minutes: 15
 
     steps:
       - uses: actions/checkout@v4
@@ -20,6 +28,14 @@ jobs:
         with:
           python-version: '3.12'
 
+      - name: Cache pip dependencies
+        uses: actions/cache@v4
+        with:
+          path: ~/AppData/Local/pip/Cache
+          key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements*.txt') }}
+          restore-keys: |
+            ${{ runner.os }}-pip-
+
       - name: Install dependencies
         run: pip install fastapi uvicorn jinja2 python-multipart groq requests httpx ezdxf reportlab numpy pygame supabase python-dotenv edge-tts pyautogui
 
@@ -27,7 +43,41 @@ jobs:
         run: python setup_ci.py
 
       - name: Run test suite
+        id: tests
         run: python nexus_test_suite.py
         env:
           GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
           CI: true
+
+      - name: Resumen en GitHub Actions
+        if: always()
+        shell: bash
+        run: |
+          if [ "${{ steps.tests.outcome }}" = "success" ]; then
+            RESULTADO="✅ APROBADO"
+          else
+            RESULTADO="❌ FALLARON"
+          fi
+          FECHA=$(date -u '+%Y-%m-%d %H:%M UTC' 2>/dev/null || echo "N/A")
+          echo "## Resultado NEXUS Test Suite" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "| Campo | Valor |" >> $GITHUB_STEP_SUMMARY
+          echo "|---|---|" >> $GITHUB_STEP_SUMMARY
+          echo "| 📅 Fecha | ${FECHA} |" >> $GITHUB_STEP_SUMMARY
+          echo "| 🌿 Rama | \`${{ github.ref_name }}\` |" >> $GITHUB_STEP_SUMMARY
+          echo "| 🔬 Resultado | $RESULTADO |" >> $GITHUB_STEP_SUMMARY
+          echo "| 🔗 Commit | [\`${{ github.sha }}\`](${{ github.server_url }}/${{ github.repository }}/commit/${{ github.sha }}) |" >> $GITHUB_STEP_SUMMARY
+
+      - name: Notificar a Telegram
+        if: always()
+        shell: bash
+        run: |
+          if [ "${{ steps.tests.outcome }}" = "success" ]; then
+            MSG="✅ NEXUS Tests APROBADO — todos los módulos OK"
+          else
+            MSG="❌ NEXUS Tests FALLARON — revisar Actions"
+          fi
+          RUN_URL="${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+          curl -s -X POST "https://api.telegram.org/bot${{ secrets.TELEGRAM_BOT_TOKEN }}/sendMessage" \
+            -H "Content-Type: application/json" \
+            -d "{\"chat_id\":\"${{ secrets.TELEGRAM_CHAT_ID }}\",\"text\":\"${MSG}\n${RUN_URL}\"}"
